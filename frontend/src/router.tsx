@@ -6,6 +6,7 @@ import Element from 'pages/Element';
 import Env from 'pages/Env';
 import Home from 'pages/Home';
 import Login from 'pages/Login';
+import Settings from 'pages/Settings';
 import Thread from 'pages/Thread';
 
 export const router = createBrowserRouter(
@@ -17,6 +18,10 @@ export const router = createBrowserRouter(
     {
       path: '/env',
       element: <Env />
+    },
+    {
+      path: '/settings',
+      element: <Settings />
     },
     {
       path: '/thread/:id?',

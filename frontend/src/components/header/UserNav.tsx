@@ -1,5 +1,6 @@
 import capitalize from 'lodash/capitalize';
-import { LogOut } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '@chainlit/react-client';
 
@@ -17,6 +18,7 @@ import { Translator } from 'components/i18n';
 
 export default function UserNav() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   if (!user) return null;
   const displayName = user?.display_name || user?.identifier;
@@ -43,6 +45,11 @@ export default function UserNav() {
             <p className="text-sm font-medium leading-none">{displayName}</p>
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => navigate('/settings')}>
+          <Translator path="navigation.user.menu.settings" />
+          <Settings className="ml-auto" />
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => logout(true)}>
           <Translator path="navigation.user.menu.logout" />

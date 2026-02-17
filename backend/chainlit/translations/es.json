@@ -229,6 +229,50 @@
       "saved": "Guardado exitosamente"
     }
   },
+  "settings": {
+    "title": "Configuración",
+    "subtitle": "Administra tu cuenta",
+    "profile": {
+      "title": "Perfil",
+      "email": "Correo electrónico",
+      "provider": "Autenticación",
+      "providerCredentials": "Correo y contraseña",
+      "providerGoogle": "Google",
+      "providerBoth": "Correo y Google",
+      "createdAt": "Cuenta creada"
+    },
+    "username": {
+      "title": "Nombre para mostrar",
+      "label": "Nombre",
+      "placeholder": "Tu nombre",
+      "save": "Guardar",
+      "success": "Nombre actualizado correctamente",
+      "errors": {
+        "required": "El nombre es obligatorio",
+        "minLength": "El nombre debe tener al menos 2 caracteres",
+        "pattern": "El nombre solo puede contener letras, números, espacios y guiones"
+      }
+    },
+    "password": {
+      "changeTitle": "Cambiar contraseña",
+      "setTitle": "Establecer una contraseña",
+      "setDescription": "Iniciaste sesión con una cuenta social. Establece una contraseña para también iniciar sesión con correo electrónico.",
+      "currentLabel": "Contraseña actual",
+      "newLabel": "Nueva contraseña",
+      "confirmLabel": "Confirmar nueva contraseña",
+      "change": "Cambiar contraseña",
+      "set": "Establecer contraseña",
+      "changeSuccess": "Contraseña cambiada correctamente",
+      "setSuccess": "Contraseña establecida correctamente",
+      "errors": {
+        "required": "La contraseña es obligatoria",
+        "minLength": "La contraseña debe tener al menos 8 caracteres",
+        "pattern": "Debe contener al menos una letra y un número",
+        "mismatch": "Las contraseñas no coinciden"
+      }
+    },
+    "back": "Volver al chat"
+  },
   "alerts": {
     "info": "Información",
     "note": "Nota",

@@ -229,6 +229,50 @@
       "saved": "Saved successfully"
     }
   },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account",
+    "profile": {
+      "title": "Profile",
+      "email": "Email",
+      "provider": "Authentication",
+      "providerCredentials": "Email & password",
+      "providerGoogle": "Google",
+      "providerBoth": "Email & Google",
+      "createdAt": "Account created"
+    },
+    "username": {
+      "title": "Display Name",
+      "label": "Name",
+      "placeholder": "Your name",
+      "save": "Save",
+      "success": "Name updated successfully",
+      "errors": {
+        "required": "Name is required",
+        "minLength": "Name must be at least 2 characters",
+        "pattern": "Name can only contain letters, numbers, spaces and hyphens"
+      }
+    },
+    "password": {
+      "changeTitle": "Change Password",
+      "setTitle": "Set a Password",
+      "setDescription": "You signed in with a social account. Set a password to also sign in with email.",
+      "currentLabel": "Current password",
+      "newLabel": "New password",
+      "confirmLabel": "Confirm new password",
+      "change": "Change password",
+      "set": "Set password",
+      "changeSuccess": "Password changed successfully",
+      "setSuccess": "Password set successfully",
+      "errors": {
+        "required": "Password is required",
+        "minLength": "Password must be at least 8 characters",
+        "pattern": "Must contain at least one letter and one number",
+        "mismatch": "Passwords do not match"
+      }
+    },
+    "back": "Back to chat"
+  },
   "alerts": {
     "info": "Info",
     "note": "Note",
