@@ -87,7 +87,13 @@ def build():
 
         pnpm = shutil.which("pnpm")
         if not pnpm:
-            raise BuildError("pnpm not found!")
+            # Si pnpm n'est pas disponible, vérifier si les dist/ pré-compilés existent
+            backend_frontend_dist = project_root / "backend" / "chainlit" / "frontend" / "dist"
+            backend_copilot_dist = project_root / "backend" / "chainlit" / "copilot" / "dist"
+            if backend_frontend_dist.exists() and backend_copilot_dist.exists():
+                print("-- pnpm not found, but pre-built frontend/copilot dist/ found. Skipping build.")
+                return
+            raise BuildError("pnpm not found and no pre-built dist/ available!")
 
         pnpm_install(project_root, pnpm)
         pnpm_buildui(project_root, pnpm)
