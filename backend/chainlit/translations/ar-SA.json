@@ -1,0 +1,259 @@
+{
+  "common": {
+    "actions": {
+      "cancel": "إلغاء",
+      "confirm": "تأكيد",
+      "continue": "متابعة",
+      "goBack": "رجوع",
+      "reset": "إعادة تعيين",
+      "submit": "إرسال"
+    },
+    "status": {
+      "loading": "جارٍ التحميل...",
+      "error": {
+        "default": "حدث خطأ",
+        "serverConnection": "تعذّر الاتصال بالخادم"
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول للوصول إلى التطبيق",
+      "form": {
+        "email": {
+          "label": "البريد الإلكتروني",
+          "required": "البريد الإلكتروني مطلوب",
+          "placeholder": "example@email.com"
+        },
+        "password": {
+          "label": "كلمة المرور",
+          "required": "كلمة المرور مطلوبة"
+        },
+        "actions": {
+          "signin": "تسجيل الدخول"
+        },
+        "alternativeText": {
+          "or": "أو"
+        }
+      },
+      "errors": {
+        "default": "تعذّر تسجيل الدخول",
+        "signin": "حاول تسجيل الدخول بحساب آخر",
+        "oauthSignin": "حاول تسجيل الدخول بحساب آخر",
+        "redirectUriMismatch": "رابط إعادة التوجيه لا يتطابق مع إعدادات تطبيق OAuth",
+        "oauthCallback": "حاول تسجيل الدخول بحساب آخر",
+        "oauthCreateAccount": "حاول تسجيل الدخول بحساب آخر",
+        "emailCreateAccount": "حاول تسجيل الدخول بحساب آخر",
+        "callback": "حاول تسجيل الدخول بحساب آخر",
+        "oauthAccountNotLinked": "لتأكيد هويتك، سجّل الدخول بنفس الحساب الذي استخدمته سابقاً",
+        "emailSignin": "تعذّر إرسال البريد الإلكتروني",
+        "emailVerify": "يرجى التحقق من بريدك الإلكتروني، تم إرسال رسالة جديدة",
+        "credentialsSignin": "فشل تسجيل الدخول. تأكد من صحة البيانات المدخلة",
+        "sessionRequired": "يرجى تسجيل الدخول للوصول إلى هذه الصفحة"
+      }
+    },
+    "provider": {
+      "continue": "المتابعة عبر {{provider}}"
+    }
+  },
+  "chat": {
+    "input": {
+      "placeholder": "اكتب رسالتك هنا...",
+      "actions": {
+        "send": "إرسال الرسالة",
+        "stop": "إيقاف المهمة",
+        "attachFiles": "إرفاق ملفات"
+      }
+    },
+    "favorites": {
+      "use": "استخدام رسالة مفضلة",
+      "headline": "الرسائل المفضلة",
+      "empty": {
+        "title": "لا توجد رسائل محفوظة بعد",
+        "description": "ابدأ بإرسال رسالة وضع عليها نجمة، أو ضع نجمة على رسالة من محادثات سابقة"
+      }
+    },
+    "commands": {
+      "button": "الأدوات",
+      "changeTool": "تغيير الأداة",
+      "availableTools": "الأدوات المتاحة"
+    },
+    "speech": {
+      "start": "بدء التسجيل",
+      "stop": "إيقاف التسجيل",
+      "connecting": "جارٍ الاتصال"
+    },
+    "fileUpload": {
+      "dragDrop": "اسحب الملفات وأفلتها هنا",
+      "browse": "تصفح الملفات",
+      "sizeLimit": "الحد الأقصى:",
+      "errors": {
+        "failed": "فشل رفع الملف",
+        "cancelled": "تم إلغاء رفع"
+      },
+      "actions": {
+        "cancelUpload": "إلغاء الرفع",
+        "removeAttachment": "إزالة المرفق"
+      }
+    },
+    "messages": {
+      "status": {
+        "using": "يستخدم",
+        "used": "تم استخدام"
+      },
+      "actions": {
+        "copy": {
+          "button": "نسخ إلى الحافظة",
+          "success": "تم النسخ!"
+        }
+      },
+      "feedback": {
+        "positive": "مفيد",
+        "negative": "غير مفيد",
+        "edit": "تعديل التقييم",
+        "dialog": {
+          "title": "أضف تعليقاً",
+          "submit": "إرسال التقييم",
+          "yourFeedback": "تقييمك..."
+        },
+        "status": {
+          "updating": "جارٍ التحديث",
+          "updated": "تم تحديث التقييم"
+        }
+      }
+    },
+    "history": {
+      "title": "آخر المدخلات",
+      "empty": "لا يوجد شيء بعد...",
+      "show": "عرض السجل"
+    },
+    "settings": {
+      "title": "لوحة الإعدادات",
+      "customize": "خصّص إعدادات المحادثة هنا"
+    },
+    "watermark": "قد تُخطئ النماذج اللغوية. تحقق من المعلومات المهمة."
+  },
+  "threadHistory": {
+    "sidebar": {
+      "title": "المحادثات السابقة",
+      "filters": {
+        "search": "بحث",
+        "placeholder": "البحث في المحادثات..."
+      },
+      "timeframes": {
+        "today": "اليوم",
+        "yesterday": "أمس",
+        "previous7days": "آخر 7 أيام",
+        "previous30days": "آخر 30 يوماً"
+      },
+      "empty": "لا توجد محادثات",
+      "actions": {
+        "close": "إغلاق الشريط الجانبي",
+        "open": "فتح الشريط الجانبي"
+      }
+    },
+    "thread": {
+      "untitled": "محادثة بدون عنوان",
+      "menu": {
+        "rename": "إعادة تسمية",
+        "share": "مشاركة",
+        "delete": "حذف"
+      },
+      "actions": {
+        "share": {
+          "title": "مشاركة رابط المحادثة",
+          "button": "مشاركة",
+          "status": {
+            "copied": "تم نسخ الرابط",
+            "created": "تم إنشاء رابط المشاركة!",
+            "unshared": "تم تعطيل المشاركة لهذه المحادثة"
+          },
+          "error": {
+            "create": "فشل إنشاء رابط المشاركة",
+            "unshare": "فشل إلغاء مشاركة المحادثة"
+          }
+        },
+        "delete": {
+          "title": "تأكيد الحذف",
+          "description": "سيتم حذف المحادثة مع جميع رسائلها وعناصرها. لا يمكن التراجع عن هذا الإجراء",
+          "success": "تم حذف المحادثة",
+          "inProgress": "جارٍ حذف المحادثة"
+        },
+        "rename": {
+          "title": "إعادة تسمية المحادثة",
+          "description": "أدخل اسماً جديداً لهذه المحادثة",
+          "form": {
+            "name": {
+              "label": "الاسم",
+              "placeholder": "أدخل الاسم الجديد"
+            }
+          },
+          "success": "تمت إعادة تسمية المحادثة!",
+          "inProgress": "جارٍ إعادة التسمية"
+        }
+      }
+    }
+  },
+  "navigation": {
+    "header": {
+      "chat": "محادثة",
+      "readme": "حول التطبيق",
+      "theme": {
+        "light": "المظهر الفاتح",
+        "dark": "المظهر الداكن",
+        "system": "مظهر النظام"
+      }
+    },
+    "newChat": {
+      "button": "محادثة جديدة",
+      "dialog": {
+        "title": "إنشاء محادثة جديدة",
+        "description": "سيتم مسح سجل المحادثة الحالية. هل أنت متأكد من المتابعة؟",
+        "tooltip": "محادثة جديدة"
+      }
+    },
+    "user": {
+      "menu": {
+        "settings": "الإعدادات",
+        "settingsKey": "S",
+        "apiKeys": "مفاتيح API",
+        "logout": "تسجيل الخروج"
+      }
+    }
+  },
+  "apiKeys": {
+    "title": "مفاتيح API المطلوبة",
+    "description": "لاستخدام هذا التطبيق، تحتاج إلى مفاتيح API التالية. يتم تخزين المفاتيح في ذاكرة جهازك المحلية.",
+    "success": {
+      "saved": "تم الحفظ بنجاح"
+    }
+  },
+  "alerts": {
+    "info": "معلومة",
+    "note": "ملاحظة",
+    "tip": "نصيحة",
+    "important": "مهم",
+    "warning": "تحذير",
+    "caution": "تنبيه",
+    "debug": "تصحيح",
+    "example": "مثال",
+    "success": "نجاح",
+    "help": "مساعدة",
+    "idea": "فكرة",
+    "pending": "قيد الانتظار",
+    "security": "أمان",
+    "beta": "تجريبي",
+    "best-practice": "أفضل ممارسة"
+  },
+  "components": {
+    "MultiSelectInput": {
+      "placeholder": "اختر..."
+    },
+    "DatePickerInput": {
+      "placeholder": {
+        "single": "اختر تاريخاً",
+        "range": "اختر نطاقاً زمنياً"
+      }
+    }
+  }
+}

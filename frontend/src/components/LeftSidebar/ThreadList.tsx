@@ -161,7 +161,13 @@ export function ThreadList({
           ...prev,
           threads: prev?.threads?.filter((t) => t.id !== threadIdToDelete)
         }));
-        navigate('/');
+        // Only navigate home if the user was viewing the deleted thread
+        if (
+          threadIdToDelete === currentThreadId ||
+          threadIdToDelete === idToResume
+        ) {
+          navigate('/');
+        }
         return (
           <Translator path="threadHistory.thread.actions.delete.success" />
         );
