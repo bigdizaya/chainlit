@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { Square } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { useAudio, useConfig } from '@chainlit/react-client';
@@ -94,7 +94,9 @@ const VoiceButton = ({ disabled }: Props) => {
                   : undefined
               }
             >
-              {audioConnection === 'on' ? <X className="!size-5" /> : null}
+              {audioConnection === 'on' ? (
+                <Square className="!size-4" fill="currentColor" />
+              ) : null}
               {audioConnection === 'off' ? (
                 <VoiceLines className="!size-6" />
               ) : null}
