@@ -2,7 +2,12 @@ import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 
-import { useAudio, useAuth, useChatData, useConfig } from '@chainlit/react-client';
+import {
+  useAudio,
+  useAuth,
+  useChatData,
+  useConfig
+} from '@chainlit/react-client';
 
 import AudioPresence from '@/components/AudioPresence';
 import ButtonLink from '@/components/ButtonLink';
@@ -20,6 +25,7 @@ import { chatSettingsSidebarOpenState } from '@/state/project';
 
 import ApiKeys from './ApiKeys';
 import ChatProfiles from './ChatProfiles';
+import FeedbackButton from './FeedbackButton';
 import NewChatButton from './NewChat';
 import ReadmeButton from './Readme';
 import ShareButton from './Share';
@@ -113,6 +119,7 @@ const Header = memo(() => {
             </TooltipContent>
           </Tooltip>
         )}
+        <FeedbackButton />
         <ThemeToggle />
         <UserNav />
       </div>

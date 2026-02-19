@@ -289,6 +289,24 @@
     "beta": "تجريبي",
     "best-practice": "أفضل ممارسة"
   },
+  "quota": {
+    "normal": "عادي",
+    "deep": "بحث عميق"
+  },
+  "feedback": {
+    "button": "ملاحظات",
+    "dialog": {
+      "title": "شاركنا رأيك",
+      "placeholder": "اكتب ملاحظاتك هنا...",
+      "category": {
+        "suggestion": "اقتراح",
+        "bug": "مشكلة",
+        "question": "سؤال"
+      },
+      "success": "شكراً لملاحظاتك!",
+      "error": "فشل في إرسال الملاحظة"
+    }
+  },
   "components": {
     "MultiSelectInput": {
       "placeholder": "اختر..."

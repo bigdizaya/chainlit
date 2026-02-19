@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useRecoilValue } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 
 import { sideViewState, useAuth, useConfig } from '@chainlit/react-client';
 
@@ -8,9 +9,11 @@ import ElementSideView from '@/components/ElementSideView';
 import LeftSidebar from '@/components/LeftSidebar';
 import { TaskList } from '@/components/Tasklist';
 import { Header } from '@/components/header';
+import QuotaBar from '@/components/header/QuotaBar';
 import { ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
+import { QuotaData, quotaState } from '@/state/quota';
 import { userEnvState } from 'state/user';
 
 type Props = {
@@ -22,6 +25,43 @@ const Page = ({ children }: Props) => {
   const { data } = useAuth();
   const userEnv = useRecoilValue(userEnvState);
   const sideView = useRecoilValue(sideViewState);
+  const setQuota = useSetRecoilState(quotaState);
+
+  const isLoggedIn = !!data?.requireLogin;
+
+  // Charger le quota au montage
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    fetch('/api/quota', {
+      method: 'POST',
+      credentials: 'include'
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setQuota({ normal: data.normal, deep: data.deep });
+        }
+      })
+      .catch(() => {
+        // Silently fail — quota bar will just not show
+      });
+  }, [isLoggedIn, setQuota]);
+
+  // Écouter les mises à jour de quota en temps réel via window messages
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      const msg = event.data;
+      if (msg && msg.type === 'quota_update' && msg.normal && msg.deep) {
+        setQuota({ normal: msg.normal, deep: msg.deep } as QuotaData);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isLoggedIn, setQuota]);
 
   if (config?.userEnv) {
     for (const key of config.userEnv || []) {
@@ -34,6 +74,7 @@ const Page = ({ children }: Props) => {
   const mainContent = (
     <div className="flex flex-col h-full w-full">
       <Header />
+      {isLoggedIn && <QuotaBar />}
       <ResizablePanelGroup
         direction="horizontal"
         className="flex flex-row flex-grow"

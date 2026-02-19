@@ -290,6 +290,24 @@
     "beta": "Beta",
     "best-practice": "Best Practice"
   },
+  "quota": {
+    "normal": "Normal",
+    "deep": "Deep Search"
+  },
+  "feedback": {
+    "button": "Feedback",
+    "dialog": {
+      "title": "Send us your feedback",
+      "placeholder": "Share your thoughts...",
+      "category": {
+        "suggestion": "Suggestion",
+        "bug": "Bug report",
+        "question": "Question"
+      },
+      "success": "Thank you for your feedback!",
+      "error": "Failed to send feedback"
+    }
+  },
   "components": {
     "MultiSelectInput": {
       "placeholder": "Select..."
