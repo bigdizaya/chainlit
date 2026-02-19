@@ -29,13 +29,44 @@ function QuotaValue({
   );
 }
 
+/**
+ * Version inline pour le header desktop — cachée sur mobile.
+ */
+export function QuotaInline() {
+  const quota = useRecoilValue(quotaState);
+
+  if (!quota) return null;
+
+  return (
+    <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground mr-1">
+      <span className="flex items-center gap-1">
+        <span className="text-[11px]">🔍</span>
+        <QuotaValue
+          remaining={quota.normal.remaining}
+          limit={quota.normal.limit}
+        />
+      </span>
+
+      <span className="text-border/60">|</span>
+
+      <span className="flex items-center gap-1">
+        <span className="text-[11px]">🔬</span>
+        <QuotaValue remaining={quota.deep.remaining} limit={quota.deep.limit} />
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Bandeau mobile uniquement — caché sur desktop.
+ */
 export default function QuotaBar() {
   const quota = useRecoilValue(quotaState);
 
   if (!quota) return null;
 
   return (
-    <div className="flex items-center justify-center gap-3 h-7 bg-muted/50 border-b text-xs text-muted-foreground px-3 shrink-0">
+    <div className="flex md:hidden items-center justify-center gap-3 h-7 bg-muted/50 border-b text-xs text-muted-foreground px-3 shrink-0">
       <span className="flex items-center gap-1">
         <span>🔍</span>
         <Translator path="quota.normal" />{' '}

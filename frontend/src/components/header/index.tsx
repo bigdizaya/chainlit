@@ -27,6 +27,7 @@ import ApiKeys from './ApiKeys';
 import ChatProfiles from './ChatProfiles';
 import FeedbackButton from './FeedbackButton';
 import NewChatButton from './NewChat';
+import { QuotaInline } from './QuotaBar';
 import ReadmeButton from './Readme';
 import ShareButton from './Share';
 import SidebarTrigger from './SidebarTrigger';
@@ -119,6 +120,7 @@ const Header = memo(() => {
             </TooltipContent>
           </Tooltip>
         )}
+        <QuotaInline />
         <FeedbackButton />
         <ThemeToggle />
         <UserNav />
