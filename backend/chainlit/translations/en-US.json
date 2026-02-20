@@ -294,18 +294,31 @@
     "normal": "Normal",
     "deep": "Deep Search"
   },
-  "feedback": {
-    "button": "Feedback",
+  "contribute": {
+    "button": "Contribute",
+    "menu": {
+      "title": "How to contribute?",
+      "book": "Suggest a book",
+      "scholar": "Suggest a scholar",
+      "feedback": "Give feedback",
+      "bug": "Report a problem",
+      "library": "View library"
+    },
     "dialog": {
-      "title": "Send us your feedback",
-      "placeholder": "Share your thoughts...",
-      "category": {
-        "suggestion": "Suggestion",
-        "bug": "Bug report",
-        "question": "Question"
+      "title": {
+        "book": "Suggest a book",
+        "scholar": "Suggest a scholar",
+        "suggestion": "Your feedback",
+        "bug": "Report a problem"
       },
-      "success": "Thank you for your feedback!",
-      "error": "Failed to send feedback"
+      "placeholder": {
+        "book": "Book title, author, edition if possible...",
+        "scholar": "Scholar name, era, specialty...",
+        "suggestion": "Share your thoughts...",
+        "bug": "Describe the problem you encountered..."
+      },
+      "success": "Thank you for your contribution!",
+      "error": "Failed to send"
     }
   },
   "components": {

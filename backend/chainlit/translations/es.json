@@ -294,18 +294,31 @@
     "normal": "Normal",
     "deep": "Búsqueda profunda"
   },
-  "feedback": {
-    "button": "Comentarios",
+  "contribute": {
+    "button": "Contribuir",
+    "menu": {
+      "title": "¿Cómo contribuir?",
+      "book": "Proponer un libro",
+      "scholar": "Sugerir un erudito",
+      "feedback": "Dar una opinión",
+      "bug": "Reportar un problema",
+      "library": "Ver la biblioteca"
+    },
     "dialog": {
-      "title": "Envíanos tus comentarios",
-      "placeholder": "Comparte tus ideas...",
-      "category": {
-        "suggestion": "Sugerencia",
-        "bug": "Problema",
-        "question": "Pregunta"
+      "title": {
+        "book": "Proponer un libro",
+        "scholar": "Sugerir un erudito",
+        "suggestion": "Tu opinión",
+        "bug": "Reportar un problema"
       },
-      "success": "¡Gracias por tus comentarios!",
-      "error": "Error al enviar los comentarios"
+      "placeholder": {
+        "book": "Título del libro, autor, edición si es posible...",
+        "scholar": "Nombre del erudito, época, especialidad...",
+        "suggestion": "Comparte tus ideas...",
+        "bug": "Describe el problema encontrado..."
+      },
+      "success": "¡Gracias por tu contribución!",
+      "error": "Error al enviar"
     }
   },
   "components": {

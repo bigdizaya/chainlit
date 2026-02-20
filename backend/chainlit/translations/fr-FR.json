@@ -294,17 +294,30 @@
         "normal": "Normal",
         "deep": "Recherche profonde"
     },
-    "feedback": {
-        "button": "Votre avis",
+    "contribute": {
+        "button": "Contribuer",
+        "menu": {
+            "title": "Comment contribuer ?",
+            "book": "Proposer un livre",
+            "scholar": "Suggérer un savant",
+            "feedback": "Donner un avis",
+            "bug": "Signaler un problème",
+            "library": "Voir la bibliothèque"
+        },
         "dialog": {
-            "title": "Donnez-nous votre avis",
-            "placeholder": "Partagez vos remarques...",
-            "category": {
-                "suggestion": "Suggestion",
-                "bug": "Problème",
-                "question": "Question"
+            "title": {
+                "book": "Proposer un livre",
+                "scholar": "Suggérer un savant",
+                "suggestion": "Votre avis",
+                "bug": "Signaler un problème"
             },
-            "success": "Merci pour votre retour !",
+            "placeholder": {
+                "book": "Titre du livre, auteur, édition si possible...",
+                "scholar": "Nom du savant, époque, spécialité...",
+                "suggestion": "Partagez vos remarques...",
+                "bug": "Décrivez le problème rencontré..."
+            },
+            "success": "Merci pour votre contribution !",
             "error": "Erreur lors de l'envoi"
         }
     },
