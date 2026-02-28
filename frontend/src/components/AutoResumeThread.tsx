@@ -25,6 +25,24 @@ export default function AutoResumeThread({ id }: Props) {
 
   useEffect(() => {
     if (!config?.threadResumable) return;
+
+    // Vérifier l'inactivité avant de reprendre le thread
+    const INACTIVITY_KEY = 'jawab_last_activity';
+    const THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
+    const lastActivity = parseInt(
+      localStorage.getItem(INACTIVITY_KEY) || '0',
+      10
+    );
+    const now = Date.now();
+
+    if (lastActivity > 0 && now - lastActivity > THRESHOLD_MS) {
+      // Inactivité > 30min → nouvelle conversation
+      clear();
+      navigate('/');
+      return;
+    }
+
+    // Inactivité < 30min → reprendre normalement
     clear();
     setIdToResume(id);
     if (!config?.dataPersistence) {
