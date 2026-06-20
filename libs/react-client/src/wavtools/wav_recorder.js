@@ -37,12 +37,16 @@ export class WavRecorder {
     // State variables
     this.stream = null;
     this.processor = null;
+    this.scriptProcessor = null;
     this.source = null;
     this.node = null;
     this.context = null;
     this.analyser = null;
     this.recording = false;
     this._resumeOnForeground = null;
+    this._processorMode = null;
+    this._recordingWatchdog = null;
+    this._chunksSeen = 0;
     // Event handling with AudioWorklet
     this._lastEventId = 0;
     this.eventReceipts = {};
@@ -157,7 +161,7 @@ export class WavRecorder {
    * @returns {"ended"|"paused"|"recording"}
    */
   getStatus() {
-    if (!this.processor) {
+    if (!this.processor && !this.scriptProcessor) {
       return 'ended';
     } else if (!this.recording) {
       return 'paused';
@@ -187,6 +191,12 @@ export class WavRecorder {
     this._resumeOnForeground = null;
   }
 
+  _clearRecordingWatchdog() {
+    if (!this._recordingWatchdog) return;
+    clearTimeout(this._recordingWatchdog);
+    this._recordingWatchdog = null;
+  }
+
   _attachForegroundResumeListener() {
     if (typeof document === 'undefined' || this._resumeOnForeground) return;
     this._resumeOnForeground = () => {
@@ -207,7 +217,16 @@ export class WavRecorder {
   }
 
   _disconnectAudioGraph() {
-    [this.processor, this.source, this.node, this.analyser].forEach((node) => {
+    if (this.scriptProcessor) {
+      this.scriptProcessor.onaudioprocess = null;
+    }
+    [
+      this.processor,
+      this.scriptProcessor,
+      this.source,
+      this.node,
+      this.analyser
+    ].forEach((node) => {
       try {
         if (node && typeof node.disconnect === 'function') node.disconnect();
       } catch {
@@ -217,8 +236,10 @@ export class WavRecorder {
   }
 
   _resetAudioGraph() {
+    this._clearRecordingWatchdog();
     this.stream = null;
     this.processor = null;
+    this.scriptProcessor = null;
     this.source = null;
     this.node = null;
     this.analyser = null;
@@ -226,11 +247,143 @@ export class WavRecorder {
     this.recording = false;
     this._chunkProcessor = () => {};
     this._chunkProcessorSize = void 0;
+    this._processorMode = null;
+    this._chunksSeen = 0;
     this._chunkProcessorBuffer = {
       raw: new ArrayBuffer(0),
       mono: new ArrayBuffer(0)
     };
     this.eventReceipts = {};
+  }
+
+  _shouldPreferScriptProcessor() {
+    if (typeof navigator === 'undefined') return false;
+
+    const userAgent = navigator.userAgent || '';
+    const isMobile = /Android|iPad|iPhone|iPod/i.test(userAgent);
+    let isStandalone = false;
+
+    if (typeof window !== 'undefined') {
+      isStandalone = Boolean(window.navigator?.standalone);
+      try {
+        isStandalone =
+          isStandalone ||
+          Boolean(window.matchMedia?.('(display-mode: standalone)').matches);
+      } catch {
+        // Some embedded browsers can throw while evaluating display-mode.
+      }
+    }
+
+    return isMobile || isStandalone;
+  }
+
+  _handleChunk(data) {
+    if (this._chunkProcessorSize) {
+      const buffer = this._chunkProcessorBuffer;
+      this._chunkProcessorBuffer = {
+        raw: WavPacker.mergeBuffers(buffer.raw, data.raw),
+        mono: WavPacker.mergeBuffers(buffer.mono, data.mono)
+      };
+      if (
+        this._chunkProcessorBuffer.mono.byteLength >= this._chunkProcessorSize
+      ) {
+        this._chunkProcessor(this._chunkProcessorBuffer);
+        this._chunkProcessorBuffer = {
+          raw: new ArrayBuffer(0),
+          mono: new ArrayBuffer(0)
+        };
+      }
+    } else {
+      this._chunkProcessor(data);
+    }
+  }
+
+  _resampleFloat32Array(input, fromSampleRate, toSampleRate) {
+    if (!fromSampleRate || !toSampleRate || fromSampleRate === toSampleRate) {
+      return input.slice();
+    }
+
+    const ratio = fromSampleRate / toSampleRate;
+    const length = Math.max(1, Math.round(input.length / ratio));
+    const result = new Float32Array(length);
+
+    for (let i = 0; i < length; i++) {
+      const position = i * ratio;
+      const index = Math.floor(position);
+      const nextIndex = Math.min(index + 1, input.length - 1);
+      const weight = position - index;
+      result[i] = input[index] * (1 - weight) + input[nextIndex] * weight;
+    }
+
+    return result;
+  }
+
+  _emitScriptProcessorChunk(input) {
+    if (!this.recording) return;
+    const monoFloat = this._resampleFloat32Array(
+      input,
+      this.context?.sampleRate || this.sampleRate,
+      this.sampleRate
+    );
+    const mono = WavPacker.floatTo16BitPCM(monoFloat);
+    this._chunksSeen++;
+    this._handleChunk({ raw: mono, mono });
+  }
+
+  _startScriptProcessorFallback() {
+    if (!this.context || !this.source) {
+      throw new Error('Can not start script processor without audio source');
+    }
+
+    this._clearRecordingWatchdog();
+
+    if (this.processor) {
+      try {
+        this.processor.port.onmessage = null;
+      } catch {
+        // ignored
+      }
+      try {
+        this.processor.disconnect();
+      } catch {
+        // ignored
+      }
+      this.processor = null;
+    }
+
+    if (!this.analyser) {
+      const analyser = this.context.createAnalyser();
+      analyser.fftSize = 8192;
+      analyser.smoothingTimeConstant = 0.1;
+      this.analyser = analyser;
+    }
+
+    try {
+      this.source.connect(this.analyser);
+    } catch {
+      // The analyser may already be connected.
+    }
+
+    if (this.scriptProcessor) {
+      this._processorMode = 'script';
+      return true;
+    }
+
+    const scriptProcessor = this.context.createScriptProcessor(4096, 1, 1);
+    scriptProcessor.onaudioprocess = (event) => {
+      const inputBuffer = event.inputBuffer;
+      if (!inputBuffer || inputBuffer.numberOfChannels < 1) return;
+      this._emitScriptProcessorChunk(inputBuffer.getChannelData(0));
+    };
+
+    this.source.connect(scriptProcessor);
+    // ScriptProcessorNode only runs reliably when connected to destination.
+    // We do not write output samples, so this keeps the pipeline alive silently.
+    scriptProcessor.connect(this.context.destination);
+
+    this.scriptProcessor = scriptProcessor;
+    this._processorMode = 'script';
+    return true;
   }
 
   /**
@@ -380,7 +533,7 @@ export class WavRecorder {
    * @returns {Promise<true>}
    */
   async begin(deviceId) {
-    if (this.processor) {
+    if (this.processor || this.scriptProcessor) {
       throw new Error(
         `Already connected: please call .end() to start a new session`
       );
@@ -407,6 +560,15 @@ export class WavRecorder {
       this.context = context;
 
       const source = context.createMediaStreamSource(this.stream);
+      this.source = source;
+
+      if (this._shouldPreferScriptProcessor()) {
+        this._startScriptProcessorFallback();
+        this._attachForegroundResumeListener();
+        await this.resume();
+        return true;
+      }
+
       // Load and execute the module script.
       await context.audioWorklet.addModule(this.scriptSrc);
       const processor = new AudioWorkletNode(context, 'audio_processor');
@@ -415,25 +577,8 @@ export class WavRecorder {
         if (event === 'receipt') {
           this.eventReceipts[id] = data;
         } else if (event === 'chunk') {
-          if (this._chunkProcessorSize) {
-            const buffer = this._chunkProcessorBuffer;
-            this._chunkProcessorBuffer = {
-              raw: WavPacker.mergeBuffers(buffer.raw, data.raw),
-              mono: WavPacker.mergeBuffers(buffer.mono, data.mono)
-            };
-            if (
-              this._chunkProcessorBuffer.mono.byteLength >=
-              this._chunkProcessorSize
-            ) {
-              this._chunkProcessor(this._chunkProcessorBuffer);
-              this._chunkProcessorBuffer = {
-                raw: new ArrayBuffer(0),
-                mono: new ArrayBuffer(0)
-              };
-            }
-          } else {
-            this._chunkProcessor(data);
-          }
+          this._chunksSeen++;
+          this._handleChunk(data);
         }
       };
 
@@ -456,16 +601,28 @@ export class WavRecorder {
       this.node = node;
       this.analyser = analyser;
       this.processor = processor;
+      this._processorMode = 'worklet';
       this._attachForegroundResumeListener();
       await this.resume();
     } catch (e) {
-      console.error(e);
+      if (this.context && this.source) {
+        try {
+          this._startScriptProcessorFallback();
+          this._attachForegroundResumeListener();
+          await this.resume();
+          return true;
+        } catch (fallbackError) {
+          console.error(fallbackError);
+        }
+      } else {
+        console.error(e);
+      }
       this._removeForegroundResumeListener();
       this._stopTracks();
       this._disconnectAudioGraph();
       await this._closeContext();
       this._resetAudioGraph();
-      throw new Error(`Could not add audioWorklet module: ${this.scriptSrc}`);
+      throw new Error(`Could not start microphone processor`);
     }
     return true;
   }
@@ -482,7 +639,7 @@ export class WavRecorder {
     minDecibels = -100,
     maxDecibels = -30
   ) {
-    if (!this.processor) {
+    if (!this.analyser) {
       throw new Error('Session ended: please call .begin() first');
     }
     return AudioAnalysis.getFrequencies(
@@ -501,7 +658,7 @@ export class WavRecorder {
    * @returns {Promise<true>}
    */
   async pause() {
-    if (!this.processor) {
+    if (!this.processor && !this.scriptProcessor) {
       throw new Error('Session ended: please call .begin() first');
     } else if (!this.recording) {
       throw new Error('Already paused: please call .record() first');
@@ -510,6 +667,11 @@ export class WavRecorder {
       this._chunkProcessor(this._chunkProcessorBuffer);
     }
     this.log('Pausing ...');
+    this._clearRecordingWatchdog();
+    if (this.scriptProcessor && !this.processor) {
+      this.recording = false;
+      return true;
+    }
     await this._event('stop');
     this.recording = false;
     return true;
@@ -522,7 +684,7 @@ export class WavRecorder {
    * @returns {Promise<true>}
    */
   async record(chunkProcessor = () => {}, chunkSize = 8192) {
-    if (!this.processor) {
+    if (!this.processor && !this.scriptProcessor) {
       throw new Error('Session ended: please call .begin() first');
     } else if (this.recording) {
       throw new Error('Already recording: please call .pause() first');
@@ -535,10 +697,29 @@ export class WavRecorder {
       raw: new ArrayBuffer(0),
       mono: new ArrayBuffer(0)
     };
+    this._chunksSeen = 0;
     this.log('Recording ...');
     await this.resume();
+    if (this.scriptProcessor && !this.processor) {
+      this.recording = true;
+      return true;
+    }
     await this._event('start');
     this.recording = true;
+    this._clearRecordingWatchdog();
+    this._recordingWatchdog = setTimeout(() => {
+      if (
+        this.recording &&
+        this._processorMode === 'worklet' &&
+        this._chunksSeen === 0
+      ) {
+        try {
+          this._startScriptProcessorFallback();
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }, 1500);
     return true;
   }
 
@@ -547,8 +728,15 @@ export class WavRecorder {
    * @returns {Promise<true>}
    */
   async clear() {
-    if (!this.processor) {
+    if (!this.processor && !this.scriptProcessor) {
       throw new Error('Session ended: please call .begin() first');
+    }
+    if (this.scriptProcessor && !this.processor) {
+      this._chunkProcessorBuffer = {
+        raw: new ArrayBuffer(0),
+        mono: new ArrayBuffer(0)
+      };
+      return true;
     }
     await this._event('clear');
     return true;
@@ -559,8 +747,14 @@ export class WavRecorder {
    * @returns {Promise<{meanValues: Float32Array, channels: Array<Float32Array>}>}
    */
   async read() {
-    if (!this.processor) {
+    if (!this.processor && !this.scriptProcessor) {
       throw new Error('Session ended: please call .begin() first');
+    }
+    if (this.scriptProcessor && !this.processor) {
+      return {
+        meanValues: new Float32Array(0),
+        channels: [new Float32Array(0)]
+      };
     }
     this.log('Reading ...');
     const result = await this._event('read');
@@ -573,8 +767,11 @@ export class WavRecorder {
    * @returns {Promise<import('./wav_packer.js').WavPackerAudioType>}
    */
   async save(force = false) {
-    if (!this.processor) {
+    if (!this.processor && !this.scriptProcessor) {
       throw new Error('Session ended: please call .begin() first');
+    }
+    if (this.scriptProcessor && !this.processor) {
+      return this._emptyAudioResult();
     }
     if (!force && this.recording) {
       throw new Error(
@@ -593,7 +790,7 @@ export class WavRecorder {
    * @returns {Promise<import('./wav_packer.js').WavPackerAudioType>}
    */
   async end() {
-    if (!this.processor) {
+    if (!this.processor || this.scriptProcessor) {
       this._removeForegroundResumeListener();
       this._stopTracks();
       this._disconnectAudioGraph();
@@ -637,7 +834,7 @@ export class WavRecorder {
    */
   async quit() {
     this.listenForDeviceChange(null);
-    if (this.processor) {
+    if (this.processor || this.scriptProcessor) {
       await this.end();
     }
     return true;

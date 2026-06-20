@@ -1,5 +1,5 @@
 import { debounce } from 'lodash';
-import { useCallback, useContext, useEffect } from 'react';
+import { useCallback, useContext, useEffect, useRef } from 'react';
 import {
   useRecoilState,
   useRecoilValue,
@@ -90,13 +90,132 @@ const useChatSession = () => {
 
   const [currentThreadId, setCurrentThreadId] =
     useRecoilState(currentThreadIdState);
+  const currentThreadIdRef = useRef(currentThreadId);
+  const isRefreshingThreadRef = useRef(false);
+  const lastForegroundRefreshRef = useRef(0);
 
   // Use currentThreadId as thread id in websocket header
   useEffect(() => {
+    currentThreadIdRef.current = currentThreadId;
     if (session?.socket) {
       session.socket.auth['threadId'] = currentThreadId || '';
     }
   }, [currentThreadId]);
+
+  const applyThread = useCallback(
+    (
+      thread: IThread,
+      options: { handleResumeRedirect?: boolean; syncLoading?: boolean } = {}
+    ) => {
+      const isReadOnlyView = Boolean(
+        (thread as any)?.metadata?.viewer_read_only
+      );
+      if (
+        options.handleResumeRedirect &&
+        !isReadOnlyView &&
+        idToResume &&
+        thread.id !== idToResume
+      ) {
+        window.location.href = `/thread/${thread.id}`;
+      }
+      if (
+        !isReadOnlyView &&
+        (options.handleResumeRedirect ? idToResume : true)
+      ) {
+        currentThreadIdRef.current = thread.id;
+        setCurrentThreadId(thread.id);
+      }
+      let messages: IStep[] = [];
+      for (const step of thread.steps) {
+        messages = addMessage(messages, step);
+      }
+      if (thread.metadata?.chat_profile) {
+        setChatProfile(thread.metadata?.chat_profile);
+      }
+      if (thread.metadata?.chat_settings) {
+        setChatSettingsValue(thread.metadata?.chat_settings);
+      }
+      setMessages(messages);
+      const elements = thread.elements || [];
+      setTasklists(
+        (elements as ITasklistElement[]).filter((e) => e.type === 'tasklist')
+      );
+      setElements(
+        (elements as IMessageElement[]).filter(
+          (e) => ['avatar', 'tasklist'].indexOf(e.type) === -1
+        )
+      );
+      if (options.syncLoading) {
+        const hasStreamingStep = thread.steps.some((step) => step.streaming);
+        setLoading(hasStreamingStep);
+      }
+    },
+    [idToResume]
+  );
+
+  const refreshCurrentThread = useCallback(async () => {
+    const threadId = currentThreadIdRef.current || idToResume;
+    if (!threadId || isRefreshingThreadRef.current) return;
+
+    isRefreshingThreadRef.current = true;
+    try {
+      const thread = await client.getThread(threadId);
+      if (thread?.id) {
+        applyThread(thread, { syncLoading: true });
+      }
+    } catch {
+      // Data persistence can be disabled, or the user may not own the thread.
+      // In those cases the socket remains the source of truth.
+    } finally {
+      isRefreshingThreadRef.current = false;
+    }
+  }, [applyThread, client, idToResume]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined' || typeof window === 'undefined') {
+      return;
+    }
+
+    let hiddenAt = 0;
+
+    const handleForeground = () => {
+      const now = Date.now();
+      if (now - lastForegroundRefreshRef.current < 1500) return;
+      lastForegroundRefreshRef.current = now;
+
+      const threadId = currentThreadIdRef.current || idToResume || '';
+      if (session?.socket) {
+        session.socket.auth['threadId'] = threadId;
+        if (!session.socket.connected) {
+          session.socket.connect();
+        }
+      }
+
+      if (!hiddenAt || now - hiddenAt > 500) {
+        refreshCurrentThread();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        hiddenAt = Date.now();
+        return;
+      }
+      if (document.visibilityState === 'visible') {
+        handleForeground();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pageshow', handleForeground);
+    window.addEventListener('focus', handleForeground);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pageshow', handleForeground);
+      window.removeEventListener('focus', handleForeground);
+    };
+  }, [idToResume, refreshCurrentThread, session?.socket]);
 
   const _connect = useCallback(
     async ({
@@ -292,35 +411,7 @@ const useChatSession = () => {
       });
 
       socket.on('resume_thread', (thread: IThread) => {
-        const isReadOnlyView = Boolean(
-          (thread as any)?.metadata?.viewer_read_only
-        );
-        if (!isReadOnlyView && idToResume && thread.id !== idToResume) {
-          window.location.href = `/thread/${thread.id}`;
-        }
-        if (!isReadOnlyView && idToResume) {
-          setCurrentThreadId(thread.id);
-        }
-        let messages: IStep[] = [];
-        for (const step of thread.steps) {
-          messages = addMessage(messages, step);
-        }
-        if (thread.metadata?.chat_profile) {
-          setChatProfile(thread.metadata?.chat_profile);
-        }
-        if (thread.metadata?.chat_settings) {
-          setChatSettingsValue(thread.metadata?.chat_settings);
-        }
-        setMessages(messages);
-        const elements = thread.elements || [];
-        setTasklists(
-          (elements as ITasklistElement[]).filter((e) => e.type === 'tasklist')
-        );
-        setElements(
-          (elements as IMessageElement[]).filter(
-            (e) => ['avatar', 'tasklist'].indexOf(e.type) === -1
-          )
-        );
+        applyThread(thread, { handleResumeRedirect: true });
       });
 
       socket.on('resume_thread_error', (error?: string) => {
@@ -335,6 +426,7 @@ const useChatSession = () => {
         'first_interaction',
         (event: { interaction: string; thread_id: string }) => {
           setFirstUserInteraction(event.interaction);
+          currentThreadIdRef.current = event.thread_id;
           setCurrentThreadId(event.thread_id);
         }
       );
@@ -526,7 +618,7 @@ const useChatSession = () => {
         }
       });
     },
-    [setSession, sessionId, idToResume, chatProfile]
+    [setSession, sessionId, idToResume, chatProfile, applyThread]
   );
 
   const connect = useCallback(debounce(_connect, 200), [_connect]);

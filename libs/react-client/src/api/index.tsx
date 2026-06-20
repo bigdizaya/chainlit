@@ -231,6 +231,14 @@ export class ChainlitAPI extends APIBase {
     return res.json();
   }
 
+  async getThread(threadId: string): Promise<IThread> {
+    const res = await this.get(
+      `/project/thread/${encodeURIComponent(threadId)}`
+    );
+
+    return res.json();
+  }
+
   async renameThread(threadId: string, name: string) {
     const res = await this.put(`/project/thread`, { threadId, name });
 
