@@ -31,6 +31,7 @@ import {
   sessionState,
   sideViewState,
   tasklistState,
+  threadHistoryState,
   threadIdToResumeState,
   tokenCountState,
   wavRecorderState,
@@ -58,6 +59,11 @@ import { OutputAudioChunk } from './types/audio';
 import { ChainlitContext } from './context';
 import type { IToken } from './useChatData';
 
+const FOREGROUND_SYNC_INTERVAL_MS = 2000;
+const FOREGROUND_SYNC_DURATION_MS = 45000;
+const THREAD_HISTORY_REFRESH_SIZE = 35;
+let foregroundSyncOwner: symbol | null = null;
+
 const useChatSession = () => {
   const client = useContext(ChainlitContext);
   const sessionId = useRecoilValue(sessionIdState);
@@ -72,6 +78,7 @@ const useChatSession = () => {
   const setMcps = useSetRecoilState(mcpState);
   const wavStreamPlayer = useRecoilValue(wavStreamPlayerState);
   const wavRecorder = useRecoilValue(wavRecorderState);
+  const messages = useRecoilValue(messagesState);
   const setMessages = useSetRecoilState(messagesState);
   const setAskUser = useSetRecoilState(askUserState);
   const setCallFn = useSetRecoilState(callFnState);
@@ -87,12 +94,16 @@ const useChatSession = () => {
   const idToResume = useRecoilValue(threadIdToResumeState);
   const setThreadResumeError = useSetRecoilState(resumeThreadErrorState);
   const setFavoriteMessages = useSetRecoilState(favoriteMessagesState);
+  const setThreadHistory = useSetRecoilState(threadHistoryState);
 
   const [currentThreadId, setCurrentThreadId] =
     useRecoilState(currentThreadIdState);
   const currentThreadIdRef = useRef(currentThreadId);
   const isRefreshingThreadRef = useRef(false);
   const lastForegroundRefreshRef = useRef(0);
+  const foregroundSyncOwnerRef = useRef(Symbol('foreground-sync-owner'));
+  const foregroundSyncTimerRef = useRef<number | undefined>(undefined);
+  const messagesRef = useRef(messages);
 
   // Use currentThreadId as thread id in websocket header
   useEffect(() => {
@@ -101,6 +112,10 @@ const useChatSession = () => {
       session.socket.auth['threadId'] = currentThreadId || '';
     }
   }, [currentThreadId]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const applyThread = useCallback(
     (
@@ -153,30 +168,114 @@ const useChatSession = () => {
     [idToResume]
   );
 
-  const refreshCurrentThread = useCallback(async () => {
-    const threadId = currentThreadIdRef.current || idToResume;
-    if (!threadId || isRefreshingThreadRef.current) return;
+  const updateThreadInHistory = useCallback(
+    (thread: IThread) => {
+      setThreadHistory((prev) => {
+        const existingThreads = prev?.threads || [];
+        const threadIndex = existingThreads.findIndex(
+          (item) => item.id === thread.id
+        );
+        const nextThread = {
+          ...(threadIndex >= 0 ? existingThreads[threadIndex] : {}),
+          ...thread
+        };
+        const nextThreads =
+          threadIndex >= 0
+            ? existingThreads.map((item, index) =>
+                index === threadIndex ? nextThread : item
+              )
+            : [nextThread, ...existingThreads];
 
-    isRefreshingThreadRef.current = true;
-    try {
-      const thread = await client.getThread(threadId);
-      if (thread?.id) {
-        applyThread(thread, { syncLoading: true });
+        return {
+          ...prev,
+          currentThreadId: thread.id,
+          threads: nextThreads
+        };
+      });
+    },
+    [setThreadHistory]
+  );
+
+  const refreshThreadHistory = useCallback(async () => {
+    const { pageInfo, data } = await client.listThreads(
+      { first: THREAD_HISTORY_REFRESH_SIZE },
+      {}
+    );
+    setThreadHistory((prev) => ({
+      ...prev,
+      pageInfo,
+      threads: data
+    }));
+    return data;
+  }, [client, setThreadHistory]);
+
+  const refreshCurrentThread = useCallback(
+    async (options?: { allowRecentFallback?: boolean }) => {
+      if (isRefreshingThreadRef.current) return;
+
+      isRefreshingThreadRef.current = true;
+      try {
+        const recentThreads = await refreshThreadHistory();
+        const canUseRecentFallback =
+          Boolean(options?.allowRecentFallback) &&
+          messagesRef.current.length > 0;
+        const threadId =
+          currentThreadIdRef.current ||
+          idToResume ||
+          (canUseRecentFallback ? recentThreads[0]?.id : undefined);
+        if (!threadId) return;
+
+        const thread = await client.getThread(threadId);
+        if (thread?.id) {
+          applyThread(thread, { syncLoading: true });
+          updateThreadInHistory(thread);
+        }
+      } catch {
+        // Data persistence can be disabled, or the user may not own the thread.
+        // In those cases the socket remains the source of truth.
+      } finally {
+        isRefreshingThreadRef.current = false;
       }
-    } catch {
-      // Data persistence can be disabled, or the user may not own the thread.
-      // In those cases the socket remains the source of truth.
-    } finally {
-      isRefreshingThreadRef.current = false;
-    }
-  }, [applyThread, client, idToResume]);
+    },
+    [
+      applyThread,
+      client,
+      idToResume,
+      refreshThreadHistory,
+      updateThreadInHistory
+    ]
+  );
 
   useEffect(() => {
     if (typeof document === 'undefined' || typeof window === 'undefined') {
       return;
     }
+    const owner = foregroundSyncOwnerRef.current;
+    if (foregroundSyncOwner && foregroundSyncOwner !== owner) {
+      return;
+    }
+    foregroundSyncOwner = owner;
 
     let hiddenAt = 0;
+
+    const stopForegroundPolling = () => {
+      if (foregroundSyncTimerRef.current) {
+        window.clearInterval(foregroundSyncTimerRef.current);
+        foregroundSyncTimerRef.current = undefined;
+      }
+    };
+
+    const startForegroundPolling = () => {
+      stopForegroundPolling();
+      const stopAt = Date.now() + FOREGROUND_SYNC_DURATION_MS;
+      foregroundSyncTimerRef.current = window.setInterval(() => {
+        if (document.visibilityState !== 'visible' || Date.now() > stopAt) {
+          stopForegroundPolling();
+          return;
+        }
+        refreshCurrentThread({ allowRecentFallback: true });
+      }, FOREGROUND_SYNC_INTERVAL_MS);
+    };
 
     const handleForeground = () => {
       const now = Date.now();
@@ -192,13 +291,15 @@ const useChatSession = () => {
       }
 
       if (!hiddenAt || now - hiddenAt > 500) {
-        refreshCurrentThread();
+        refreshCurrentThread({ allowRecentFallback: true });
+        startForegroundPolling();
       }
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         hiddenAt = Date.now();
+        stopForegroundPolling();
         return;
       }
       if (document.visibilityState === 'visible') {
@@ -211,6 +312,10 @@ const useChatSession = () => {
     window.addEventListener('focus', handleForeground);
 
     return () => {
+      stopForegroundPolling();
+      if (foregroundSyncOwner === owner) {
+        foregroundSyncOwner = null;
+      }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pageshow', handleForeground);
       window.removeEventListener('focus', handleForeground);
@@ -339,6 +444,7 @@ const useChatSession = () => {
 
       socket.on('task_end', () => {
         setLoading(false);
+        refreshCurrentThread();
       });
 
       socket.on('reload', () => {
@@ -618,7 +724,14 @@ const useChatSession = () => {
         }
       });
     },
-    [setSession, sessionId, idToResume, chatProfile, applyThread]
+    [
+      setSession,
+      sessionId,
+      idToResume,
+      chatProfile,
+      applyThread,
+      refreshCurrentThread
+    ]
   );
 
   const connect = useCallback(debounce(_connect, 200), [_connect]);

@@ -173,6 +173,11 @@ const Chat = () => {
 
   useEffect(() => {
     const currentPage = new URL(window.location.href);
+    setThreads((prev) => ({
+      ...prev,
+      currentThreadId: threadId
+    }));
+
     if (
       user &&
       config?.dataPersistence &&
@@ -180,13 +185,8 @@ const Chat = () => {
       currentPage.pathname === '/'
     ) {
       navigate(`/thread/${threadId}`);
-    } else {
-      setThreads((prev) => ({
-        ...prev,
-        currentThreadId: threadId
-      }));
     }
-  }, []);
+  }, [config?.dataPersistence, navigate, setThreads, threadId, user]);
 
   const enableAttachments =
     !disabled && config?.features?.spontaneous_file_upload?.enabled;
