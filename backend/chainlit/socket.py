@@ -4,7 +4,7 @@ from typing import Any, Dict, Literal, Optional, Tuple, TypedDict, Union
 from urllib.parse import unquote
 
 from starlette.requests import cookie_parser
-from typing_extensions import TypeAlias
+from typing_extensions import NotRequired, TypeAlias
 
 from chainlit.auth import (
     get_current_user,
@@ -36,6 +36,7 @@ class WebSocketSessionAuth(TypedDict):
     clientType: ClientType
     chatProfile: str | None
     threadId: str | None
+    freshChat: NotRequired[str | bool | None]
 
 
 def restore_existing_session(sid, session_id, emit_fn, emit_call_fn, environ):
@@ -52,6 +53,15 @@ def restore_existing_session(sid, session_id, emit_fn, emit_call_fn, environ):
 async def persist_user_session(thread_id: str, metadata: Dict):
     if data_layer := get_data_layer():
         await data_layer.update_thread(thread_id=thread_id, metadata=metadata)
+
+
+def is_fresh_chat_request(auth: WebSocketSessionAuth) -> bool:
+    value = auth.get("freshChat")
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    return str(value).lower() in {"1", "true", "yes"}
 
 
 async def resume_thread(session: WebsocketSession):
@@ -123,6 +133,7 @@ async def connect(sid: str, environ: WSGIEnvironment, auth: WebSocketSessionAuth
     user: User | PersistedUser | None = None
     token: str | None = None
     thread_id = auth.get("threadId", None)
+    fresh_chat = is_fresh_chat_request(auth)
 
     if require_login():
         try:
@@ -150,7 +161,10 @@ async def connect(sid: str, environ: WSGIEnvironment, auth: WebSocketSessionAuth
         return sio.call(event, data, timeout=timeout, to=sid)
 
     session_id = auth["sessionId"]
-    if restore_existing_session(sid, session_id, emit_fn, emit_call_fn, environ):
+    if fresh_chat:
+        if existing_session := WebsocketSession.get_by_id(session_id):
+            await existing_session.delete()
+    elif restore_existing_session(sid, session_id, emit_fn, emit_call_fn, environ):
         return True
 
     user_env_string = auth.get("userEnv", None)

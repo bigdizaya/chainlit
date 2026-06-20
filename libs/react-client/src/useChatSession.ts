@@ -110,6 +110,16 @@ function redirectToBayyanFreshChat() {
   window.location.replace(BAYYAN_FRESH_CHAT_URL);
 }
 
+function isBayyanFreshChatRequest() {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    return new URL(window.location.href).searchParams.get('new') === '1';
+  } catch {
+    return false;
+  }
+}
+
 const useChatSession = () => {
   const client = useContext(ChainlitContext);
   const sessionId = useRecoilValue(sessionIdState);
@@ -152,6 +162,7 @@ const useChatSession = () => {
   const foregroundSyncOwnerRef = useRef(Symbol('foreground-sync-owner'));
   const foregroundSyncTimerRef = useRef<number | undefined>(undefined);
   const messagesRef = useRef(messages);
+  const freshChatClientClearedRef = useRef(false);
 
   // Use currentThreadId as thread id in websocket header
   useEffect(() => {
@@ -244,36 +255,61 @@ const useChatSession = () => {
     [setThreadHistory]
   );
 
+  const clearCurrentThreadState = useCallback(
+    (options: { resetSessionId?: boolean } = {}) => {
+      setIdToResume(undefined);
+      if (options.resetSessionId) {
+        resetSessionId();
+      }
+      setFirstUserInteraction(undefined);
+      setLoading(false);
+      setMessages([]);
+      setElements([]);
+      setTasklists([]);
+      setActions([]);
+      setTokenCount(0);
+      setAskUser(undefined);
+      setCallFn(undefined);
+      setSideView(undefined);
+      currentThreadIdRef.current = undefined;
+      setCurrentThreadId(undefined);
+    },
+    [
+      resetSessionId,
+      setActions,
+      setAskUser,
+      setCallFn,
+      setCurrentThreadId,
+      setElements,
+      setFirstUserInteraction,
+      setIdToResume,
+      setLoading,
+      setMessages,
+      setSideView,
+      setTasklists,
+      setTokenCount
+    ]
+  );
+
   const clearStaleSessionState = useCallback(() => {
-    setIdToResume(undefined);
-    resetSessionId();
-    setFirstUserInteraction(undefined);
-    setLoading(false);
-    setMessages([]);
-    setElements([]);
-    setTasklists([]);
-    setActions([]);
-    setTokenCount(0);
-    setAskUser(undefined);
-    setCallFn(undefined);
-    setSideView(undefined);
-    currentThreadIdRef.current = undefined;
-    setCurrentThreadId(undefined);
-  }, [
-    resetSessionId,
-    setActions,
-    setAskUser,
-    setCallFn,
-    setCurrentThreadId,
-    setElements,
-    setFirstUserInteraction,
-    setIdToResume,
-    setLoading,
-    setMessages,
-    setSideView,
-    setTasklists,
-    setTokenCount
-  ]);
+    clearCurrentThreadState({ resetSessionId: true });
+  }, [clearCurrentThreadState]);
+
+  const clearFreshChatState = useCallback(() => {
+    clearCurrentThreadState();
+  }, [clearCurrentThreadState]);
+
+  const markFreshChatClientCleared = useCallback(() => {
+    if (!isBayyanFreshChatRequest()) {
+      freshChatClientClearedRef.current = false;
+      return false;
+    }
+    if (!freshChatClientClearedRef.current) {
+      clearFreshChatState();
+      freshChatClientClearedRef.current = true;
+    }
+    return true;
+  }, [clearFreshChatState]);
 
   const refreshThreadHistory = useCallback(async () => {
     const { pageInfo, data } = await client.listThreads(
@@ -291,6 +327,7 @@ const useChatSession = () => {
   const refreshCurrentThread = useCallback(
     async (options?: { allowRecentFallback?: boolean }) => {
       if (isRefreshingThreadRef.current) return;
+      if (isBayyanFreshChatRequest()) return;
       if (isBayyanSessionStale()) return;
 
       isRefreshingThreadRef.current = true;
@@ -427,6 +464,7 @@ const useChatSession = () => {
       transports?: string[];
       userEnv: Record<string, string>;
     }) => {
+      const freshChatRequest = markFreshChatClientCleared();
       const { protocol, host, pathname } = new URL(client.httpEndpoint);
       const uri = `${protocol}//${host}`;
       const path =
@@ -447,7 +485,8 @@ const useChatSession = () => {
         auth: {
           clientType: client.type,
           sessionId,
-          threadId: idToResume || '',
+          threadId: freshChatRequest ? '' : idToResume || '',
+          freshChat: freshChatRequest ? '1' : '',
           userEnv: JSON.stringify(userEnv),
           chatProfile: chatProfile ? encodeURIComponent(chatProfile) : ''
         }
@@ -614,6 +653,10 @@ const useChatSession = () => {
       });
 
       socket.on('resume_thread', (thread: IThread) => {
+        if (isBayyanFreshChatRequest()) {
+          clearFreshChatState();
+          return;
+        }
         applyThread(thread, { handleResumeRedirect: true });
       });
 
@@ -628,6 +671,11 @@ const useChatSession = () => {
       socket.on(
         'first_interaction',
         (event: { interaction: string; thread_id: string }) => {
+          if (isBayyanFreshChatRequest() && event.interaction === 'resume') {
+            clearFreshChatState();
+            return;
+          }
+          freshChatClientClearedRef.current = false;
           setFirstUserInteraction(event.interaction);
           currentThreadIdRef.current = event.thread_id;
           setCurrentThreadId(event.thread_id);
@@ -826,6 +874,8 @@ const useChatSession = () => {
       sessionId,
       idToResume,
       chatProfile,
+      markFreshChatClientCleared,
+      clearFreshChatState,
       applyThread,
       refreshCurrentThread
     ]
