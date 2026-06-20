@@ -1,3 +1,4 @@
+import { isBayyanFreshChatRequest } from '@/lib/bayyanInactivity';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
@@ -169,7 +170,7 @@ const Chat = () => {
     options: { noClick: true }
   });
 
-  const { threadId } = useChatMessages();
+  const { firstInteraction, threadId } = useChatMessages();
 
   useEffect(() => {
     const currentPage = new URL(window.location.href);
@@ -182,11 +183,19 @@ const Chat = () => {
       user &&
       config?.dataPersistence &&
       threadId &&
-      currentPage.pathname === '/'
+      currentPage.pathname === '/' &&
+      !(isBayyanFreshChatRequest() && !firstInteraction)
     ) {
       navigate(`/thread/${threadId}`);
     }
-  }, [config?.dataPersistence, navigate, setThreads, threadId, user]);
+  }, [
+    config?.dataPersistence,
+    firstInteraction,
+    navigate,
+    setThreads,
+    threadId,
+    user
+  ]);
 
   const enableAttachments =
     !disabled && config?.features?.spontaneous_file_upload?.enabled;

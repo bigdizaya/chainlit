@@ -1,3 +1,7 @@
+import {
+  isBayyanSessionStale,
+  redirectToBayyanFreshChat
+} from '@/lib/bayyanInactivity';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
@@ -26,19 +30,10 @@ export default function AutoResumeThread({ id }: Props) {
   useEffect(() => {
     if (!config?.threadResumable) return;
 
-    // Vérifier l'inactivité avant de reprendre le thread
-    const INACTIVITY_KEY = 'jawab_last_activity';
-    const THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
-    const lastActivity = parseInt(
-      localStorage.getItem(INACTIVITY_KEY) || '0',
-      10
-    );
-    const now = Date.now();
-
-    if (lastActivity > 0 && now - lastActivity > THRESHOLD_MS) {
+    if (isBayyanSessionStale()) {
       // Inactivité > 30min → nouvelle conversation
       clear();
-      navigate('/');
+      redirectToBayyanFreshChat();
       return;
     }
 
@@ -48,7 +43,7 @@ export default function AutoResumeThread({ id }: Props) {
     if (!config?.dataPersistence) {
       navigate('/');
     }
-  }, [config?.threadResumable, id]);
+  }, [clear, config?.dataPersistence, config?.threadResumable, id, navigate]);
 
   useEffect(() => {
     if (id !== idToResume) {
@@ -58,7 +53,7 @@ export default function AutoResumeThread({ id }: Props) {
       toast.error("Couldn't resume chat");
       navigate('/');
     }
-  }, [session, idToResume, id]);
+  }, [id, idToResume, navigate, session]);
 
   useEffect(() => {
     if (resumeThreadError) {
@@ -66,7 +61,7 @@ export default function AutoResumeThread({ id }: Props) {
       navigate('/');
       setResumeThreadError(undefined);
     }
-  }, [resumeThreadError]);
+  }, [navigate, resumeThreadError, setResumeThreadError]);
 
   return null;
 }

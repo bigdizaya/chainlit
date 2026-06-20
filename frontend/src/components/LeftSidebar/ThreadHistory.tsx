@@ -1,3 +1,4 @@
+import { isBayyanFreshChatRequest } from '@/lib/bayyanInactivity';
 import { uniqBy } from 'lodash';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -53,7 +54,11 @@ export function ThreadHistory() {
       await fetchThreads(undefined, true);
 
       const currentPage = new URL(window.location.href);
-      if (threadId && currentPage.pathname === '/') {
+      if (
+        threadId &&
+        currentPage.pathname === '/' &&
+        !(isBayyanFreshChatRequest() && !firstInteraction)
+      ) {
         navigate(`/thread/${threadId}`);
       }
     };

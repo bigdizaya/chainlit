@@ -62,7 +62,53 @@ import type { IToken } from './useChatData';
 const FOREGROUND_SYNC_INTERVAL_MS = 2000;
 const FOREGROUND_SYNC_DURATION_MS = 45000;
 const THREAD_HISTORY_REFRESH_SIZE = 35;
+const BAYYAN_ACTIVITY_KEY = 'jawab_last_activity';
+const BAYYAN_INACTIVITY_THRESHOLD_MS = 30 * 60 * 1000;
+const BAYYAN_FRESH_CHAT_URL = '/?new=1';
 let foregroundSyncOwner: symbol | null = null;
+
+function readBayyanLastActivity() {
+  if (typeof window === 'undefined') return 0;
+
+  try {
+    return parseInt(
+      window.localStorage.getItem(BAYYAN_ACTIVITY_KEY) || '0',
+      10
+    );
+  } catch {
+    return 0;
+  }
+}
+
+function isBayyanSessionStale(now = Date.now()) {
+  const lastActivity = readBayyanLastActivity();
+  return (
+    lastActivity > 0 && now - lastActivity > BAYYAN_INACTIVITY_THRESHOLD_MS
+  );
+}
+
+function markBayyanActivity(now = Date.now()) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(BAYYAN_ACTIVITY_KEY, now.toString());
+  } catch {
+    // Private browsing or blocked storage should not break the app shell.
+  }
+}
+
+function redirectToBayyanFreshChat() {
+  if (typeof window === 'undefined') return;
+
+  markBayyanActivity();
+  if (
+    window.location.pathname === '/' &&
+    window.location.search.includes('new=1')
+  ) {
+    return;
+  }
+  window.location.replace(BAYYAN_FRESH_CHAT_URL);
+}
 
 const useChatSession = () => {
   const client = useContext(ChainlitContext);
@@ -92,9 +138,11 @@ const useChatSession = () => {
   const setTokenCount = useSetRecoilState(tokenCountState);
   const [chatProfile, setChatProfile] = useRecoilState(chatProfileState);
   const idToResume = useRecoilValue(threadIdToResumeState);
+  const setIdToResume = useSetRecoilState(threadIdToResumeState);
   const setThreadResumeError = useSetRecoilState(resumeThreadErrorState);
   const setFavoriteMessages = useSetRecoilState(favoriteMessagesState);
   const setThreadHistory = useSetRecoilState(threadHistoryState);
+  const resetSessionId = useResetRecoilState(sessionIdState);
 
   const [currentThreadId, setCurrentThreadId] =
     useRecoilState(currentThreadIdState);
@@ -196,6 +244,37 @@ const useChatSession = () => {
     [setThreadHistory]
   );
 
+  const clearStaleSessionState = useCallback(() => {
+    setIdToResume(undefined);
+    resetSessionId();
+    setFirstUserInteraction(undefined);
+    setLoading(false);
+    setMessages([]);
+    setElements([]);
+    setTasklists([]);
+    setActions([]);
+    setTokenCount(0);
+    setAskUser(undefined);
+    setCallFn(undefined);
+    setSideView(undefined);
+    currentThreadIdRef.current = undefined;
+    setCurrentThreadId(undefined);
+  }, [
+    resetSessionId,
+    setActions,
+    setAskUser,
+    setCallFn,
+    setCurrentThreadId,
+    setElements,
+    setFirstUserInteraction,
+    setIdToResume,
+    setLoading,
+    setMessages,
+    setSideView,
+    setTasklists,
+    setTokenCount
+  ]);
+
   const refreshThreadHistory = useCallback(async () => {
     const { pageInfo, data } = await client.listThreads(
       { first: THREAD_HISTORY_REFRESH_SIZE },
@@ -212,6 +291,7 @@ const useChatSession = () => {
   const refreshCurrentThread = useCallback(
     async (options?: { allowRecentFallback?: boolean }) => {
       if (isRefreshingThreadRef.current) return;
+      if (isBayyanSessionStale()) return;
 
       isRefreshingThreadRef.current = true;
       try {
@@ -282,6 +362,18 @@ const useChatSession = () => {
       if (now - lastForegroundRefreshRef.current < 1500) return;
       lastForegroundRefreshRef.current = now;
 
+      if (isBayyanSessionStale(now)) {
+        stopForegroundPolling();
+        if (session?.socket) {
+          session.socket.emit('clear_session');
+          session.socket.disconnect();
+        }
+        clearStaleSessionState();
+        redirectToBayyanFreshChat();
+        return;
+      }
+      markBayyanActivity(now);
+
       const threadId = currentThreadIdRef.current || idToResume || '';
       if (session?.socket) {
         session.socket.auth['threadId'] = threadId;
@@ -320,7 +412,12 @@ const useChatSession = () => {
       window.removeEventListener('pageshow', handleForeground);
       window.removeEventListener('focus', handleForeground);
     };
-  }, [idToResume, refreshCurrentThread, session?.socket]);
+  }, [
+    clearStaleSessionState,
+    idToResume,
+    refreshCurrentThread,
+    session?.socket
+  ]);
 
   const _connect = useCallback(
     async ({
