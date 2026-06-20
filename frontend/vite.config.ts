@@ -4,12 +4,28 @@ import { defineConfig } from 'vite';
 import svgr from 'vite-plugin-svgr';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
+const bayyanAssetVersion =
+  process.env.BAYYAN_ASSET_VERSION || '20260621-fresh-chat';
+
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
     sourcemap: true
   },
-  plugins: [react(), tsconfigPaths(), svgr()],
+  plugins: [
+    react(),
+    tsconfigPaths(),
+    svgr(),
+    {
+      name: 'bayyan-versioned-html-assets',
+      transformIndexHtml(html) {
+        return html.replace(
+          /(src|href)="(\/assets\/[^"]+\.(?:js|css))"/g,
+          `$1="$2?v=${bayyanAssetVersion}"`
+        );
+      }
+    }
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
