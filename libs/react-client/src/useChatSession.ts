@@ -199,6 +199,21 @@ const useChatSession = () => {
         setSession((s) => ({ ...s!, error: true }));
       });
 
+      socket.on('disconnect', async () => {
+        setAudioConnection('off');
+        setIsAiSpeaking(false);
+        try {
+          await wavRecorder.end();
+        } catch {
+          // Best-effort cleanup after mobile background disconnects.
+        }
+        try {
+          await wavStreamPlayer.interrupt();
+        } catch {
+          // Player may already be disconnected.
+        }
+      });
+
       socket.on('task_start', () => {
         setLoading(true);
       });
@@ -218,8 +233,17 @@ const useChatSession = () => {
           const startTime = Date.now();
           const mimeType = 'pcm16';
           try {
+            if (
+              typeof wavRecorder.getStatus === 'function' &&
+              wavRecorder.getStatus() !== 'ended'
+            ) {
+              await wavRecorder.end();
+            }
             await wavRecorder.begin();
             await wavStreamPlayer.connect();
+            if (typeof wavRecorder.resume === 'function') {
+              await wavRecorder.resume();
+            }
             await wavRecorder.record(async (data) => {
               const elapsedTime = Date.now() - startTime;
               socket.emit('audio_chunk', {
@@ -243,8 +267,17 @@ const useChatSession = () => {
             return;
           }
         } else {
-          await wavRecorder.end();
-          await wavStreamPlayer.interrupt();
+          try {
+            await wavRecorder.end();
+          } catch {
+            // Recorder may already be cleaned up.
+          }
+          try {
+            await wavStreamPlayer.interrupt();
+          } catch {
+            // Player may already be disconnected.
+          }
+          setIsAiSpeaking(false);
         }
         setAudioConnection(state);
       });

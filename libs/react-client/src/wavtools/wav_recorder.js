@@ -39,7 +39,10 @@ export class WavRecorder {
     this.processor = null;
     this.source = null;
     this.node = null;
+    this.context = null;
+    this.analyser = null;
     this.recording = false;
+    this._resumeOnForeground = null;
     // Event handling with AudioWorklet
     this._lastEventId = 0;
     this.eventReceipts = {};
@@ -161,6 +164,84 @@ export class WavRecorder {
     } else {
       return 'recording';
     }
+  }
+
+  _emptyAudioResult() {
+    const packer = new WavPacker();
+    return packer.pack(this.sampleRate, {
+      bitsPerSample: 16,
+      channels: [new Float32Array(0)],
+      data: new Int16Array(0)
+    });
+  }
+
+  _stopTracks() {
+    if (!this.stream) return;
+    const tracks = this.stream.getTracks();
+    tracks.forEach((track) => track.stop());
+  }
+
+  _removeForegroundResumeListener() {
+    if (!this._resumeOnForeground || typeof document === 'undefined') return;
+    document.removeEventListener('visibilitychange', this._resumeOnForeground);
+    this._resumeOnForeground = null;
+  }
+
+  _attachForegroundResumeListener() {
+    if (typeof document === 'undefined' || this._resumeOnForeground) return;
+    this._resumeOnForeground = () => {
+      if (document.visibilityState === 'visible') {
+        this.resume().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', this._resumeOnForeground);
+  }
+
+  async _closeContext() {
+    if (!this.context || this.context.state === 'closed') return;
+    try {
+      await this.context.close();
+    } catch {
+      // The browser may already have closed the context while backgrounded.
+    }
+  }
+
+  _disconnectAudioGraph() {
+    [this.processor, this.source, this.node, this.analyser].forEach((node) => {
+      try {
+        if (node && typeof node.disconnect === 'function') node.disconnect();
+      } catch {
+        // Some nodes can already be disconnected after mobile backgrounding.
+      }
+    });
+  }
+
+  _resetAudioGraph() {
+    this.stream = null;
+    this.processor = null;
+    this.source = null;
+    this.node = null;
+    this.analyser = null;
+    this.context = null;
+    this.recording = false;
+    this._chunkProcessor = () => {};
+    this._chunkProcessorSize = void 0;
+    this._chunkProcessorBuffer = {
+      raw: new ArrayBuffer(0),
+      mono: new ArrayBuffer(0)
+    };
+    this.eventReceipts = {};
+  }
+
+  /**
+   * Resumes the AudioContext after mobile browsers suspend it in background.
+   * @returns {Promise<true>}
+   */
+  async resume() {
+    if (this.context && this.context.state === 'suspended') {
+      await this.context.resume();
+    }
+    return true;
   }
 
   /**
@@ -321,62 +402,71 @@ export class WavRecorder {
       throw new Error('Could not start media stream');
     }
 
-    const context = new AudioContext({ sampleRate: this.sampleRate });
-    const source = context.createMediaStreamSource(this.stream);
-    // Load and execute the module script.
     try {
+      const context = new AudioContext({ sampleRate: this.sampleRate });
+      this.context = context;
+
+      const source = context.createMediaStreamSource(this.stream);
+      // Load and execute the module script.
       await context.audioWorklet.addModule(this.scriptSrc);
+      const processor = new AudioWorkletNode(context, 'audio_processor');
+      processor.port.onmessage = (e) => {
+        const { event, id, data } = e.data;
+        if (event === 'receipt') {
+          this.eventReceipts[id] = data;
+        } else if (event === 'chunk') {
+          if (this._chunkProcessorSize) {
+            const buffer = this._chunkProcessorBuffer;
+            this._chunkProcessorBuffer = {
+              raw: WavPacker.mergeBuffers(buffer.raw, data.raw),
+              mono: WavPacker.mergeBuffers(buffer.mono, data.mono)
+            };
+            if (
+              this._chunkProcessorBuffer.mono.byteLength >=
+              this._chunkProcessorSize
+            ) {
+              this._chunkProcessor(this._chunkProcessorBuffer);
+              this._chunkProcessorBuffer = {
+                raw: new ArrayBuffer(0),
+                mono: new ArrayBuffer(0)
+              };
+            }
+          } else {
+            this._chunkProcessor(data);
+          }
+        }
+      };
+
+      const node = source.connect(processor);
+      const analyser = context.createAnalyser();
+      analyser.fftSize = 8192;
+      analyser.smoothingTimeConstant = 0.1;
+      node.connect(analyser);
+      if (this.outputToSpeakers) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          'Warning: Output to speakers may affect sound quality,\n' +
+            'especially due to system audio feedback preventative measures.\n' +
+            'use only for debugging'
+        );
+        analyser.connect(context.destination);
+      }
+
+      this.source = source;
+      this.node = node;
+      this.analyser = analyser;
+      this.processor = processor;
+      this._attachForegroundResumeListener();
+      await this.resume();
     } catch (e) {
       console.error(e);
+      this._removeForegroundResumeListener();
+      this._stopTracks();
+      this._disconnectAudioGraph();
+      await this._closeContext();
+      this._resetAudioGraph();
       throw new Error(`Could not add audioWorklet module: ${this.scriptSrc}`);
     }
-    const processor = new AudioWorkletNode(context, 'audio_processor');
-    processor.port.onmessage = (e) => {
-      const { event, id, data } = e.data;
-      if (event === 'receipt') {
-        this.eventReceipts[id] = data;
-      } else if (event === 'chunk') {
-        if (this._chunkProcessorSize) {
-          const buffer = this._chunkProcessorBuffer;
-          this._chunkProcessorBuffer = {
-            raw: WavPacker.mergeBuffers(buffer.raw, data.raw),
-            mono: WavPacker.mergeBuffers(buffer.mono, data.mono)
-          };
-          if (
-            this._chunkProcessorBuffer.mono.byteLength >=
-            this._chunkProcessorSize
-          ) {
-            this._chunkProcessor(this._chunkProcessorBuffer);
-            this._chunkProcessorBuffer = {
-              raw: new ArrayBuffer(0),
-              mono: new ArrayBuffer(0)
-            };
-          }
-        } else {
-          this._chunkProcessor(data);
-        }
-      }
-    };
-
-    const node = source.connect(processor);
-    const analyser = context.createAnalyser();
-    analyser.fftSize = 8192;
-    analyser.smoothingTimeConstant = 0.1;
-    node.connect(analyser);
-    if (this.outputToSpeakers) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        'Warning: Output to speakers may affect sound quality,\n' +
-          'especially due to system audio feedback preventative measures.\n' +
-          'use only for debugging'
-      );
-      analyser.connect(context.destination);
-    }
-
-    this.source = source;
-    this.node = node;
-    this.analyser = analyser;
-    this.processor = processor;
     return true;
   }
 
@@ -446,6 +536,7 @@ export class WavRecorder {
       mono: new ArrayBuffer(0)
     };
     this.log('Recording ...');
+    await this.resume();
     await this._event('start');
     this.recording = true;
     return true;
@@ -503,32 +594,40 @@ export class WavRecorder {
    */
   async end() {
     if (!this.processor) {
-      throw new Error('Session ended: please call .begin() first');
+      this._removeForegroundResumeListener();
+      this._stopTracks();
+      this._disconnectAudioGraph();
+      await this._closeContext();
+      this._resetAudioGraph();
+      return this._emptyAudioResult();
     }
 
     const _processor = this.processor;
+    let exportData = null;
 
-    this.log('Stopping ...');
-    await this._event('stop');
-    this.recording = false;
-    const tracks = this.stream.getTracks();
-    tracks.forEach((track) => track.stop());
+    try {
+      this.log('Stopping ...');
+      this._stopTracks();
+      await this._event('stop');
+      this.recording = false;
 
-    this.log('Exporting ...');
-    const exportData = await this._event('export', {}, _processor);
+      this.log('Exporting ...');
+      exportData = await this._event('export', {}, _processor);
+    } catch {
+      // Mobile browsers can suspend AudioWorklet message receipts in background.
+      // Cleanup below is more important than preserving a local export here.
+    } finally {
+      this._removeForegroundResumeListener();
+      this._stopTracks();
+      this._disconnectAudioGraph();
+      await this._closeContext();
+      this._resetAudioGraph();
+    }
 
-    this.processor.disconnect();
-    this.source.disconnect();
-    this.node.disconnect();
-    this.analyser.disconnect();
-    this.stream = null;
-    this.processor = null;
-    this.source = null;
-    this.node = null;
+    if (!exportData) return this._emptyAudioResult();
 
     const packer = new WavPacker();
-    const result = packer.pack(this.sampleRate, exportData.audio);
-    return result;
+    return packer.pack(this.sampleRate, exportData.audio);
   }
 
   /**
