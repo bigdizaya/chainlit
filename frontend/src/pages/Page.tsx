@@ -13,7 +13,7 @@ import QuotaBar from '@/components/header/QuotaBar';
 import { ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
-import { QuotaData, quotaState } from '@/state/quota';
+import { normalizeQuotaPayload, quotaState } from '@/state/quota';
 import { userEnvState } from 'state/user';
 
 type Props = {
@@ -39,8 +39,9 @@ const Page = ({ children }: Props) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) {
-          setQuota({ normal: data.normal, deep: data.deep });
+        const quota = normalizeQuotaPayload(data);
+        if (data.success && quota) {
+          setQuota(quota);
         }
       })
       .catch(() => {
@@ -54,8 +55,9 @@ const Page = ({ children }: Props) => {
 
     const handleMessage = (event: MessageEvent) => {
       const msg = event.data;
-      if (msg && msg.type === 'quota_update' && msg.normal && msg.deep) {
-        setQuota({ normal: msg.normal, deep: msg.deep } as QuotaData);
+      if (msg && msg.type === 'quota_update') {
+        const quota = normalizeQuotaPayload(msg);
+        if (quota) setQuota(quota);
       }
     };
 
