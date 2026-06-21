@@ -450,7 +450,6 @@ const useChatSession = () => {
       socket.on('connect', () => {
         if (freshChatRequest) {
           markBayyanActivity();
-          consumeBayyanFreshChatRequest();
         }
         socket.emit('connection_successful');
         setSession((s) => ({ ...s!, error: false }));
@@ -627,6 +626,10 @@ const useChatSession = () => {
             (freshChatRequest || isBayyanFreshChatRequest())
           ) {
             return;
+          }
+          if (freshChatRequest || isBayyanFreshChatRequest()) {
+            markBayyanActivity();
+            consumeBayyanFreshChatRequest();
           }
           setFirstUserInteraction(event.interaction);
           currentThreadIdRef.current = event.thread_id;
