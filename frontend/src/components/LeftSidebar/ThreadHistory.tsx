@@ -57,7 +57,7 @@ export function ThreadHistory() {
       if (
         threadId &&
         currentPage.pathname === '/' &&
-        !(isBayyanFreshChatRequest() && !firstInteraction)
+        !isBayyanFreshChatRequest()
       ) {
         navigate(`/thread/${threadId}`);
       }

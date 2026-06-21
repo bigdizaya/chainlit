@@ -184,7 +184,7 @@ const Chat = () => {
       config?.dataPersistence &&
       threadId &&
       currentPage.pathname === '/' &&
-      !(isBayyanFreshChatRequest() && !firstInteraction)
+      !isBayyanFreshChatRequest()
     ) {
       navigate(`/thread/${threadId}`);
     }
