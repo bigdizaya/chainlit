@@ -13,14 +13,36 @@ const serverUrl = new URL(url);
 
 const httpEndpoint = serverUrl.toString();
 
+const isAuthRoute = () => {
+  const base = getRouterBasename();
+  const path = window.location.pathname;
+
+  return path === base + '/login' || path === base + '/login/callback';
+};
+
+const isExpectedAuthError = (error: ClientError) => {
+  const status = (error as ClientError & { status?: number }).status;
+  const message = error.toString();
+
+  return (
+    status === 401 ||
+    message.includes('Invalid authentication token') ||
+    message.includes('Not authenticated')
+  );
+};
+
 const on401 = () => {
-  if (window.location.pathname !== getRouterBasename() + '/login') {
+  if (!isAuthRoute()) {
     // The credentials aren't correct, remove the token and redirect to login
     window.location.href = getRouterBasename() + '/login';
   }
 };
 
 const onError = (error: ClientError) => {
+  if (isAuthRoute() && isExpectedAuthError(error)) {
+    return;
+  }
+
   toast.error(error.toString());
 };
 

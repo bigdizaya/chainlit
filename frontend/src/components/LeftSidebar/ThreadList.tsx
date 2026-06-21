@@ -1,3 +1,4 @@
+import { markBayyanExplicitThreadResume } from '@/lib/bayyanInactivity';
 import { cn } from '@/lib/utils';
 import { size } from 'lodash';
 import { Share2 } from 'lucide-react';
@@ -343,6 +344,7 @@ export function ThreadList({
                             <Link
                               to={isResumed ? '' : `/thread/${thread.id}`}
                               onClick={() => {
+                                markBayyanExplicitThreadResume(thread.id);
                                 if (isMobile) {
                                   setOpenMobile(false);
                                 }

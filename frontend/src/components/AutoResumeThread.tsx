@@ -1,4 +1,9 @@
-import { markBayyanActivity } from '@/lib/bayyanInactivity';
+import {
+  consumeBayyanExplicitThreadResume,
+  isBayyanSessionStale,
+  markBayyanActivity,
+  redirectToBayyanFreshChat
+} from '@/lib/bayyanInactivity';
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
@@ -40,9 +45,15 @@ export default function AutoResumeThread({ id }: Props) {
     if (lastResumeIdRef.current === id) return;
     lastResumeIdRef.current = id;
 
-    // A click on a past thread is an explicit user action. It must resume the
-    // selected conversation even if the app would otherwise start fresh after
-    // inactivity.
+    const explicitResume = consumeBayyanExplicitThreadResume(id);
+    if (isBayyanSessionStale() && !explicitResume) {
+      redirectToBayyanFreshChat();
+      return;
+    }
+
+    // A real click on a past thread is an explicit user action. It must resume
+    // the selected conversation even if the app would otherwise start fresh
+    // after inactivity.
     markBayyanActivity();
     clearRef.current();
     setIdToResumeRef.current(id);

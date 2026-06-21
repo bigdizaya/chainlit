@@ -1,5 +1,7 @@
 const INACTIVITY_KEY = 'jawab_last_activity';
+const EXPLICIT_THREAD_KEY = 'bayyan_explicit_thread_resume';
 const THRESHOLD_MS = 30 * 60 * 1000;
+const EXPLICIT_THREAD_TTL_MS = 15 * 1000;
 const FRESH_CHAT_URL = '/?new=1';
 
 function readLastActivity() {
@@ -38,6 +40,38 @@ export function redirectToBayyanFreshChat() {
     return;
   }
   window.location.replace(FRESH_CHAT_URL);
+}
+
+export function markBayyanExplicitThreadResume(threadId: string) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.sessionStorage.setItem(
+      EXPLICIT_THREAD_KEY,
+      JSON.stringify({ threadId, timestamp: Date.now() })
+    );
+  } catch {
+    // Session storage is only a hint; explicit resume still works without it.
+  }
+}
+
+export function consumeBayyanExplicitThreadResume(threadId: string) {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    const raw = window.sessionStorage.getItem(EXPLICIT_THREAD_KEY);
+    window.sessionStorage.removeItem(EXPLICIT_THREAD_KEY);
+    if (!raw) return false;
+
+    const data = JSON.parse(raw);
+    return (
+      data?.threadId === threadId &&
+      typeof data?.timestamp === 'number' &&
+      Date.now() - data.timestamp <= EXPLICIT_THREAD_TTL_MS
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function isBayyanFreshChatRequest() {

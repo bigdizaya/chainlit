@@ -153,7 +153,7 @@ export default function MessageComposer({
   );
 
   const onSubmit = useCallback(
-    async (
+    (
       msg: string,
       attachments?: IAttachment[],
       selectedCommand?: string
@@ -186,13 +186,13 @@ export default function MessageComposer({
       if (autoScrollRef) {
         autoScrollRef.current = true;
       }
-      sendMessage(message, fileReferences);
+      return sendMessage(message, fileReferences);
     },
     [user, sendMessage, autoScrollRef, modes, getSelectedOptionId]
   );
 
   const onReply = useCallback(
-    async (msg: string) => {
+    (msg: string) => {
       const message: IStep = {
         threadId: '',
         id: uuidv4(),
@@ -207,6 +207,7 @@ export default function MessageComposer({
       if (autoScrollRef) {
         autoScrollRef.current = true;
       }
+      return true;
     },
     [user, replyMessage, autoScrollRef]
   );
@@ -219,10 +220,12 @@ export default function MessageComposer({
       return;
     }
 
-    if (askUser) {
-      onReply(value);
-    } else {
-      onSubmit(value, attachments, selectedCommand?.id);
+    const sent = askUser
+      ? onReply(value)
+      : onSubmit(value, attachments, selectedCommand?.id);
+
+    if (!sent) {
+      return;
     }
 
     setAttachments([]);

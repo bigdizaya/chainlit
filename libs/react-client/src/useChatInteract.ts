@@ -76,9 +76,25 @@ const useChatInteract = () => {
       if (!message.createdAt) {
         message.createdAt = new Date().toISOString();
       }
+      const socket = session?.socket;
+      if (!socket) {
+        return false;
+      }
+
+      const emitMessage = () => {
+        socket.emit('client_message', { message, fileReferences });
+      };
+
       setMessages((oldMessages) => addMessage(oldMessages, message as IStep));
 
-      session?.socket.emit('client_message', { message, fileReferences });
+      if (socket.connected) {
+        emitMessage();
+      } else {
+        socket.once('connect', emitMessage);
+        socket.connect();
+      }
+
+      return true;
     },
     [session?.socket]
   );

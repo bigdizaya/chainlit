@@ -56,6 +56,9 @@ def get_configuration():
 
 
 async def authenticate_user(token: str = Depends(reuseable_oauth)):
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
     try:
         user = decode_jwt(token)
     except Exception as e:
