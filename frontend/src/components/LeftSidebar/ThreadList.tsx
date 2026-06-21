@@ -48,7 +48,8 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem
+  SidebarMenuItem,
+  useSidebar
 } from '@/components/ui/sidebar';
 import {
   Tooltip,
@@ -86,6 +87,7 @@ export function ThreadList({
   const { config } = useConfig();
   const dataPersistence = config?.dataPersistence;
   const threadSharingReady = Boolean((config as any)?.threadSharing);
+  const { isMobile, setOpenMobile } = useSidebar();
   // sessionId not needed here
 
   // Share thread state
@@ -338,7 +340,14 @@ export function ThreadList({
                       >
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Link to={isResumed ? '' : `/thread/${thread.id}`}>
+                            <Link
+                              to={isResumed ? '' : `/thread/${thread.id}`}
+                              onClick={() => {
+                                if (isMobile) {
+                                  setOpenMobile(false);
+                                }
+                              }}
+                            >
                               <SidebarMenuButton
                                 isActive={isSelected}
                                 className="relative h-9 group/thread"

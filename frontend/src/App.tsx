@@ -1,10 +1,16 @@
 import { cn } from '@/lib/utils';
-import { useEffect } from 'react';
+import { isBayyanFreshChatRequest } from '@/lib/bayyanInactivity';
+import { useEffect, useRef } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
 import { router } from 'router';
 
-import { useAuth, useChatSession, useConfig } from '@chainlit/react-client';
+import {
+  useAuth,
+  useChatInteract,
+  useChatSession,
+  useConfig
+} from '@chainlit/react-client';
 
 import ChatSettingsModal from './components/ChatSettings';
 import { ThemeProvider } from './components/ThemeProvider';
@@ -30,6 +36,9 @@ function App() {
   const { isAuthenticated, data, isReady } = useAuth();
   const userEnv = useRecoilValue(userEnvState);
   const { connect, chatProfile, setChatProfile } = useChatSession();
+  const { clear } = useChatInteract();
+  const clearRef = useRef(clear);
+  const freshChatClearedRef = useRef(false);
 
   const configLoaded = !!config;
 
@@ -40,8 +49,21 @@ function App() {
     : false;
 
   useEffect(() => {
+    clearRef.current = clear;
+  }, [clear]);
+
+  useEffect(() => {
     if (!isAuthenticated || !isReady || !chatProfileOk) {
       return;
+    }
+
+    if (isBayyanFreshChatRequest() && !freshChatClearedRef.current) {
+      freshChatClearedRef.current = true;
+      clearRef.current();
+      return;
+    }
+    if (!isBayyanFreshChatRequest()) {
+      freshChatClearedRef.current = false;
     }
 
     connect({

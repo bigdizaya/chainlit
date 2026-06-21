@@ -1,7 +1,4 @@
-import {
-  isBayyanSessionStale,
-  redirectToBayyanFreshChat
-} from '@/lib/bayyanInactivity';
+import { markBayyanActivity } from '@/lib/bayyanInactivity';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
@@ -30,14 +27,10 @@ export default function AutoResumeThread({ id }: Props) {
   useEffect(() => {
     if (!config?.threadResumable) return;
 
-    if (isBayyanSessionStale()) {
-      // Inactivité > 30min → nouvelle conversation
-      clear();
-      redirectToBayyanFreshChat();
-      return;
-    }
-
-    // Inactivité < 30min → reprendre normalement
+    // A click on a past thread is an explicit user action. It must resume the
+    // selected conversation even if the app would otherwise start fresh after
+    // inactivity.
+    markBayyanActivity();
     clear();
     setIdToResume(id);
     if (!config?.dataPersistence) {
