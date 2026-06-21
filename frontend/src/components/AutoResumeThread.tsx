@@ -1,5 +1,5 @@
 import { markBayyanActivity } from '@/lib/bayyanInactivity';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import { toast } from 'sonner';
@@ -20,23 +20,36 @@ export default function AutoResumeThread({ id }: Props) {
   const { config } = useConfig();
   const { clear, setIdToResume } = useChatInteract();
   const { session, idToResume } = useChatSession();
+  const clearRef = useRef(clear);
+  const setIdToResumeRef = useRef(setIdToResume);
+  const lastResumeIdRef = useRef<string>();
   const [resumeThreadError, setResumeThreadError] = useRecoilState(
     resumeThreadErrorState
   );
 
   useEffect(() => {
+    clearRef.current = clear;
+  }, [clear]);
+
+  useEffect(() => {
+    setIdToResumeRef.current = setIdToResume;
+  }, [setIdToResume]);
+
+  useEffect(() => {
     if (!config?.threadResumable) return;
+    if (lastResumeIdRef.current === id) return;
+    lastResumeIdRef.current = id;
 
     // A click on a past thread is an explicit user action. It must resume the
     // selected conversation even if the app would otherwise start fresh after
     // inactivity.
     markBayyanActivity();
-    clear();
-    setIdToResume(id);
+    clearRef.current();
+    setIdToResumeRef.current(id);
     if (!config?.dataPersistence) {
       navigate('/');
     }
-  }, [clear, config?.dataPersistence, config?.threadResumable, id, navigate]);
+  }, [config?.dataPersistence, config?.threadResumable, id, navigate]);
 
   useEffect(() => {
     if (id !== idToResume) {
