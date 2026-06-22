@@ -644,13 +644,22 @@ const useChatSession = () => {
       socket.on(
         'first_interaction',
         (event: { interaction: string; thread_id: string }) => {
+          const freshRequestActive =
+            freshChatRequest || isBayyanFreshChatRequest();
+          const hasLocalUserMessage = messagesRef.current.some(
+            (message) => message.type === 'user_message'
+          );
+
+          if (freshRequestActive && !hasLocalUserMessage) {
+            return;
+          }
           if (
             event.interaction === 'resume' &&
-            (freshChatRequest || isBayyanFreshChatRequest())
+            freshRequestActive
           ) {
             return;
           }
-          if (freshChatRequest || isBayyanFreshChatRequest()) {
+          if (freshRequestActive) {
             markBayyanActivity();
             consumeBayyanFreshChatRequest();
           }
