@@ -120,6 +120,14 @@ function isBayyanFreshChatRequest() {
   }
 }
 
+function isBayyanAuthRoute() {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.location.pathname === '/login' ||
+    window.location.pathname === '/login/callback'
+  );
+}
+
 function consumeBayyanFreshChatRequest() {
   if (typeof window === 'undefined') return;
 
@@ -272,6 +280,8 @@ const useChatSession = () => {
   );
 
   const refreshThreadHistory = useCallback(async () => {
+    if (isBayyanAuthRoute()) return [];
+
     const { pageInfo, data } = await client.listThreads(
       { first: THREAD_HISTORY_REFRESH_SIZE },
       {}
@@ -287,6 +297,7 @@ const useChatSession = () => {
   const refreshCurrentThread = useCallback(
     async (options?: { allowRecentFallback?: boolean }) => {
       if (isRefreshingThreadRef.current) return;
+      if (isBayyanAuthRoute()) return;
       if (isBayyanFreshChatRequest()) return;
       if (isBayyanSessionStale()) return;
 
@@ -359,6 +370,11 @@ const useChatSession = () => {
       const now = Date.now();
       if (now - lastForegroundRefreshRef.current < 1500) return;
       lastForegroundRefreshRef.current = now;
+
+      if (isBayyanAuthRoute()) {
+        stopForegroundPolling();
+        return;
+      }
 
       if (isBayyanSessionStale(now)) {
         stopForegroundPolling();
