@@ -182,7 +182,9 @@ const useChatSession = () => {
   useEffect(() => {
     currentThreadIdRef.current = currentThreadId;
     if (session?.socket) {
-      session.socket.auth['threadId'] = currentThreadId || '';
+      session.socket.auth['threadId'] = isBayyanFreshChatRequest()
+        ? ''
+        : currentThreadId || '';
     }
   }, [currentThreadId]);
 
@@ -301,6 +303,7 @@ const useChatSession = () => {
         if (!threadId) return;
 
         const thread = await client.getThread(threadId);
+        if (isBayyanFreshChatRequest() || isBayyanSessionStale()) return;
         if (thread?.id) {
           applyThread(thread, { syncLoading: true });
           updateThreadInHistory(thread);
@@ -364,13 +367,17 @@ const useChatSession = () => {
       }
       markBayyanActivity(now);
 
-      const threadId = currentThreadIdRef.current || idToResume || '';
+      const freshChatRequest = isBayyanFreshChatRequest();
+      const threadId = freshChatRequest
+        ? ''
+        : currentThreadIdRef.current || idToResume || '';
       if (session?.socket) {
         session.socket.auth['threadId'] = threadId;
         if (!session.socket.connected) {
           session.socket.connect();
         }
       }
+      if (freshChatRequest) return;
 
       if (!hiddenAt || now - hiddenAt > 500) {
         refreshCurrentThread({ allowRecentFallback: true });

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAuth } from '@chainlit/react-client';
 
+const FRESH_CHAT_URL = '/?new=1';
+
 export default function AuthCallback() {
   const { user, setUserFromAPI } = useAuth();
   const navigate = useNavigate();
@@ -14,7 +16,7 @@ export default function AuthCallback() {
 
   useEffect(() => {
     if (user) {
-      navigate('/');
+      navigate(FRESH_CHAT_URL, { replace: true });
     }
   }, [user]);
 

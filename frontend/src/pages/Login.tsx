@@ -13,6 +13,8 @@ export const LoginError = new Error(
   'Error logging in. Please try again later.'
 );
 
+const FRESH_CHAT_URL = '/?new=1';
+
 export default function Login() {
   const query = useQuery();
   const { data: config, user, setUserFromAPI } = useAuth();
@@ -49,8 +51,7 @@ export default function Login() {
   const handleHeaderAuth = async () => {
     const jsonPromise = apiClient.headerAuth();
 
-    // Why does apiClient redirect to '/' but handlePasswordLogin to callbackUrl?
-    await handleAuth(jsonPromise, '/');
+    await handleAuth(jsonPromise, FRESH_CHAT_URL);
   };
 
   const handlePasswordLogin = async (email: string, password: string) => {
@@ -71,13 +72,13 @@ export default function Login() {
       return;
     }
     if (!config.requireLogin) {
-      navigate('/');
+      navigate(FRESH_CHAT_URL, { replace: true });
     }
     if (config.headerAuth && !user) {
       handleHeaderAuth();
     }
     if (user) {
-      navigate('/');
+      navigate(FRESH_CHAT_URL, { replace: true });
     }
   }, [config, user]);
 
@@ -91,7 +92,7 @@ export default function Login() {
           <div className="w-full max-w-xs">
             <LoginForm
               error={error}
-              callbackUrl="/"
+              callbackUrl={FRESH_CHAT_URL}
               providers={config?.oauthProviders || []}
               onPasswordSignIn={
                 config?.passwordAuth ? handlePasswordLogin : undefined

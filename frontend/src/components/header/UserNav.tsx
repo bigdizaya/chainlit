@@ -2,7 +2,7 @@ import capitalize from 'lodash/capitalize';
 import { LogOut, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-import { useAuth } from '@chainlit/react-client';
+import { useAuth, useChatInteract } from '@chainlit/react-client';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,14 @@ import { Translator } from 'components/i18n';
 
 export default function UserNav() {
   const { user, logout } = useAuth();
+  const { clear } = useChatInteract();
   const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    clear();
+    await logout(false);
+    window.location.assign('/login');
+  };
 
   if (!user) return null;
   const displayName = user?.display_name || user?.identifier;
@@ -51,7 +58,7 @@ export default function UserNav() {
           <Settings className="ml-auto" />
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => logout(true)}>
+        <DropdownMenuItem onClick={handleLogout}>
           <Translator path="navigation.user.menu.logout" />
           <LogOut className="ml-auto" />
         </DropdownMenuItem>
