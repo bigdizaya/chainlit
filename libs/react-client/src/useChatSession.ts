@@ -294,46 +294,37 @@ const useChatSession = () => {
     return data;
   }, [client, setThreadHistory]);
 
-  const refreshCurrentThread = useCallback(
-    async (options?: { allowRecentFallback?: boolean }) => {
-      if (isRefreshingThreadRef.current) return;
-      if (isBayyanAuthRoute()) return;
-      if (isBayyanFreshChatRequest()) return;
-      if (isBayyanSessionStale()) return;
+  const refreshCurrentThread = useCallback(async () => {
+    if (isRefreshingThreadRef.current) return;
+    if (isBayyanAuthRoute()) return;
+    if (isBayyanFreshChatRequest()) return;
+    if (isBayyanSessionStale()) return;
 
-      isRefreshingThreadRef.current = true;
-      try {
-        const recentThreads = await refreshThreadHistory();
-        const canUseRecentFallback =
-          Boolean(options?.allowRecentFallback) &&
-          messagesRef.current.length > 0;
-        const threadId =
-          currentThreadIdRef.current ||
-          idToResume ||
-          (canUseRecentFallback ? recentThreads[0]?.id : undefined);
-        if (!threadId) return;
+    isRefreshingThreadRef.current = true;
+    try {
+      const threadId = currentThreadIdRef.current || idToResume;
+      if (!threadId) return;
 
-        const thread = await client.getThread(threadId);
-        if (isBayyanFreshChatRequest() || isBayyanSessionStale()) return;
-        if (thread?.id) {
-          applyThread(thread, { syncLoading: true });
-          updateThreadInHistory(thread);
-        }
-      } catch {
-        // Data persistence can be disabled, or the user may not own the thread.
-        // In those cases the socket remains the source of truth.
-      } finally {
-        isRefreshingThreadRef.current = false;
+      await refreshThreadHistory();
+      const thread = await client.getThread(threadId);
+      if (isBayyanFreshChatRequest() || isBayyanSessionStale()) return;
+      if (thread?.id) {
+        applyThread(thread, { syncLoading: true });
+        updateThreadInHistory(thread);
       }
-    },
-    [
-      applyThread,
-      client,
-      idToResume,
-      refreshThreadHistory,
-      updateThreadInHistory
-    ]
-  );
+    } catch {
+      // Data persistence can be disabled, or the user may not own the thread.
+      // In those cases the socket remains the source of truth.
+    } finally {
+      isRefreshingThreadRef.current = false;
+    }
+  }, [
+    applyThread,
+    client,
+    idToResume,
+    refreshThreadHistory,
+    updateThreadInHistory
+  ]);
 
   useEffect(() => {
     if (typeof document === 'undefined' || typeof window === 'undefined') {
@@ -362,7 +353,7 @@ const useChatSession = () => {
           stopForegroundPolling();
           return;
         }
-        refreshCurrentThread({ allowRecentFallback: true });
+        refreshCurrentThread();
       }, FOREGROUND_SYNC_INTERVAL_MS);
     };
 
@@ -396,7 +387,7 @@ const useChatSession = () => {
       if (freshChatRequest) return;
 
       if (!hiddenAt || now - hiddenAt > 500) {
-        refreshCurrentThread({ allowRecentFallback: true });
+        refreshCurrentThread();
         startForegroundPolling();
       }
     };
@@ -653,10 +644,7 @@ const useChatSession = () => {
           if (freshRequestActive && !hasLocalUserMessage) {
             return;
           }
-          if (
-            event.interaction === 'resume' &&
-            freshRequestActive
-          ) {
+          if (event.interaction === 'resume' && freshRequestActive) {
             return;
           }
           if (freshRequestActive) {
