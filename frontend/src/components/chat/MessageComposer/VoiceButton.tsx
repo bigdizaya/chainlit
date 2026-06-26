@@ -1,4 +1,5 @@
-import { Square } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Mic, Square } from 'lucide-react';
 import { useHotkeys } from 'react-hotkeys-hook';
 
 import { useAudio, useConfig } from '@chainlit/react-client';
@@ -13,7 +14,6 @@ import {
 import { Translator } from 'components/i18n';
 
 import { Loader } from '../../Loader';
-import { VoiceLines } from '../../icons/VoiceLines';
 import { Button } from '../../ui/button';
 
 interface Props {
@@ -56,7 +56,7 @@ const VoiceButton = ({ disabled }: Props) => {
       }
 
       if (audioConnection === 'on') return endConversation();
-      return startConversation();
+      if (audioConnection === 'off') return startConversation();
     },
     {
       enableOnFormTags: false,
@@ -66,6 +66,13 @@ const VoiceButton = ({ disabled }: Props) => {
   );
 
   if (!isEnabled) return null;
+
+  const buttonLabel =
+    audioConnection === 'on'
+      ? 'Stop recording'
+      : audioConnection === 'connecting'
+      ? 'Connecting microphone'
+      : 'Start recording';
 
   return (
     <div className="flex items-center gap-1">
@@ -82,10 +89,19 @@ const VoiceButton = ({ disabled }: Props) => {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              disabled={disabled}
+              aria-label={buttonLabel}
+              aria-pressed={audioConnection === 'on'}
+              disabled={disabled || audioConnection === 'connecting'}
               variant="ghost"
               size="icon"
-              className="hover:bg-muted"
+              className={cn(
+                'rounded-full transition-colors',
+                audioConnection === 'on'
+                  ? 'bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive'
+                  : audioConnection === 'connecting'
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              )}
               onClick={
                 audioConnection === 'on'
                   ? endConversation
@@ -98,7 +114,7 @@ const VoiceButton = ({ disabled }: Props) => {
                 <Square className="!size-4" fill="currentColor" />
               ) : null}
               {audioConnection === 'off' ? (
-                <VoiceLines className="!size-6" />
+                <Mic className="!size-5" />
               ) : null}
               {audioConnection === 'connecting' ? (
                 <Loader className="!size-5" />

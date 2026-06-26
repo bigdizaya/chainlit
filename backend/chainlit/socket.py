@@ -425,6 +425,11 @@ async def audio_start(sid):
         connected = bool(await config.code.on_audio_start())
         connection_state = "on" if connected else "off"
         await context.emitter.update_audio_connection(connection_state)
+        if not connected:
+            await context.emitter.send_toast(
+                "Recording did not start. Please wait a moment and try again.",
+                "warning",
+            )
 
 
 @sio.on("audio_chunk")
@@ -448,19 +453,20 @@ async def audio_chunk(sid, payload: InputAudioChunkPayload):
 async def audio_end(sid):
     """Handle the end of the audio stream."""
     session = WebsocketSession.require(sid)
+    context = init_ws_context(session)
 
     try:
-        context = init_ws_context(session)
         await context.emitter.task_start()
 
-        if not session.has_first_interaction:
-            session.has_first_interaction = True
-            asyncio.create_task(context.emitter.init_thread("audio"))
-
         config: ChainlitConfig = session.get_config()  # type: ignore
+        audio_result = None
 
         if config.features.audio and config.features.audio.enabled:
-            await config.code.on_audio_end()
+            audio_result = await config.code.on_audio_end()
+
+        if audio_result is not False and not session.has_first_interaction:
+            session.has_first_interaction = True
+            asyncio.create_task(context.emitter.init_thread("audio"))
 
     except asyncio.CancelledError:
         pass

@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
+import { toast } from 'sonner';
 
 import {
   audioConnectionState,
@@ -53,6 +54,9 @@ const useAudio = () => {
 
     const timeout = window.setTimeout(() => {
       setAudioConnection('off');
+      toast.warning(
+        'Microphone connection timed out. Check your browser permission and try again.'
+      );
     }, 12000);
 
     return () => window.clearTimeout(timeout);

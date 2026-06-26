@@ -67,6 +67,20 @@ const BAYYAN_INACTIVITY_THRESHOLD_MS = 30 * 60 * 1000;
 const BAYYAN_FRESH_CHAT_URL = '/?new=1';
 let foregroundSyncOwner: symbol | null = null;
 
+function getAudioStartErrorMessage(error: unknown) {
+  const detail = error instanceof Error ? error.message : String(error || '');
+
+  if (/media stream|permission|denied|notallowed|notfound/i.test(detail)) {
+    return 'Microphone access is blocked or unavailable. Check your browser permission and try again.';
+  }
+
+  if (/processor|worklet|audio/i.test(detail)) {
+    return 'The microphone could not start in this browser. Refresh the page and try again.';
+  }
+
+  return 'The microphone could not start. Please try again.';
+}
+
 function readBayyanLastActivity() {
   if (typeof window === 'undefined') return 0;
 
@@ -581,7 +595,7 @@ const useChatSession = () => {
               isFirstChunk = false;
             });
             wavStreamPlayer.onStop = () => setIsAiSpeaking(false);
-          } catch {
+          } catch (error) {
             try {
               await wavRecorder.end();
             } catch {
@@ -590,6 +604,7 @@ const useChatSession = () => {
             await wavStreamPlayer.interrupt();
             socket.emit('audio_end');
             setAudioConnection('off');
+            toast.error(getAudioStartErrorMessage(error));
             return;
           }
         } else {
@@ -814,6 +829,9 @@ const useChatSession = () => {
       });
 
       socket.on('window_message', (data: any) => {
+        window.dispatchEvent(
+          new CustomEvent('chainlit:window_message', { detail: data })
+        );
         if (window.parent) {
           window.parent.postMessage(data, '*');
         }

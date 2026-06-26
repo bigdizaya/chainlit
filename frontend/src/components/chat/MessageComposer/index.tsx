@@ -6,6 +6,7 @@ import {
   useState
 } from 'react';
 import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -60,6 +61,8 @@ export default function MessageComposer({
 }: Props) {
   const inputRef = useRef<InputMethods>(null);
   const [value, setValue] = useState('');
+  const valueRef = useRef(value);
+  const [draftInputType, setDraftInputType] = useState<'audio' | undefined>();
   const [selectedCommand, setSelectedCommand] = useRecoilState(
     persistentCommandState
   );
@@ -75,6 +78,10 @@ export default function MessageComposer({
   }, [commands]);
   const [attachments, setAttachments] = useRecoilState(attachmentsState);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    valueRef.current = value;
+  }, [value]);
 
   const { user } = useAuth();
   const { sendMessage, replyMessage } = useChatInteract();
@@ -126,7 +133,56 @@ export default function MessageComposer({
 
   const [promptUsed, setPromptUsed] = useState(false);
 
+  const onInputChange = useCallback((nextValue: string) => {
+    setValue(nextValue);
+    if (!nextValue.trim()) {
+      setDraftInputType(undefined);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleAudioDraftMessage = (event: Event) => {
+      const data = event instanceof CustomEvent ? event.detail : undefined;
+      if (!data || typeof data !== 'object') return;
+
+      if (data.type === 'bayyan_audio_transcription_error') {
+        toast.error(
+          data.message || 'La transcription vocale a échoué. Réessayez.'
+        );
+        return;
+      }
+
+      if (data.type === 'bayyan_audio_transcription_empty') {
+        toast.warning(data.message || "Aucun texte vocal n'a été détecté.");
+        return;
+      }
+
+      if (data.type !== 'bayyan_audio_transcription_draft') return;
+
+      const transcript =
+        typeof data.text === 'string' ? data.text.trim() : '';
+      if (!transcript) return;
+
+      const currentValue = valueRef.current;
+      const separator =
+        currentValue.trim() && !/[ \n]$/.test(currentValue) ? ' ' : '';
+      const nextValue = `${currentValue}${separator}${transcript}`;
+
+      inputRef.current?.setValueExtern(nextValue);
+      setDraftInputType('audio');
+      toast.success('Transcription ajoutée dans le champ.');
+    };
+
+    window.addEventListener('chainlit:window_message', handleAudioDraftMessage);
+    return () =>
+      window.removeEventListener(
+        'chainlit:window_message',
+        handleAudioDraftMessage
+      );
+  }, []);
+
   const onFavoriteSelect = useCallback((content: string) => {
+    setDraftInputType(undefined);
     setValue(content);
     if (inputRef.current) {
       inputRef.current.setValueExtern(content);
@@ -176,7 +232,10 @@ export default function MessageComposer({
         type: 'user_message',
         output: msg,
         createdAt: new Date().toISOString(),
-        metadata: { location: window.location.href }
+        metadata: {
+          location: window.location.href,
+          input_type: draftInputType === 'audio' ? 'audio' : 'text'
+        }
       };
 
       const fileReferences = attachments
@@ -188,7 +247,7 @@ export default function MessageComposer({
       }
       return sendMessage(message, fileReferences);
     },
-    [user, sendMessage, autoScrollRef, modes, getSelectedOptionId]
+    [user, sendMessage, autoScrollRef, modes, getSelectedOptionId, draftInputType]
   );
 
   const onReply = useCallback(
@@ -200,7 +259,10 @@ export default function MessageComposer({
         type: 'user_message',
         output: msg,
         createdAt: new Date().toISOString(),
-        metadata: { location: window.location.href }
+        metadata: {
+          location: window.location.href,
+          input_type: draftInputType === 'audio' ? 'audio' : 'text'
+        }
       };
 
       replyMessage(message);
@@ -209,7 +271,7 @@ export default function MessageComposer({
       }
       return true;
     },
-    [user, replyMessage, autoScrollRef]
+    [user, replyMessage, autoScrollRef, draftInputType]
   );
 
   const submit = useCallback(() => {
@@ -229,6 +291,7 @@ export default function MessageComposer({
     }
 
     setAttachments([]);
+    setDraftInputType(undefined);
     setValue(''); // Clear the value state
     inputRef.current?.reset();
   }, [
@@ -272,7 +335,7 @@ export default function MessageComposer({
         autoFocus={!isMobile}
         selectedCommand={selectedCommand}
         setSelectedCommand={setSelectedCommand}
-        onChange={setValue}
+        onChange={onInputChange}
         onPaste={onPaste}
         onEnter={submit}
         placeholder={t('chat.input.placeholder')}
