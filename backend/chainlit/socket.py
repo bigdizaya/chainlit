@@ -246,6 +246,7 @@ async def disconnect(sid):
         return
 
     init_ws_context(session)
+    await _cancel_audio_chunk_tasks(session)
 
     if config.code.on_chat_end:
         await config.code.on_chat_end()
@@ -280,6 +281,8 @@ async def stop(sid):
 
         if session.current_task:
             session.current_task.cancel()
+
+        await _cancel_audio_chunk_tasks(session)
 
         if config.code.on_stop:
             await config.code.on_stop()
@@ -357,6 +360,20 @@ async def _drain_audio_chunk_tasks(session: WebsocketSession) -> None:
         return
 
     await asyncio.gather(*pending, return_exceptions=True)
+
+
+async def _cancel_audio_chunk_tasks(session: WebsocketSession) -> None:
+    tasks = _get_audio_chunk_tasks(session)
+    pending = [task for task in tuple(tasks) if not task.done()]
+    if not pending:
+        tasks.clear()
+        return
+
+    for task in pending:
+        task.cancel()
+
+    await asyncio.gather(*pending, return_exceptions=True)
+    tasks.clear()
 
 
 @sio.on("edit_message")  # pyright: ignore [reportOptionalCall]

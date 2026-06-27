@@ -7,6 +7,7 @@ import pytest
 from chainlit.session import WebsocketSession
 from chainlit.socket import (
     _authenticate_connection,
+    _cancel_audio_chunk_tasks,
     _get_token,
     _get_token_from_cookie,
     audio_chunk,
@@ -493,6 +494,29 @@ class TestAudioEnd:
         mock_context.emitter.task_end.assert_not_awaited()
         mock_context.emitter.init_thread.assert_not_called()
         assert mock_session.has_first_interaction is False
+
+
+class TestAudioCleanup:
+    """Test suite for audio task cleanup."""
+
+    @pytest.mark.asyncio
+    async def test_cancel_audio_chunk_tasks_clears_pending_tasks(self):
+        """Stop/disconnect cleanup should not leave stale audio chunks alive."""
+        release_chunk = asyncio.Event()
+
+        async def pending_chunk():
+            await release_chunk.wait()
+
+        task = asyncio.create_task(pending_chunk())
+        await asyncio.sleep(0)
+
+        mock_session = Mock(spec=WebsocketSession)
+        mock_session.audio_chunk_tasks = {task}
+
+        await _cancel_audio_chunk_tasks(mock_session)
+
+        assert task.cancelled()
+        assert mock_session.audio_chunk_tasks == set()
 
 
 class TestSocketEdgeCases:

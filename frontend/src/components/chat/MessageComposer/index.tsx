@@ -62,7 +62,7 @@ export default function MessageComposer({
   const inputRef = useRef<InputMethods>(null);
   const [value, setValue] = useState('');
   const valueRef = useRef(value);
-  const [draftInputType, setDraftInputType] = useState<'audio' | undefined>();
+  const draftInputTypeRef = useRef<'audio' | undefined>();
   const [selectedCommand, setSelectedCommand] = useRecoilState(
     persistentCommandState
   );
@@ -137,7 +137,7 @@ export default function MessageComposer({
     valueRef.current = nextValue;
     setValue(nextValue);
     if (!nextValue.trim()) {
-      setDraftInputType(undefined);
+      draftInputTypeRef.current = undefined;
     }
   }, []);
 
@@ -170,8 +170,8 @@ export default function MessageComposer({
       const nextValue = `${currentValue}${separator}${transcript}`;
 
       valueRef.current = nextValue;
+      draftInputTypeRef.current = 'audio';
       inputRef.current?.setValueExtern(nextValue, { focus: true });
-      setDraftInputType('audio');
     };
 
     window.addEventListener('chainlit:window_message', handleAudioDraftMessage);
@@ -183,7 +183,7 @@ export default function MessageComposer({
   }, []);
 
   const onFavoriteSelect = useCallback((content: string) => {
-    setDraftInputType(undefined);
+    draftInputTypeRef.current = undefined;
     setValue(content);
     if (inputRef.current) {
       inputRef.current.setValueExtern(content);
@@ -235,7 +235,7 @@ export default function MessageComposer({
         createdAt: new Date().toISOString(),
         metadata: {
           location: window.location.href,
-          input_type: draftInputType === 'audio' ? 'audio' : 'text'
+          input_type: draftInputTypeRef.current === 'audio' ? 'audio' : 'text'
         }
       };
 
@@ -248,7 +248,7 @@ export default function MessageComposer({
       }
       return sendMessage(message, fileReferences);
     },
-    [user, sendMessage, autoScrollRef, modes, getSelectedOptionId, draftInputType]
+    [user, sendMessage, autoScrollRef, modes, getSelectedOptionId]
   );
 
   const onReply = useCallback(
@@ -262,7 +262,7 @@ export default function MessageComposer({
         createdAt: new Date().toISOString(),
         metadata: {
           location: window.location.href,
-          input_type: draftInputType === 'audio' ? 'audio' : 'text'
+          input_type: draftInputTypeRef.current === 'audio' ? 'audio' : 'text'
         }
       };
 
@@ -272,31 +272,35 @@ export default function MessageComposer({
       }
       return true;
     },
-    [user, replyMessage, autoScrollRef, draftInputType]
+    [user, replyMessage, autoScrollRef]
   );
 
   const submit = useCallback(() => {
+    const currentValue = valueRef.current;
+
     if (
       disabled ||
-      (value.trim() === '' && attachments.length === 0 && !selectedCommand)
+      (currentValue.trim() === '' &&
+        attachments.length === 0 &&
+        !selectedCommand)
     ) {
       return;
     }
 
     const sent = askUser
-      ? onReply(value)
-      : onSubmit(value, attachments, selectedCommand?.id);
+      ? onReply(currentValue)
+      : onSubmit(currentValue, attachments, selectedCommand?.id);
 
     if (!sent) {
       return;
     }
 
     setAttachments([]);
-    setDraftInputType(undefined);
+    valueRef.current = '';
+    draftInputTypeRef.current = undefined;
     setValue(''); // Clear the value state
     inputRef.current?.reset();
   }, [
-    value,
     disabled,
     askUser,
     attachments,
