@@ -134,6 +134,7 @@ export default function MessageComposer({
   const [promptUsed, setPromptUsed] = useState(false);
 
   const onInputChange = useCallback((nextValue: string) => {
+    valueRef.current = nextValue;
     setValue(nextValue);
     if (!nextValue.trim()) {
       setDraftInputType(undefined);
@@ -168,9 +169,9 @@ export default function MessageComposer({
         currentValue.trim() && !/[ \n]$/.test(currentValue) ? ' ' : '';
       const nextValue = `${currentValue}${separator}${transcript}`;
 
-      inputRef.current?.setValueExtern(nextValue);
+      valueRef.current = nextValue;
+      inputRef.current?.setValueExtern(nextValue, { focus: true });
       setDraftInputType('audio');
-      toast.success('Transcription ajoutée dans le champ.');
     };
 
     window.addEventListener('chainlit:window_message', handleAudioDraftMessage);

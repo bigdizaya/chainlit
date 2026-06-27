@@ -35,7 +35,7 @@ interface Props {
 
 export interface InputMethods {
   reset: () => void;
-  setValueExtern: (value: string) => void;
+  setValueExtern: (value: string, options?: { focus?: boolean }) => void;
 }
 
 const Input = forwardRef<InputMethods, Props>(
@@ -99,9 +99,15 @@ const Input = forwardRef<InputMethods, Props>(
 
     useImperativeHandle(ref, () => ({
       reset,
-      setValueExtern: (value: string) => {
+      setValueExtern: (value: string, options?: { focus?: boolean }) => {
         setValue(value);
         onChange(value);
+        if (options?.focus) {
+          window.requestAnimationFrame(() => {
+            textareaRef.current?.focus();
+            textareaRef.current?.setSelectionRange(value.length, value.length);
+          });
+        }
       }
     }));
 

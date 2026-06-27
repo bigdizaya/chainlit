@@ -358,9 +358,7 @@ def on_audio_end(func: Callable) -> Callable:
         Callable[], Any]: The decorated hook.
     """
 
-    config.code.on_audio_end = wrap_user_function(
-        step(func, name="on_audio_end", type="run"), with_task=True
-    )
+    config.code.on_audio_end = wrap_user_function(func, with_task=False)
     return func
 
 

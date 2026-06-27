@@ -1,3 +1,4 @@
+import asyncio
 import json
 from unittest.mock import AsyncMock, Mock, patch
 
@@ -8,6 +9,8 @@ from chainlit.socket import (
     _authenticate_connection,
     _get_token,
     _get_token_from_cookie,
+    audio_chunk,
+    audio_end,
     clean_session,
     load_user_env,
     persist_user_session,
@@ -401,6 +404,95 @@ class TestCleanSession:
 
             # Should not raise an error
             await clean_session("socket_123")
+
+
+class TestAudioEnd:
+    """Test suite for audio stream completion."""
+
+    @pytest.mark.asyncio
+    async def test_audio_end_false_does_not_start_task_or_thread(self):
+        """A draft-only audio handler must not refresh the chat timeline."""
+        mock_session = Mock(spec=WebsocketSession)
+        mock_session.has_first_interaction = False
+
+        mock_config = Mock()
+        mock_config.features.audio.enabled = True
+        mock_config.code.on_audio_end = AsyncMock(return_value=False)
+        mock_session.get_config.return_value = mock_config
+
+        mock_context = Mock()
+        mock_context.emitter.task_start = AsyncMock()
+        mock_context.emitter.task_end = AsyncMock()
+        mock_context.emitter.init_thread = AsyncMock()
+
+        with patch.object(WebsocketSession, "require", return_value=mock_session):
+            with patch("chainlit.socket.init_ws_context", return_value=mock_context):
+                with patch("chainlit.socket.asyncio.create_task") as create_task:
+                    await audio_end("socket_123")
+
+        mock_config.code.on_audio_end.assert_awaited_once()
+        mock_context.emitter.task_start.assert_not_awaited()
+        mock_context.emitter.task_end.assert_not_awaited()
+        mock_context.emitter.init_thread.assert_not_called()
+        create_task.assert_not_called()
+        assert mock_session.has_first_interaction is False
+
+    @pytest.mark.asyncio
+    async def test_audio_end_waits_for_pending_audio_chunks(self):
+        """Stop waits for the last audio chunks before transcription starts."""
+        mock_session = Mock(spec=WebsocketSession)
+        mock_session.has_first_interaction = False
+        mock_session.audio_chunk_tasks = set()
+
+        chunk_started = asyncio.Event()
+        release_chunk = asyncio.Event()
+        events = []
+
+        async def on_audio_chunk(_chunk):
+            events.append("chunk_start")
+            chunk_started.set()
+            await release_chunk.wait()
+            events.append("chunk_done")
+
+        async def on_audio_end():
+            events.append("end")
+            return False
+
+        mock_config = Mock()
+        mock_config.features.audio.enabled = True
+        mock_config.code.on_audio_chunk = AsyncMock(side_effect=on_audio_chunk)
+        mock_config.code.on_audio_end = AsyncMock(side_effect=on_audio_end)
+        mock_session.get_config.return_value = mock_config
+
+        mock_context = Mock()
+        mock_context.emitter.task_start = AsyncMock()
+        mock_context.emitter.task_end = AsyncMock()
+        mock_context.emitter.init_thread = AsyncMock()
+
+        payload = {
+            "isStart": True,
+            "mimeType": "pcm16",
+            "elapsedTime": 0,
+            "data": b"\x00\x00",
+        }
+
+        with patch.object(WebsocketSession, "require", return_value=mock_session):
+            with patch("chainlit.socket.init_ws_context", return_value=mock_context):
+                await audio_chunk("socket_123", payload)
+                await asyncio.wait_for(chunk_started.wait(), timeout=1)
+
+                end_task = asyncio.create_task(audio_end("socket_123"))
+                await asyncio.sleep(0)
+                mock_config.code.on_audio_end.assert_not_awaited()
+
+                release_chunk.set()
+                await asyncio.wait_for(end_task, timeout=1)
+
+        assert events == ["chunk_start", "chunk_done", "end"]
+        mock_context.emitter.task_start.assert_not_awaited()
+        mock_context.emitter.task_end.assert_not_awaited()
+        mock_context.emitter.init_thread.assert_not_called()
+        assert mock_session.has_first_interaction is False
 
 
 class TestSocketEdgeCases:

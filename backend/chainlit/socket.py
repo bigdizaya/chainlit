@@ -306,6 +306,59 @@ async def process_message(session: WebsocketSession, payload: MessagePayload):
         await context.emitter.task_end()
 
 
+def _get_audio_chunk_tasks(session: WebsocketSession) -> set[asyncio.Task]:
+    tasks = getattr(session, "audio_chunk_tasks", None)
+    if tasks is None:
+        tasks = set()
+        session.audio_chunk_tasks = tasks
+    return tasks
+
+
+def _get_audio_chunk_lock(session: WebsocketSession) -> asyncio.Lock:
+    lock = getattr(session, "audio_chunk_lock", None)
+    if lock is None:
+        lock = asyncio.Lock()
+        session.audio_chunk_lock = lock
+    return lock
+
+
+async def _run_audio_chunk_handler(
+    session: WebsocketSession, payload: InputAudioChunkPayload
+):
+    config: ChainlitConfig = session.get_config()
+    async with _get_audio_chunk_lock(session):
+        await config.code.on_audio_chunk(InputAudioChunk(**payload))
+
+
+def _track_audio_chunk_task(session: WebsocketSession, task: asyncio.Task) -> None:
+    tasks = _get_audio_chunk_tasks(session)
+    tasks.add(task)
+
+    def cleanup(completed: asyncio.Task):
+        tasks.discard(completed)
+        if completed.cancelled():
+            return
+
+        try:
+            completed.result()
+        except Exception as exc:
+            logger.error(
+                "Audio chunk handler failed",
+                exc_info=(type(exc), exc, exc.__traceback__),
+            )
+
+    task.add_done_callback(cleanup)
+
+
+async def _drain_audio_chunk_tasks(session: WebsocketSession) -> None:
+    tasks = _get_audio_chunk_tasks(session)
+    pending = [task for task in tuple(tasks) if not task.done()]
+    if not pending:
+        return
+
+    await asyncio.gather(*pending, return_exceptions=True)
+
+
 @sio.on("edit_message")  # pyright: ignore [reportOptionalCall]
 async def edit_message(sid, payload: MessagePayload):
     """Handle a message sent by the User."""
@@ -422,6 +475,8 @@ async def audio_start(sid):
     config: ChainlitConfig = session.get_config()  # type: ignore
 
     if config.features.audio and config.features.audio.enabled:
+        await _drain_audio_chunk_tasks(session)
+        _get_audio_chunk_tasks(session).clear()
         connected = bool(await config.code.on_audio_start())
         connection_state = "on" if connected else "off"
         await context.emitter.update_audio_connection(connection_state)
@@ -446,7 +501,8 @@ async def audio_chunk(sid, payload: InputAudioChunkPayload):
         and config.features.audio.enabled
         and config.code.on_audio_chunk
     ):
-        asyncio.create_task(config.code.on_audio_chunk(InputAudioChunk(**payload)))
+        task = asyncio.create_task(_run_audio_chunk_handler(session, payload))
+        _track_audio_chunk_task(session, task)
 
 
 @sio.on("audio_end")
@@ -454,15 +510,21 @@ async def audio_end(sid):
     """Handle the end of the audio stream."""
     session = WebsocketSession.require(sid)
     context = init_ws_context(session)
+    task_started = False
 
     try:
-        await context.emitter.task_start()
-
         config: ChainlitConfig = session.get_config()  # type: ignore
         audio_result = None
 
         if config.features.audio and config.features.audio.enabled:
+            await _drain_audio_chunk_tasks(session)
             audio_result = await config.code.on_audio_end()
+
+        if audio_result is False:
+            return
+
+        await context.emitter.task_start()
+        task_started = True
 
         if audio_result is not False and not session.has_first_interaction:
             session.has_first_interaction = True
@@ -476,7 +538,8 @@ async def audio_end(sid):
             author="Error", content=str(e) or e.__class__.__name__
         ).send()
     finally:
-        await context.emitter.task_end()
+        if task_started:
+            await context.emitter.task_end()
 
 
 @sio.on("chat_settings_change")
