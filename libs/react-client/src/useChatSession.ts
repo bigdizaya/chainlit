@@ -59,8 +59,6 @@ import { OutputAudioChunk } from './types/audio';
 import { ChainlitContext } from './context';
 import type { IToken } from './useChatData';
 
-const FOREGROUND_SYNC_INTERVAL_MS = 2000;
-const FOREGROUND_SYNC_DURATION_MS = 45000;
 const THREAD_HISTORY_REFRESH_SIZE = 35;
 const BAYYAN_ACTIVITY_KEY = 'jawab_last_activity';
 const BAYYAN_INACTIVITY_THRESHOLD_MS = 30 * 60 * 1000;
@@ -197,7 +195,7 @@ const useChatSession = () => {
   const isRefreshingThreadRef = useRef(false);
   const lastForegroundRefreshRef = useRef(0);
   const foregroundSyncOwnerRef = useRef(Symbol('foreground-sync-owner'));
-  const foregroundSyncTimerRef = useRef<number | undefined>(undefined);
+  const taskStartedRef = useRef(false);
   const messagesRef = useRef(messages);
 
   // Use currentThreadId as thread id in websocket header
@@ -352,37 +350,16 @@ const useChatSession = () => {
 
     let hiddenAt = 0;
 
-    const stopForegroundPolling = () => {
-      if (foregroundSyncTimerRef.current) {
-        window.clearInterval(foregroundSyncTimerRef.current);
-        foregroundSyncTimerRef.current = undefined;
-      }
-    };
-
-    const startForegroundPolling = () => {
-      stopForegroundPolling();
-      const stopAt = Date.now() + FOREGROUND_SYNC_DURATION_MS;
-      foregroundSyncTimerRef.current = window.setInterval(() => {
-        if (document.visibilityState !== 'visible' || Date.now() > stopAt) {
-          stopForegroundPolling();
-          return;
-        }
-        refreshCurrentThread();
-      }, FOREGROUND_SYNC_INTERVAL_MS);
-    };
-
     const handleForeground = () => {
       const now = Date.now();
       if (now - lastForegroundRefreshRef.current < 1500) return;
       lastForegroundRefreshRef.current = now;
 
       if (isBayyanAuthRoute()) {
-        stopForegroundPolling();
         return;
       }
 
       if (isBayyanSessionStale(now)) {
-        stopForegroundPolling();
         redirectToBayyanFreshChat();
         return;
       }
@@ -402,14 +379,12 @@ const useChatSession = () => {
 
       if (!hiddenAt || now - hiddenAt > 500) {
         refreshCurrentThread();
-        startForegroundPolling();
       }
     };
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         hiddenAt = Date.now();
-        stopForegroundPolling();
         return;
       }
       if (document.visibilityState === 'visible') {
@@ -422,7 +397,6 @@ const useChatSession = () => {
     window.addEventListener('focus', handleForeground);
 
     return () => {
-      stopForegroundPolling();
       if (foregroundSyncOwner === owner) {
         foregroundSyncOwner = null;
       }
@@ -539,6 +513,7 @@ const useChatSession = () => {
       });
 
       socket.on('disconnect', async () => {
+        taskStartedRef.current = false;
         setAudioConnection('off');
         setIsAiSpeaking(false);
         try {
@@ -554,17 +529,30 @@ const useChatSession = () => {
       });
 
       socket.on('task_start', () => {
+        taskStartedRef.current = true;
         setLoading(true);
       });
 
       socket.on('task_end', () => {
         setLoading(false);
-        refreshCurrentThread();
+        if (taskStartedRef.current) {
+          taskStartedRef.current = false;
+          refreshCurrentThread();
+        }
       });
 
       socket.on('reload', () => {
         socket.emit('clear_session');
-        window.location.reload();
+        const isLocalDev =
+          window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1';
+        if (isLocalDev) {
+          window.location.reload();
+        } else {
+          console.warn(
+            '[BAYYAN] Ignored development reload event in production.'
+          );
+        }
       });
 
       socket.on('audio_connection', async (state: 'on' | 'off') => {
@@ -832,8 +820,8 @@ const useChatSession = () => {
         window.dispatchEvent(
           new CustomEvent('chainlit:window_message', { detail: data })
         );
-        if (window.parent) {
-          window.parent.postMessage(data, '*');
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(data, window.location.origin);
         }
       });
 

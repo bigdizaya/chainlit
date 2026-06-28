@@ -42,6 +42,7 @@ import FavoriteButton from './FavoriteButton';
 import Input, { InputMethods } from './Input';
 import McpButton from './Mcp';
 import ModePicker from './ModePicker';
+import ResponseLevelPicker from './ResponseLevelPicker';
 import SubmitButton from './SubmitButton';
 import UploadButton from './UploadButton';
 import VoiceButton from './VoiceButton';
@@ -160,8 +161,7 @@ export default function MessageComposer({
 
       if (data.type !== 'bayyan_audio_transcription_draft') return;
 
-      const transcript =
-        typeof data.text === 'string' ? data.text.trim() : '';
+      const transcript = typeof data.text === 'string' ? data.text.trim() : '';
       if (!transcript) return;
 
       const currentValue = valueRef.current;
@@ -210,11 +210,7 @@ export default function MessageComposer({
   );
 
   const onSubmit = useCallback(
-    (
-      msg: string,
-      attachments?: IAttachment[],
-      selectedCommand?: string
-    ) => {
+    (msg: string, attachments?: IAttachment[], selectedCommand?: string) => {
       // Build modes dict: only include modes that have selections
       const modesDict: Record<string, string> = {};
       modes.forEach((mode) => {
@@ -366,6 +362,7 @@ export default function MessageComposer({
               <Settings className="!size-6" />
             </Button>
           )}
+          <ResponseLevelPicker disabled={disabled} />
           <McpButton disabled={disabled} />
           {modes.map((mode) => (
             <ModePicker

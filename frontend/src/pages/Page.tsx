@@ -53,16 +53,33 @@ const Page = ({ children }: Props) => {
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    const handleMessage = (event: MessageEvent) => {
-      const msg = event.data;
-      if (msg && msg.type === 'quota_update') {
-        const quota = normalizeQuotaPayload(msg);
+    const applyQuotaMessage = (msg: unknown) => {
+      if (!msg || typeof msg !== 'object') return;
+      const record = msg as Record<string, unknown>;
+      if (record.type === 'quota_update') {
+        const quota = normalizeQuotaPayload(record);
         if (quota) setQuota(quota);
       }
     };
 
+    const handleMessage = (event: MessageEvent) => {
+      applyQuotaMessage(event.data);
+    };
+
+    const handleWindowMessage = (event: Event) => {
+      const data = event instanceof CustomEvent ? event.detail : undefined;
+      applyQuotaMessage(data);
+    };
+
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    window.addEventListener('chainlit:window_message', handleWindowMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      window.removeEventListener(
+        'chainlit:window_message',
+        handleWindowMessage
+      );
+    };
   }, [isLoggedIn, setQuota]);
 
   if (config?.userEnv) {

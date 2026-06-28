@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
 import { isBayyanFreshChatRequest } from '@/lib/bayyanInactivity';
+import { cn } from '@/lib/utils';
 import { useEffect, useRef } from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { useRecoilValue } from 'recoil';
@@ -51,6 +51,13 @@ function App() {
   useEffect(() => {
     clearRef.current = clear;
   }, [clear]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-bayyan-react-ready', '1');
+    return () => {
+      document.documentElement.removeAttribute('data-bayyan-react-ready');
+    };
+  }, []);
 
   useEffect(() => {
     if (!isAuthenticated || !isReady || !chatProfileOk) {

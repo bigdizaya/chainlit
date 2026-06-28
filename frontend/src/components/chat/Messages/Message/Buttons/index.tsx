@@ -10,6 +10,7 @@ import CopyButton from '@/components/CopyButton';
 import MessageActions from './Actions';
 import { DebugButton } from './DebugButton';
 import { FeedbackButtons } from './FeedbackButtons';
+import MessageShareButton from './ShareButton';
 
 interface Props {
   message: IStep;
@@ -41,7 +42,10 @@ const MessageButtons = ({ message, actions, run, contentRef }: Props) => {
   return (
     <div className="-ml-1.5 flex items-center flex-wrap">
       {showCopyButton ? (
-        <CopyButton content={message.output} contentRef={contentRef} />
+        <>
+          <CopyButton content={message.output} contentRef={contentRef} />
+          <MessageShareButton content={message.output} />
+        </>
       ) : null}
       {run ? <FeedbackButtons message={run} /> : null}
       {messageActions.length ? (
