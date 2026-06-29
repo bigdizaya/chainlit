@@ -3,12 +3,12 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { ClientError } from '@chainlit/react-client';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Translator, { useTranslation } from 'components/i18n/Translator';
-
-import { ClientError } from '@chainlit/react-client';
 
 import Alert from './Alert';
 import { ProviderButton } from './ProviderButton';
@@ -80,10 +80,10 @@ export function LoginForm({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className={cn('flex flex-col gap-6')}
+      className={cn('flex flex-col gap-4 sm:gap-6')}
     >
-      <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">
+      <div className="flex flex-col items-center gap-1 text-center sm:gap-2">
+        <h1 className="text-[1.65rem] font-bold leading-tight sm:text-2xl">
           <Translator path="auth.login.title" />
         </h1>
       </div>
@@ -97,10 +97,10 @@ export function LoginForm({
         </Alert>
       )}
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 sm:gap-6">
         {onPasswordSignIn && (
           <>
-            <div className="grid gap-2">
+            <div className="grid gap-1.5 sm:gap-2">
               <Label htmlFor="email">
                 <Translator path="auth.login.form.email.label" />
               </Label>
@@ -123,7 +123,7 @@ export function LoginForm({
               )}
             </div>
 
-            <div className="grid gap-2">
+            <div className="grid gap-1.5 sm:gap-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">
                   <Translator path="auth.login.form.password.label" />

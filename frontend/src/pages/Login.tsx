@@ -83,12 +83,12 @@ export default function Login() {
   }, [config, user]);
 
   return (
-    <div className="grid min-h-svh lg:grid-cols-2">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <Logo className="w-[150px]" />
+    <div className="grid min-h-[100dvh] overflow-y-auto lg:grid-cols-2">
+      <div className="flex min-h-[100dvh] flex-col gap-3 px-6 pb-8 pt-5 sm:gap-4 sm:pt-7 md:p-10">
+        <div className="flex shrink-0 justify-center gap-2 md:justify-start">
+          <Logo className="w-[142px] sm:w-[150px]" />
         </div>
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex flex-1 items-start justify-center pt-10 sm:pt-12 md:items-center md:pt-0">
           <div className="w-full max-w-xs">
             <LoginForm
               error={error}

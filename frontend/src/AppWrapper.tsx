@@ -48,7 +48,8 @@ export default function AppWrapper() {
     window.location.pathname !== getRouterBasename() + '/login' &&
     window.location.pathname !== getRouterBasename() + '/login/callback'
   ) {
-    window.location.href = getRouterBasename() + '/login';
+    window.location.replace(getRouterBasename() + '/login');
+    return null;
   }
   return <App />;
 }
