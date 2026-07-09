@@ -238,7 +238,8 @@
             "provider": "Authentification",
             "providerCredentials": "E-mail et mot de passe",
             "providerGoogle": "Google",
-            "providerBoth": "E-mail et Google",
+            "providerApple": "Apple",
+            "providerBoth": "E-mail et compte social",
             "createdAt": "Compte créé le"
         },
         "username": {
@@ -269,6 +270,18 @@
                 "minLength": "Le mot de passe doit contenir au moins 8 caractères",
                 "pattern": "Doit contenir au moins une lettre et un chiffre",
                 "mismatch": "Les mots de passe ne correspondent pas"
+            }
+        },
+        "delete": {
+            "title": "Supprimer le compte",
+            "description": "Cette action supprime définitivement votre compte, votre historique de conversation et vos données associées. Elle est irréversible.",
+            "passwordLabel": "Mot de passe",
+            "oauthHint": "Vous êtes connecté avec un compte social. Une confirmation vous sera demandée avant la suppression.",
+            "button": "Supprimer mon compte",
+            "confirm": "Voulez-vous vraiment supprimer définitivement votre compte BAYYAN et les données associées ?",
+            "success": "Votre compte a été supprimé.",
+            "errors": {
+                "required": "Le mot de passe est requis pour supprimer votre compte."
             }
         },
         "back": "Retour au chat"

@@ -238,7 +238,8 @@
       "provider": "Authentication",
       "providerCredentials": "Email & password",
       "providerGoogle": "Google",
-      "providerBoth": "Email & Google",
+      "providerApple": "Apple",
+      "providerBoth": "Email & social account",
       "createdAt": "Account created"
     },
     "username": {
@@ -269,6 +270,18 @@
         "minLength": "Password must be at least 8 characters",
         "pattern": "Must contain at least one letter and one number",
         "mismatch": "Passwords do not match"
+      }
+    },
+    "delete": {
+      "title": "Delete account",
+      "description": "This permanently deletes your account, your conversation history, and your associated data. This action cannot be undone.",
+      "passwordLabel": "Password",
+      "oauthHint": "You are signed in with a social account. You will be asked to confirm before deleting this account.",
+      "button": "Delete my account",
+      "confirm": "Are you sure you want to permanently delete your BAYYAN account and associated data?",
+      "success": "Your account has been deleted.",
+      "errors": {
+        "required": "Password is required to delete your account."
       }
     },
     "back": "Back to chat"

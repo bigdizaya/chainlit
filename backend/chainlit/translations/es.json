@@ -238,7 +238,8 @@
       "provider": "Autenticación",
       "providerCredentials": "Correo y contraseña",
       "providerGoogle": "Google",
-      "providerBoth": "Correo y Google",
+      "providerApple": "Apple",
+      "providerBoth": "Correo y cuenta social",
       "createdAt": "Cuenta creada"
     },
     "username": {
@@ -269,6 +270,18 @@
         "minLength": "La contraseña debe tener al menos 8 caracteres",
         "pattern": "Debe contener al menos una letra y un número",
         "mismatch": "Las contraseñas no coinciden"
+      }
+    },
+    "delete": {
+      "title": "Eliminar cuenta",
+      "description": "Esto elimina permanentemente tu cuenta, tu historial de conversación y los datos asociados. Esta acción no se puede deshacer.",
+      "passwordLabel": "Contraseña",
+      "oauthHint": "Has iniciado sesión con una cuenta social. Se te pedirá confirmar antes de eliminar esta cuenta.",
+      "button": "Eliminar mi cuenta",
+      "confirm": "¿Seguro que quieres eliminar permanentemente tu cuenta de BAYYAN y los datos asociados?",
+      "success": "Tu cuenta ha sido eliminada.",
+      "errors": {
+        "required": "La contraseña es obligatoria para eliminar tu cuenta."
       }
     },
     "back": "Volver al chat"
