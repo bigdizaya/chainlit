@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-import { useAuth } from '@chainlit/react-client';
+import { useAuth, useChatInteract } from '@chainlit/react-client';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -92,7 +92,8 @@ async function apiCall(
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const { clear } = useChatInteract();
   const { t } = useTranslation();
   const layoutMaxWidth = useLayoutMaxWidth();
 
@@ -182,7 +183,15 @@ const Settings = () => {
         <DeleteAccountCard
           profile={profile}
           token={token}
-          onDeleted={() => navigate('/login?account_deleted=1')}
+          onDeleted={async () => {
+            clear();
+            try {
+              await logout(false);
+            } catch {
+              // The account is already deleted; redirect even if logout cannot reach the server.
+            }
+            window.location.replace('/login?account_deleted=1');
+          }}
         />
 
         {/* Password section */}
@@ -267,7 +276,7 @@ function DeleteAccountCard({
 }: {
   profile: Profile;
   token: string | null;
-  onDeleted: () => void;
+  onDeleted: () => Promise<void> | void;
 }) {
   const { t } = useTranslation();
 
@@ -305,7 +314,7 @@ function DeleteAccountCard({
 
       if (res.success) {
         toast.success(t('settings.delete.success'));
-        onDeleted();
+        await onDeleted();
       } else {
         toast.error(res.message || t('common.status.error.default'));
       }
