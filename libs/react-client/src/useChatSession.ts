@@ -58,6 +58,7 @@ import { OutputAudioChunk } from './types/audio';
 
 import { ChainlitContext } from './context';
 import type { IToken } from './useChatData';
+import { bindBayyanFreshChatToThread } from './utils/bayyanFreshChat';
 
 const THREAD_HISTORY_REFRESH_SIZE = 35;
 const BAYYAN_ACTIVITY_KEY = 'jawab_last_activity';
@@ -650,6 +651,7 @@ const useChatSession = () => {
           if (event.interaction === 'resume' && freshRequestActive) {
             return;
           }
+          bindBayyanFreshChatToThread(socket.auth, event.thread_id);
           if (freshRequestActive) {
             markBayyanActivity();
             consumeBayyanFreshChatRequest();

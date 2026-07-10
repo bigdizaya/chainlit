@@ -13,11 +13,26 @@ from chainlit.socket import (
     audio_chunk,
     audio_end,
     clean_session,
+    is_fresh_chat_request,
     load_user_env,
     persist_user_session,
     restore_existing_session,
     resume_thread,
 )
+
+
+class TestFreshChatRequest:
+    def test_accepts_fresh_chat_without_thread_id(self):
+        assert is_fresh_chat_request({"threadId": "", "freshChat": "1"}) is True
+
+    @pytest.mark.parametrize("value", ["1", "true", True])
+    def test_reconnect_with_thread_id_is_never_fresh(self, value):
+        auth = {"threadId": "thread_123", "freshChat": value}
+
+        assert is_fresh_chat_request(auth) is False
+
+    def test_rejects_missing_fresh_chat_hint(self):
+        assert is_fresh_chat_request({"threadId": ""}) is False
 
 
 class TestGetTokenFromCookie:

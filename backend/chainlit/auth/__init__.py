@@ -6,6 +6,7 @@ from chainlit.config import config
 from chainlit.data import get_data_layer
 from chainlit.logger import logger
 from chainlit.oauth_providers import get_configured_oauth_providers
+from chainlit.user import PersistedUser, User
 
 from .cookie import (
     OAuth2PasswordBearerWithCookie,
@@ -66,24 +67,48 @@ async def authenticate_user(token: str = Depends(reuseable_oauth)):
             status_code=401, detail="Invalid authentication token"
         ) from e
 
-    if data_layer := get_data_layer():
-        # Get or create persistent user if we've a data layer available.
-        try:
-            persisted_user = await data_layer.get_user(user.identifier)
-            if persisted_user is None:
-                persisted_user = await data_layer.create_user(user)
-                assert persisted_user
-        except Exception as e:
-            logger.exception("Unable to get persisted_user from data layer: %s", e)
-            return user
-
-        if user and user.display_name:
-            # Copy ephemeral display_name from authenticated user to persistent user.
-            persisted_user.display_name = user.display_name
-
-        return persisted_user
+    if get_data_layer():
+        return await persist_user(user)
 
     return user
+
+
+async def persist_user(user: User, force_create: bool = False) -> PersistedUser:
+    """Return a persisted user or reject authentication when persistence fails."""
+    data_layer = get_data_layer()
+    if not data_layer:
+        raise HTTPException(
+            status_code=503, detail="Authentication persistence unavailable"
+        )
+
+    try:
+        persisted_user = (
+            None if force_create else await data_layer.get_user(user.identifier)
+        )
+        if persisted_user is None:
+            persisted_user = await data_layer.create_user(user)
+    except Exception as e:
+        logger.exception("Unable to persist authenticated user: %s", e)
+        raise HTTPException(
+            status_code=503, detail="Authentication persistence unavailable"
+        ) from e
+
+    if persisted_user is None:
+        logger.error("Unable to persist authenticated user: data layer returned None")
+        raise HTTPException(
+            status_code=503 if force_create else 401,
+            detail=(
+                "Authentication persistence unavailable"
+                if force_create
+                else "Not authenticated"
+            ),
+        )
+
+    if user.display_name:
+        # Copy ephemeral display_name from authenticated user to persistent user.
+        persisted_user.display_name = user.display_name
+
+    return persisted_user
 
 
 async def get_current_user(token: str = Depends(reuseable_oauth)):
@@ -99,5 +124,6 @@ __all__ = [
     "get_configuration",
     "get_current_user",
     "get_token_from_cookies",
+    "persist_user",
     "set_auth_cookie",
 ]

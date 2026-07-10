@@ -34,7 +34,13 @@ from starlette.types import Receive, Scope, Send
 from typing_extensions import Annotated
 from watchfiles import awatch
 
-from chainlit.auth import create_jwt, decode_jwt, get_configuration, get_current_user
+from chainlit.auth import (
+    create_jwt,
+    decode_jwt,
+    get_configuration,
+    get_current_user,
+    persist_user,
+)
 from chainlit.auth.cookie import (
     clear_auth_cookie,
     clear_oauth_state_cookie,
@@ -512,14 +518,9 @@ async def _authenticate_user(
             detail="credentialssignin",
         )
 
-    # If a data layer is defined, attempt to persist user.
-    if data_layer := get_data_layer():
-        try:
-            await data_layer.create_user(user)
-        except Exception as e:
-            # Catch and log exceptions during user creation.
-            # TODO: Make this catch only specific errors and allow others to propagate.
-            logger.error(f"Error creating user: {e}")
+    # Never issue an authenticated session if configured persistence failed.
+    if get_data_layer():
+        await persist_user(user, force_create=True)
 
     access_token = create_jwt(user)
 

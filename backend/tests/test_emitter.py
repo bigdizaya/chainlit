@@ -1,7 +1,9 @@
-from unittest.mock import MagicMock
+import uuid
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from chainlit.context import ChainlitContext, context_var
 from chainlit.element import ElementDict
 from chainlit.emitter import ChainlitEmitter
 from chainlit.step import StepDict
@@ -163,3 +165,41 @@ async def test_send_toast_invalid_type(emitter: ChainlitEmitter) -> None:
     message = "This is a test message"
     with pytest.raises(ValueError, match="Invalid toast type: invalid"):
         await emitter.send_toast(message, type="invalid")  # type: ignore[arg-type]
+
+
+async def test_process_message_initializes_thread_before_creating_first_step(
+    mock_session_factory,
+) -> None:
+    session = mock_session_factory(has_first_interaction=False)
+    emitter = ChainlitEmitter(session)
+    chainlit_context = ChainlitContext(session, emitter=emitter)
+    context_token = context_var.set(chainlit_context)
+    events = []
+
+    async def record_init_thread(_interaction: str):
+        events.append("init_thread")
+
+    async def record_message_create(_message):
+        events.append("message_create")
+
+    payload = {
+        "message": {
+            "id": str(uuid.uuid4()),
+            "createdAt": "2026-07-10T00:00:00Z",
+            "output": "First question",
+            "type": "user_message",
+        }
+    }
+
+    try:
+        with patch.object(
+            emitter, "init_thread", new=AsyncMock(side_effect=record_init_thread)
+        ):
+            with patch("chainlit.emitter.Message._create", new=record_message_create):
+                with patch("chainlit.emitter.chat_context.add"):
+                    await emitter.process_message(payload)
+    finally:
+        context_var.reset(context_token)
+
+    assert session.has_first_interaction is True
+    assert events == ["init_thread", "message_create"]

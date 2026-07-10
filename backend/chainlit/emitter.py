@@ -276,11 +276,13 @@ class ChainlitEmitter(BaseChainlitEmitter):
         message.created_at = utc_now()
         chat_context.add(message)
 
-        asyncio.create_task(message._create())
-
         if not self.session.has_first_interaction:
             self.session.has_first_interaction = True
-            asyncio.create_task(self.init_thread(message.content))
+            await self.init_thread(message.content)
+            # The thread must be persisted before its first step is created.
+            await message._create()
+        else:
+            asyncio.create_task(message._create())
 
         if file_refs:
             files = [

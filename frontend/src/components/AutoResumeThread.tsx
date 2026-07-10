@@ -74,11 +74,11 @@ export default function AutoResumeThread({ id }: Props) {
 
   useEffect(() => {
     if (resumeThreadError) {
-      toast.error("Couldn't resume chat: " + resumeThreadError);
-      navigate('/');
+      clearRef.current();
       setResumeThreadError(undefined);
+      redirectToBayyanFreshChat();
     }
-  }, [navigate, resumeThreadError, setResumeThreadError]);
+  }, [resumeThreadError, setResumeThreadError]);
 
   return null;
 }

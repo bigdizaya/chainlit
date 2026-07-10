@@ -56,6 +56,11 @@ async def persist_user_session(thread_id: str, metadata: Dict):
 
 
 def is_fresh_chat_request(auth: WebSocketSessionAuth) -> bool:
+    # `freshChat` is a one-shot hint. Once a thread id exists, reconnecting
+    # must resume that thread instead of deleting the session and starting over.
+    if auth.get("threadId"):
+        return False
+
     value = auth.get("freshChat")
     if isinstance(value, bool):
         return value
