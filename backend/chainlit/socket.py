@@ -250,8 +250,8 @@ async def disconnect(sid):
     if not session:
         return
 
-    init_ws_context(session)
-    await _cancel_audio_chunk_tasks(session)
+    context = init_ws_context(session)
+    await _cancel_active_audio(session, context, reason="disconnect")
 
     if config.code.on_chat_end:
         await config.code.on_chat_end()
@@ -281,13 +281,13 @@ async def disconnect(sid):
 @sio.on("stop")  # pyright: ignore [reportOptionalCall]
 async def stop(sid):
     if session := WebsocketSession.get(sid):
-        init_ws_context(session)
+        context = init_ws_context(session)
         await Message(content="Task manually stopped.").send()
 
         if session.current_task:
             session.current_task.cancel()
 
-        await _cancel_audio_chunk_tasks(session)
+        await _cancel_active_audio(session, context, reason="task_stopped")
 
         if config.code.on_stop:
             await config.code.on_stop()
@@ -379,6 +379,59 @@ async def _cancel_audio_chunk_tasks(session: WebsocketSession) -> None:
 
     await asyncio.gather(*pending, return_exceptions=True)
     tasks.clear()
+
+
+def _audio_recording_id(payload: Optional[dict]) -> Optional[str]:
+    if not isinstance(payload, dict):
+        return None
+    value = payload.get("recordingId")
+    return value if isinstance(value, str) and value else None
+
+
+def _matches_active_audio(
+    session: WebsocketSession, recording_id: Optional[str]
+) -> bool:
+    if not getattr(session, "audio_active", False):
+        return False
+    active_id = getattr(session, "active_audio_recording_id", None)
+    # Legacy clients did not send ids. Keep them working while new clients get
+    # strict stale-event protection.
+    return recording_id is None or active_id is None or recording_id == active_id
+
+
+async def _cancel_active_audio(
+    session: WebsocketSession,
+    context,
+    *,
+    recording_id: Optional[str] = None,
+    reason: str = "cancelled",
+    emit_connection: bool = True,
+) -> bool:
+    if not _matches_active_audio(session, recording_id):
+        return False
+
+    active_id = getattr(session, "active_audio_recording_id", None)
+    session.audio_attempt_version = getattr(session, "audio_attempt_version", 0) + 1
+    session.audio_active = False
+    await _cancel_audio_chunk_tasks(session)
+
+    session_config: ChainlitConfig = session.get_config()
+    if session_config.code.on_audio_cancel:
+        try:
+            await session_config.code.on_audio_cancel()
+        except asyncio.CancelledError:
+            pass
+        except Exception:
+            logger.exception("Audio cancel handler failed (%s)", reason)
+
+    if (
+        not getattr(session, "audio_active", False)
+        and getattr(session, "active_audio_recording_id", None) == active_id
+    ):
+        session.active_audio_recording_id = None
+        if emit_connection:
+            await context.emitter.update_audio_connection("off", active_id)
+    return True
 
 
 @sio.on("edit_message")  # pyright: ignore [reportOptionalCall]
@@ -489,7 +542,7 @@ async def window_message(sid, data):
 
 
 @sio.on("audio_start")  # pyright: ignore [reportOptionalCall]
-async def audio_start(sid):
+async def audio_start(sid, payload=None):
     """Handle audio init."""
     session = WebsocketSession.require(sid)
 
@@ -497,11 +550,42 @@ async def audio_start(sid):
     config: ChainlitConfig = session.get_config()  # type: ignore
 
     if config.features.audio and config.features.audio.enabled:
-        await _drain_audio_chunk_tasks(session)
+        recording_id = _audio_recording_id(payload)
+        if getattr(session, "audio_active", False):
+            await _cancel_active_audio(
+                session,
+                context,
+                recording_id=getattr(session, "active_audio_recording_id", None),
+                reason="superseded",
+            )
+        else:
+            await _drain_audio_chunk_tasks(session)
         _get_audio_chunk_tasks(session).clear()
-        connected = bool(await config.code.on_audio_start())
+        session.audio_attempt_version = getattr(session, "audio_attempt_version", 0) + 1
+        attempt_version = session.audio_attempt_version
+        session.audio_active = True
+        session.active_audio_recording_id = recording_id
+        try:
+            connected = bool(await config.code.on_audio_start())
+        except asyncio.CancelledError:
+            connected = False
+        except Exception:
+            logger.exception("Audio start handler failed")
+            connected = False
+
+        is_current_attempt = (
+            getattr(session, "audio_attempt_version", 0) == attempt_version
+            and getattr(session, "audio_active", False)
+            and getattr(session, "active_audio_recording_id", None) == recording_id
+        )
+        if not is_current_attempt:
+            return
+
         connection_state = "on" if connected else "off"
-        await context.emitter.update_audio_connection(connection_state)
+        if not connected:
+            session.audio_active = False
+            session.active_audio_recording_id = None
+        await context.emitter.update_audio_connection(connection_state, recording_id)
         if not connected:
             await context.emitter.send_toast(
                 "Recording did not start. Please wait a moment and try again.",
@@ -517,9 +601,11 @@ async def audio_chunk(sid, payload: InputAudioChunkPayload):
     init_ws_context(session)
 
     config: ChainlitConfig = session.get_config()
+    recording_id = _audio_recording_id(payload)
 
     if (
-        config.features.audio
+        _matches_active_audio(session, recording_id)
+        and config.features.audio
         and config.features.audio.enabled
         and config.code.on_audio_chunk
     ):
@@ -528,11 +614,18 @@ async def audio_chunk(sid, payload: InputAudioChunkPayload):
 
 
 @sio.on("audio_end")
-async def audio_end(sid):
+async def audio_end(sid, payload=None):
     """Handle the end of the audio stream."""
     session = WebsocketSession.require(sid)
     context = init_ws_context(session)
     task_started = False
+    recording_id = _audio_recording_id(payload)
+
+    if not _matches_active_audio(session, recording_id):
+        return
+
+    active_id = getattr(session, "active_audio_recording_id", None)
+    session.audio_active = False
 
     try:
         config: ChainlitConfig = session.get_config()  # type: ignore
@@ -562,6 +655,27 @@ async def audio_end(sid):
     finally:
         if task_started:
             await context.emitter.task_end()
+        if (
+            not getattr(session, "audio_active", False)
+            and getattr(session, "active_audio_recording_id", None) == active_id
+        ):
+            session.active_audio_recording_id = None
+            await context.emitter.update_audio_connection("off", active_id)
+
+
+@sio.on("audio_cancel")
+async def audio_cancel(sid, payload=None):
+    """Abandon an audio attempt without invoking transcription."""
+    session = WebsocketSession.require(sid)
+    context = init_ws_context(session)
+    await _cancel_active_audio(
+        session,
+        context,
+        recording_id=_audio_recording_id(payload),
+        reason=(payload or {}).get("reason", "cancelled")
+        if isinstance(payload, dict)
+        else "cancelled",
+    )
 
 
 @sio.on("chat_settings_change")

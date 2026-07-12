@@ -362,6 +362,13 @@ def on_audio_end(func: Callable) -> Callable:
     return func
 
 
+def on_audio_cancel(func: Callable) -> Callable:
+    """Hook called when an audio attempt is abandoned without transcription."""
+
+    config.code.on_audio_cancel = wrap_user_function(func, with_task=False)
+    return func
+
+
 def author_rename(
     func: Callable[[str], Awaitable[str]],
 ) -> Callable[[str], Awaitable[str]]:

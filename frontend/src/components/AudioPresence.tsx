@@ -126,10 +126,7 @@ export default function AudioPresence({
 
   return (
     <div className="flex items-center gap-1">
-      {type === 'server' && !isAiSpeaking ? (
-        <div className="text-muted-foreground">Listening</div>
-      ) : null}
-      <canvas ref={canvasRef} />
+      <canvas ref={canvasRef} aria-hidden="true" />
     </div>
   );
 }

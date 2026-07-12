@@ -143,30 +143,56 @@ const useChatInteract = () => {
     [session?.socket]
   );
 
-  const startAudioStream = useCallback(() => {
-    session?.socket.emit('audio_start');
-  }, [session?.socket]);
+  const startAudioStream = useCallback(
+    (recordingId?: string) => {
+      if (!session?.socket) return false;
+      session.socket.emit(
+        'audio_start',
+        recordingId ? { recordingId } : undefined
+      );
+      return true;
+    },
+    [session?.socket]
+  );
 
   const sendAudioChunk = useCallback(
     (
       isStart: boolean,
       mimeType: string,
       elapsedTime: number,
-      data: Int16Array
+      data: Int16Array,
+      recordingId?: string
     ) => {
       session?.socket.emit('audio_chunk', {
         isStart,
         mimeType,
         elapsedTime,
-        data
+        data,
+        recordingId
       });
     },
     [session?.socket]
   );
 
-  const endAudioStream = useCallback(() => {
-    session?.socket.emit('audio_end');
-  }, [session?.socket]);
+  const endAudioStream = useCallback(
+    (recordingId?: string) => {
+      session?.socket.emit(
+        'audio_end',
+        recordingId ? { recordingId } : undefined
+      );
+    },
+    [session?.socket]
+  );
+
+  const cancelAudioStream = useCallback(
+    (recordingId?: string, reason?: string) => {
+      session?.socket.emit('audio_cancel', {
+        recordingId,
+        reason
+      });
+    },
+    [session?.socket]
+  );
 
   const replyMessage = useCallback(
     (message: IStep) => {
@@ -223,6 +249,7 @@ const useChatInteract = () => {
     startAudioStream,
     sendAudioChunk,
     endAudioStream,
+    cancelAudioStream,
     stopTask,
     setIdToResume,
     updateChatSettings,

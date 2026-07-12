@@ -56,6 +56,7 @@ import {
 
 import { OutputAudioChunk } from './types/audio';
 
+import { audioSessionController } from './audioSessionController';
 import { ChainlitContext } from './context';
 import type { IToken } from './useChatData';
 import { bindBayyanFreshChatToThread } from './utils/bayyanFreshChat';
@@ -70,14 +71,25 @@ function getAudioStartErrorMessage(error: unknown) {
   const detail = error instanceof Error ? error.message : String(error || '');
 
   if (/media stream|permission|denied|notallowed|notfound/i.test(detail)) {
-    return 'Microphone access is blocked or unavailable. Check your browser permission and try again.';
+    return 'Le microphone est bloqué ou indisponible. Vérifiez son autorisation puis réessayez.';
   }
 
   if (/processor|worklet|audio/i.test(detail)) {
-    return 'The microphone could not start in this browser. Refresh the page and try again.';
+    return 'Le microphone n’a pas pu démarrer dans ce navigateur. Fermez puis rouvrez l’application.';
   }
 
-  return 'The microphone could not start. Please try again.';
+  return 'Le microphone n’a pas pu démarrer. Veuillez réessayer.';
+}
+
+type AudioConnectionSignal =
+  | 'on'
+  | 'off'
+  | { state: 'on' | 'off'; recordingId?: string };
+
+function parseAudioConnectionSignal(signal: AudioConnectionSignal) {
+  return typeof signal === 'string'
+    ? { state: signal, recordingId: undefined }
+    : signal;
 }
 
 function readBayyanLastActivity() {
@@ -198,6 +210,23 @@ const useChatSession = () => {
   const foregroundSyncOwnerRef = useRef(Symbol('foreground-sync-owner'));
   const taskStartedRef = useRef(false);
   const messagesRef = useRef(messages);
+
+  const closeAudioHardware = useCallback(async () => {
+    try {
+      await wavRecorder.end();
+    } catch {
+      // Recorder cleanup is best-effort after mobile suspension.
+    }
+    try {
+      if (typeof wavStreamPlayer.close === 'function') {
+        await wavStreamPlayer.close();
+      } else {
+        await wavStreamPlayer.interrupt();
+      }
+    } catch {
+      // Output audio may already be disconnected.
+    }
+  }, [wavRecorder, wavStreamPlayer]);
 
   // Use currentThreadId as thread id in websocket header
   useEffect(() => {
@@ -351,6 +380,22 @@ const useChatSession = () => {
 
     let hiddenAt = 0;
 
+    const cancelActiveAudio = () => {
+      const recordingId = audioSessionController.currentId();
+      if (!recordingId || !audioSessionController.beginStop(recordingId)) {
+        return;
+      }
+      void closeAudioHardware().finally(() => {
+        session?.socket?.emit('audio_cancel', {
+          recordingId,
+          reason: 'app_backgrounded'
+        });
+        audioSessionController.finish(recordingId);
+        setAudioConnection('off');
+        setIsAiSpeaking(false);
+      });
+    };
+
     const handleForeground = () => {
       const now = Date.now();
       if (now - lastForegroundRefreshRef.current < 1500) return;
@@ -386,6 +431,7 @@ const useChatSession = () => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         hiddenAt = Date.now();
+        cancelActiveAudio();
         return;
       }
       if (document.visibilityState === 'visible') {
@@ -394,6 +440,7 @@ const useChatSession = () => {
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', cancelActiveAudio);
     window.addEventListener('pageshow', handleForeground);
     window.addEventListener('focus', handleForeground);
 
@@ -402,10 +449,18 @@ const useChatSession = () => {
         foregroundSyncOwner = null;
       }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', cancelActiveAudio);
       window.removeEventListener('pageshow', handleForeground);
       window.removeEventListener('focus', handleForeground);
     };
-  }, [idToResume, refreshCurrentThread, session?.socket]);
+  }, [
+    closeAudioHardware,
+    idToResume,
+    refreshCurrentThread,
+    session?.socket,
+    setAudioConnection,
+    setIsAiSpeaking
+  ]);
 
   const _connect = useCallback(
     async ({
@@ -515,18 +570,14 @@ const useChatSession = () => {
 
       socket.on('disconnect', async () => {
         taskStartedRef.current = false;
-        setAudioConnection('off');
         setIsAiSpeaking(false);
-        try {
-          await wavRecorder.end();
-        } catch {
-          // Best-effort cleanup after mobile background disconnects.
+        const recordingId = audioSessionController.currentId();
+        if (recordingId) {
+          audioSessionController.beginStop(recordingId);
+          await closeAudioHardware();
+          audioSessionController.finish(recordingId);
         }
-        try {
-          await wavStreamPlayer.interrupt();
-        } catch {
-          // Player may already be disconnected.
-        }
+        setAudioConnection('off');
       });
 
       socket.on('task_start', () => {
@@ -556,65 +607,131 @@ const useChatSession = () => {
         }
       });
 
-      socket.on('audio_connection', async (state: 'on' | 'off') => {
+      const cancelSocketAudioAttempt = async (
+        recordingId: string,
+        reason: string,
+        message?: string
+      ) => {
+        if (!audioSessionController.beginStop(recordingId)) return false;
+        await closeAudioHardware();
+        socket.emit('audio_cancel', { recordingId, reason });
+        audioSessionController.finish(recordingId);
+        setAudioConnection('off');
+        setIsAiSpeaking(false);
+        if (message) toast.error(message);
+        return true;
+      };
+
+      socket.on('audio_connection', async (signal: AudioConnectionSignal) => {
+        const { state, recordingId: signaledRecordingId } =
+          parseAudioConnectionSignal(signal);
+        const recordingId =
+          signaledRecordingId || audioSessionController.currentId();
+
+        if (!recordingId || !audioSessionController.isCurrent(recordingId)) {
+          if (state === 'on' && signaledRecordingId) {
+            socket.emit('audio_cancel', {
+              recordingId: signaledRecordingId,
+              reason: 'stale_server_ack'
+            });
+          }
+          return;
+        }
+
+        if (
+          state === 'on' &&
+          audioSessionController.currentPhase() === 'stopping'
+        ) {
+          socket.emit('audio_cancel', {
+            recordingId,
+            reason: 'attempt_already_stopping'
+          });
+          return;
+        }
+
         if (state === 'on') {
           let isFirstChunk = true;
           const startTime = Date.now();
           const mimeType = 'pcm16';
+          audioSessionController.clearConnectionTimeout(recordingId);
+          audioSessionController.transition(recordingId, 'waiting_first_chunk');
           try {
             if (
               typeof wavRecorder.getStatus === 'function' &&
-              wavRecorder.getStatus() !== 'ended'
+              wavRecorder.getStatus() === 'ended'
             ) {
-              await wavRecorder.end();
+              throw new Error('Microphone recorder is not prepared');
             }
-            await wavRecorder.begin();
-            await wavStreamPlayer.connect();
             if (typeof wavRecorder.resume === 'function') {
-              await wavRecorder.resume();
+              const running = await wavRecorder.resume();
+              if (!running) throw new Error('Audio context is suspended');
             }
             await wavRecorder.record(async (data) => {
+              if (
+                !audioSessionController.isCurrent(recordingId) ||
+                audioSessionController.currentPhase() === 'stopping'
+              ) {
+                return;
+              }
               const elapsedTime = Date.now() - startTime;
               socket.emit('audio_chunk', {
                 isStart: isFirstChunk,
                 mimeType,
                 elapsedTime,
-                data: data.mono
+                data: data.mono,
+                recordingId
               });
               isFirstChunk = false;
             });
+
+            let receivedAudio =
+              typeof wavRecorder.waitForFirstChunk === 'function'
+                ? await wavRecorder.waitForFirstChunk(2500)
+                : true;
+            if (!receivedAudio && typeof wavRecorder.resume === 'function') {
+              await wavRecorder.resume();
+              receivedAudio = await wavRecorder.waitForFirstChunk(1000);
+            }
+
+            if (!audioSessionController.isCurrent(recordingId)) return;
+            if (!receivedAudio) {
+              await cancelSocketAudioAttempt(
+                recordingId,
+                'no_first_audio_chunk',
+                'Le microphone est ouvert, mais aucun son n’arrive. Vérifiez le micro puis réessayez.'
+              );
+              return;
+            }
+
+            audioSessionController.transition(recordingId, 'recording');
+            setAudioConnection('on');
             wavStreamPlayer.onStop = () => setIsAiSpeaking(false);
           } catch (error) {
-            try {
-              await wavRecorder.end();
-            } catch {
-              // ignored
-            }
-            await wavStreamPlayer.interrupt();
-            socket.emit('audio_end');
-            setAudioConnection('off');
-            toast.error(getAudioStartErrorMessage(error));
+            await cancelSocketAudioAttempt(
+              recordingId,
+              'client_start_failed',
+              getAudioStartErrorMessage(error)
+            );
             return;
           }
         } else {
-          try {
-            await wavRecorder.end();
-          } catch {
-            // Recorder may already be cleaned up.
-          }
-          try {
-            await wavStreamPlayer.interrupt();
-          } catch {
-            // Player may already be disconnected.
-          }
+          audioSessionController.beginStop(recordingId);
+          await closeAudioHardware();
+          audioSessionController.finish(recordingId);
+          setAudioConnection('off');
           setIsAiSpeaking(false);
         }
-        setAudioConnection(state);
       });
 
-      socket.on('audio_chunk', (chunk: OutputAudioChunk) => {
-        wavStreamPlayer.add16BitPCM(chunk.data, chunk.track);
-        setIsAiSpeaking(true);
+      socket.on('audio_chunk', async (chunk: OutputAudioChunk) => {
+        try {
+          await wavStreamPlayer.connect();
+          wavStreamPlayer.add16BitPCM(chunk.data, chunk.track);
+          setIsAiSpeaking(true);
+        } catch (error) {
+          setIsAiSpeaking(false);
+          console.error('Unable to play server audio', error);
+        }
       });
 
       socket.on('audio_interrupt', () => {
@@ -858,6 +975,7 @@ const useChatSession = () => {
       idToResume,
       chatProfile,
       applyThread,
+      closeAudioHardware,
       refreshCurrentThread
     ]
   );

@@ -23,6 +23,7 @@ from dataclasses import field
 from dataclasses_json import DataClassJsonMixin
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
+from typing_extensions import NotRequired
 
 InputWidgetType = Literal[
     "switch",
@@ -179,6 +180,7 @@ class InputAudioChunkPayload(TypedDict):
     mimeType: str
     elapsedTime: float
     data: bytes
+    recordingId: NotRequired[str]
 
 
 @dataclass
@@ -187,6 +189,7 @@ class InputAudioChunk:
     mimeType: str
     elapsedTime: float
     data: bytes
+    recordingId: Optional[str] = None
 
 
 class OutputAudioChunk(TypedDict):

@@ -55,7 +55,9 @@ const VoiceButton = ({ disabled }: Props) => {
         }
       }
 
-      if (audioConnection === 'on') return endConversation();
+      if (audioConnection === 'on' || audioConnection === 'connecting') {
+        return endConversation();
+      }
       if (audioConnection === 'off') return startConversation();
     },
     {
@@ -91,7 +93,7 @@ const VoiceButton = ({ disabled }: Props) => {
             <Button
               aria-label={buttonLabel}
               aria-pressed={audioConnection === 'on'}
-              disabled={disabled || audioConnection === 'connecting'}
+              disabled={disabled}
               variant="ghost"
               size="icon"
               className={cn(
@@ -107,15 +109,13 @@ const VoiceButton = ({ disabled }: Props) => {
                   ? endConversation
                   : audioConnection === 'off'
                   ? startConversation
-                  : undefined
+                  : endConversation
               }
             >
               {audioConnection === 'on' ? (
                 <Square className="!size-4" fill="currentColor" />
               ) : null}
-              {audioConnection === 'off' ? (
-                <Mic className="!size-5" />
-              ) : null}
+              {audioConnection === 'off' ? <Mic className="!size-5" /> : null}
               {audioConnection === 'connecting' ? (
                 <Loader className="!size-5" />
               ) : null}

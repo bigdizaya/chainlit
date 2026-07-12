@@ -20,6 +20,9 @@ export class WavStreamPlayer {
     this.analyser = null;
     this.trackSampleOffsets = {};
     this.interruptedTrackIds = {};
+    this._closePromise = null;
+    this._connectPromise = null;
+    this._lifecycleId = 0;
   }
 
   /**
@@ -27,21 +30,56 @@ export class WavStreamPlayer {
    * @returns {Promise<true>}
    */
   async connect() {
-    this.context = new AudioContext({ sampleRate: this.sampleRate });
-    if (this.context.state === 'suspended') {
-      await this.context.resume();
+    if (this.context && this.context.state !== 'closed' && this.analyser) {
+      return true;
     }
+    if (this._connectPromise) return this._connectPromise;
+
+    const lifecycleId = ++this._lifecycleId;
+    const connectPromise = (async () => {
+      if (this._closePromise) await this._closePromise;
+      if (lifecycleId !== this._lifecycleId) {
+        throw new Error('Audio output connection cancelled');
+      }
+
+      const context = new AudioContext({ sampleRate: this.sampleRate });
+      this.context = context;
+
+      try {
+        if (context.state === 'suspended') await context.resume();
+        await context.audioWorklet.addModule(this.scriptSrc);
+
+        if (lifecycleId !== this._lifecycleId || this.context !== context) {
+          throw new Error('Audio output connection cancelled');
+        }
+
+        const analyser = context.createAnalyser();
+        analyser.fftSize = 8192;
+        analyser.smoothingTimeConstant = 0.1;
+        this.analyser = analyser;
+        return true;
+      } catch (error) {
+        if (this.context === context) {
+          this.context = null;
+          this.analyser = null;
+        }
+        if (context.state !== 'closed') await context.close().catch(() => {});
+        if (lifecycleId !== this._lifecycleId) {
+          throw new Error('Audio output connection cancelled');
+        }
+        console.error(error);
+        throw new Error(`Could not add audioWorklet module: ${this.scriptSrc}`);
+      }
+    })();
+
+    this._connectPromise = connectPromise;
     try {
-      await this.context.audioWorklet.addModule(this.scriptSrc);
-    } catch (e) {
-      console.error(e);
-      throw new Error(`Could not add audioWorklet module: ${this.scriptSrc}`);
+      return await connectPromise;
+    } finally {
+      if (this._connectPromise === connectPromise) {
+        this._connectPromise = null;
+      }
     }
-    const analyser = this.context.createAnalyser();
-    analyser.fftSize = 8192;
-    analyser.smoothingTimeConstant = 0.1;
-    this.analyser = analyser;
-    return true;
   }
 
   /**
@@ -132,16 +170,25 @@ export class WavStreamPlayer {
     if (!this.stream) {
       return null;
     }
+    const lifecycleId = this._lifecycleId;
+    const stream = this.stream;
     const requestId = crypto.randomUUID();
-    this.stream.port.postMessage({
+    stream.port.postMessage({
       event: interrupt ? 'interrupt' : 'offset',
       requestId
     });
     let trackSampleOffset;
-    while (!trackSampleOffset) {
+    const timeoutAt = Date.now() + 1000;
+    while (
+      !trackSampleOffset &&
+      lifecycleId === this._lifecycleId &&
+      this.stream === stream &&
+      Date.now() < timeoutAt
+    ) {
       trackSampleOffset = this.trackSampleOffsets[requestId];
       await new Promise((r) => setTimeout(() => r(), 1));
     }
+    if (!trackSampleOffset) return null;
     const { trackId } = trackSampleOffset;
     if (interrupt && trackId) {
       this.interruptedTrackIds[trackId] = true;
@@ -156,6 +203,55 @@ export class WavStreamPlayer {
    */
   async interrupt() {
     return this.getTrackSampleOffset(true);
+  }
+
+  /**
+   * Fully closes the output graph. Safe to call several times.
+   * @returns {Promise<true>}
+   */
+  async close() {
+    if (this._closePromise) return this._closePromise;
+
+    this._lifecycleId++;
+
+    this._closePromise = (async () => {
+      const context = this.context;
+      const stream = this.stream;
+      const analyser = this.analyser;
+
+      this.context = null;
+      this.stream = null;
+      this.analyser = null;
+
+      try {
+        if (stream) {
+          stream.port.onmessage = null;
+          stream.disconnect();
+        }
+      } catch {
+        // The stream can already be disconnected.
+      }
+      try {
+        analyser?.disconnect();
+      } catch {
+        // The analyser can already be disconnected.
+      }
+      try {
+        if (context && context.state !== 'closed') await context.close();
+      } catch {
+        // Mobile browsers may close the context while backgrounded.
+      }
+
+      this.trackSampleOffsets = {};
+      this.interruptedTrackIds = {};
+      return true;
+    })();
+
+    try {
+      return await this._closePromise;
+    } finally {
+      this._closePromise = null;
+    }
   }
 }
 

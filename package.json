@@ -21,7 +21,7 @@
     "preinstall": "npx only-allow pnpm",
     "test": "cypress run",
     "test:interactive": "cypress open",
-    "test:ui": "cd frontend && pnpm test",
+    "test:ui": "pnpm --filter @chainlit/react-client test && pnpm --dir frontend test",
     "prepare": "husky",
     "lint": "pnpm run lintUi && pnpm run lintPython",
     "lintUi": "pnpm run --parallel lint",

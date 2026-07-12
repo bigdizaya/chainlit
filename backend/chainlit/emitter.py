@@ -63,7 +63,9 @@ class BaseChainlitEmitter:
         """Stub method to send an element to the UI."""
         pass
 
-    async def update_audio_connection(self, state: Literal["on", "off"]):
+    async def update_audio_connection(
+        self, state: Literal["on", "off"], recording_id: Optional[str] = None
+    ):
         """Audio connection signaling."""
         pass
 
@@ -200,9 +202,14 @@ class ChainlitEmitter(BaseChainlitEmitter):
         """Send a thread resume error to the UI"""
         return self.emit("resume_thread_error", error)
 
-    async def update_audio_connection(self, state: Literal["on", "off"]):
+    async def update_audio_connection(
+        self, state: Literal["on", "off"], recording_id: Optional[str] = None
+    ):
         """Audio connection signaling."""
-        await self.emit("audio_connection", state)
+        payload = (
+            {"state": state, "recordingId": recording_id} if recording_id else state
+        )
+        await self.emit("audio_connection", payload)
 
     async def send_audio_chunk(self, chunk: OutputAudioChunk):
         """Send an audio chunk to the UI."""

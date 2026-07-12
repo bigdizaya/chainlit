@@ -47,6 +47,9 @@ export class WavRecorder {
     this._processorMode = null;
     this._recordingWatchdog = null;
     this._chunksSeen = 0;
+    this._lifecycleId = 0;
+    this._endPromise = null;
+    this._firstChunkWaiters = new Set();
     // Event handling with AudioWorklet
     this._lastEventId = 0;
     this.eventReceipts = {};
@@ -197,6 +200,29 @@ export class WavRecorder {
     this._recordingWatchdog = null;
   }
 
+  _resolveFirstChunkWaiters(value) {
+    const waiters = Array.from(this._firstChunkWaiters);
+    this._firstChunkWaiters.clear();
+    waiters.forEach((resolve) => resolve(value));
+  }
+
+  _markChunkSeen() {
+    this._chunksSeen++;
+    if (this._chunksSeen === 1) {
+      this._resolveFirstChunkWaiters(true);
+    }
+  }
+
+  _flushPendingChunk() {
+    if (!this._chunkProcessorBuffer.mono.byteLength) return;
+    const buffer = this._chunkProcessorBuffer;
+    this._chunkProcessorBuffer = {
+      raw: new ArrayBuffer(0),
+      mono: new ArrayBuffer(0)
+    };
+    this._chunkProcessor(buffer);
+  }
+
   _attachForegroundResumeListener() {
     if (typeof document === 'undefined' || this._resumeOnForeground) return;
     this._resumeOnForeground = () => {
@@ -237,6 +263,7 @@ export class WavRecorder {
 
   _resetAudioGraph() {
     this._clearRecordingWatchdog();
+    this._resolveFirstChunkWaiters(false);
     this.stream = null;
     this.processor = null;
     this.scriptProcessor = null;
@@ -326,7 +353,7 @@ export class WavRecorder {
       this.sampleRate
     );
     const mono = WavPacker.floatTo16BitPCM(monoFloat);
-    this._chunksSeen++;
+    this._markChunkSeen();
     this._handleChunk({ raw: mono, mono });
   }
 
@@ -394,7 +421,30 @@ export class WavRecorder {
     if (this.context && this.context.state === 'suspended') {
       await this.context.resume();
     }
-    return true;
+    return Boolean(this.context && this.context.state === 'running');
+  }
+
+  /**
+   * Waits until the recorder has produced a real PCM chunk.
+   * @param {number} [timeoutMs]
+   * @returns {Promise<boolean>}
+   */
+  async waitForFirstChunk(timeoutMs = 2500) {
+    if (this._chunksSeen > 0) return true;
+    if (!this.recording) return false;
+
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (value) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
+        this._firstChunkWaiters.delete(finish);
+        resolve(value);
+      };
+      const timeout = setTimeout(() => finish(false), timeoutMs);
+      this._firstChunkWaiters.add(finish);
+    });
   }
 
   /**
@@ -545,19 +595,34 @@ export class WavRecorder {
     ) {
       throw new Error('Could not request user media');
     }
+    const lifecycleId = ++this._lifecycleId;
+    let context;
     try {
+      // Create the context and request media before the first await so mobile
+      // browsers keep the original user gesture associated with this start.
+      context = new AudioContext({ sampleRate: this.sampleRate });
+      this.context = context;
+
+      const activationPromise =
+        context.state === 'suspended'
+          ? context.resume().then(
+              () => true,
+              () => false
+            )
+          : Promise.resolve(true);
+
       const config = { audio: true };
       if (deviceId) {
         config.audio = { deviceId: { exact: deviceId } };
       }
-      this.stream = await navigator.mediaDevices.getUserMedia(config);
-    } catch (err) {
-      throw new Error('Could not start media stream');
-    }
-
-    try {
-      const context = new AudioContext({ sampleRate: this.sampleRate });
-      this.context = context;
+      const mediaPromise = navigator.mediaDevices.getUserMedia(config);
+      const [, stream] = await Promise.all([activationPromise, mediaPromise]);
+      if (lifecycleId !== this._lifecycleId) {
+        stream.getTracks().forEach((track) => track.stop());
+        if (context.state !== 'closed') await context.close().catch(() => {});
+        throw new Error('Microphone start cancelled');
+      }
+      this.stream = stream;
 
       const source = context.createMediaStreamSource(this.stream);
       this.source = source;
@@ -565,7 +630,9 @@ export class WavRecorder {
       if (this._shouldPreferScriptProcessor()) {
         this._startScriptProcessorFallback();
         this._attachForegroundResumeListener();
-        await this.resume();
+        if (!(await this.resume())) {
+          throw new Error('Audio context remained suspended');
+        }
         return true;
       }
 
@@ -577,7 +644,7 @@ export class WavRecorder {
         if (event === 'receipt') {
           this.eventReceipts[id] = data;
         } else if (event === 'chunk') {
-          this._chunksSeen++;
+          this._markChunkSeen();
           this._handleChunk(data);
         }
       };
@@ -603,8 +670,11 @@ export class WavRecorder {
       this.processor = processor;
       this._processorMode = 'worklet';
       this._attachForegroundResumeListener();
-      await this.resume();
+      if (!(await this.resume())) {
+        throw new Error('Audio context remained suspended');
+      }
     } catch (e) {
+      if (lifecycleId !== this._lifecycleId) throw e;
       if (this.context && this.source) {
         try {
           this._startScriptProcessorFallback();
@@ -622,6 +692,10 @@ export class WavRecorder {
       this._disconnectAudioGraph();
       await this._closeContext();
       this._resetAudioGraph();
+      const detail = e instanceof Error ? e.message : String(e || '');
+      if (/media stream|permission|denied|notallowed/i.test(detail)) {
+        throw new Error('Could not start media stream');
+      }
       throw new Error(`Could not start microphone processor`);
     }
     return true;
@@ -663,9 +737,7 @@ export class WavRecorder {
     } else if (!this.recording) {
       throw new Error('Already paused: please call .record() first');
     }
-    if (this._chunkProcessorBuffer.raw.byteLength) {
-      this._chunkProcessor(this._chunkProcessorBuffer);
-    }
+    this._flushPendingChunk();
     this.log('Pausing ...');
     this._clearRecordingWatchdog();
     if (this.scriptProcessor && !this.processor) {
@@ -673,6 +745,8 @@ export class WavRecorder {
       return true;
     }
     await this._event('stop');
+    // A Worklet chunk may arrive while the stop receipt is in flight.
+    this._flushPendingChunk();
     this.recording = false;
     return true;
   }
@@ -698,6 +772,7 @@ export class WavRecorder {
       mono: new ArrayBuffer(0)
     };
     this._chunksSeen = 0;
+    this._resolveFirstChunkWaiters(false);
     this.log('Recording ...');
     await this.resume();
     if (this.scriptProcessor && !this.processor) {
@@ -790,6 +865,19 @@ export class WavRecorder {
    * @returns {Promise<import('./wav_packer.js').WavPackerAudioType>}
    */
   async end() {
+    if (this._endPromise) return this._endPromise;
+    const endPromise = this._endInternal();
+    this._endPromise = endPromise;
+    try {
+      return await endPromise;
+    } finally {
+      if (this._endPromise === endPromise) this._endPromise = null;
+    }
+  }
+
+  async _endInternal() {
+    this._lifecycleId++;
+    this._flushPendingChunk();
     if (!this.processor || this.scriptProcessor) {
       this._removeForegroundResumeListener();
       this._stopTracks();

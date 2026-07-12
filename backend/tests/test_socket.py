@@ -10,8 +10,10 @@ from chainlit.socket import (
     _cancel_audio_chunk_tasks,
     _get_token,
     _get_token_from_cookie,
+    audio_cancel,
     audio_chunk,
     audio_end,
+    audio_start,
     clean_session,
     is_fresh_chat_request,
     load_user_env,
@@ -430,6 +432,9 @@ class TestAudioEnd:
         """A draft-only audio handler must not refresh the chat timeline."""
         mock_session = Mock(spec=WebsocketSession)
         mock_session.has_first_interaction = False
+        mock_session.audio_active = True
+        mock_session.active_audio_recording_id = None
+        mock_session.audio_chunk_tasks = set()
 
         mock_config = Mock()
         mock_config.features.audio.enabled = True
@@ -440,6 +445,7 @@ class TestAudioEnd:
         mock_context.emitter.task_start = AsyncMock()
         mock_context.emitter.task_end = AsyncMock()
         mock_context.emitter.init_thread = AsyncMock()
+        mock_context.emitter.update_audio_connection = AsyncMock()
 
         with patch.object(WebsocketSession, "require", return_value=mock_session):
             with patch("chainlit.socket.init_ws_context", return_value=mock_context):
@@ -454,10 +460,31 @@ class TestAudioEnd:
         assert mock_session.has_first_interaction is False
 
     @pytest.mark.asyncio
+    async def test_stale_audio_end_is_ignored(self):
+        mock_session = Mock(spec=WebsocketSession)
+        mock_session.audio_active = True
+        mock_session.active_audio_recording_id = "recording-new"
+
+        mock_config = Mock()
+        mock_config.features.audio.enabled = True
+        mock_config.code.on_audio_end = AsyncMock(return_value=False)
+        mock_session.get_config.return_value = mock_config
+
+        with patch.object(WebsocketSession, "require", return_value=mock_session):
+            with patch("chainlit.socket.init_ws_context"):
+                await audio_end("socket_123", {"recordingId": "recording-old"})
+
+        mock_config.code.on_audio_end.assert_not_awaited()
+        assert mock_session.audio_active is True
+        assert mock_session.active_audio_recording_id == "recording-new"
+
+    @pytest.mark.asyncio
     async def test_audio_end_waits_for_pending_audio_chunks(self):
         """Stop waits for the last audio chunks before transcription starts."""
         mock_session = Mock(spec=WebsocketSession)
         mock_session.has_first_interaction = False
+        mock_session.audio_active = True
+        mock_session.active_audio_recording_id = None
         mock_session.audio_chunk_tasks = set()
 
         chunk_started = asyncio.Event()
@@ -484,6 +511,7 @@ class TestAudioEnd:
         mock_context.emitter.task_start = AsyncMock()
         mock_context.emitter.task_end = AsyncMock()
         mock_context.emitter.init_thread = AsyncMock()
+        mock_context.emitter.update_audio_connection = AsyncMock()
 
         payload = {
             "isStart": True,
@@ -532,6 +560,189 @@ class TestAudioCleanup:
 
         assert task.cancelled()
         assert mock_session.audio_chunk_tasks == set()
+
+
+class TestAudioAttemptProtocol:
+    @pytest.mark.asyncio
+    async def test_audio_start_echoes_recording_id(self):
+        mock_session = Mock(spec=WebsocketSession)
+        mock_session.audio_active = False
+        mock_session.active_audio_recording_id = None
+        mock_session.audio_chunk_tasks = set()
+
+        mock_config = Mock()
+        mock_config.features.audio.enabled = True
+        mock_config.code.on_audio_start = AsyncMock(return_value=True)
+        mock_session.get_config.return_value = mock_config
+
+        mock_context = Mock()
+        mock_context.emitter.update_audio_connection = AsyncMock()
+
+        with patch.object(WebsocketSession, "require", return_value=mock_session):
+            with patch("chainlit.socket.init_ws_context", return_value=mock_context):
+                await audio_start("socket_123", {"recordingId": "recording-1"})
+
+        assert mock_session.audio_active is True
+        assert mock_session.active_audio_recording_id == "recording-1"
+        mock_context.emitter.update_audio_connection.assert_awaited_once_with(
+            "on", "recording-1"
+        )
+
+    @pytest.mark.asyncio
+    async def test_stale_audio_start_result_cannot_override_retry(self):
+        mock_session = Mock(spec=WebsocketSession)
+        mock_session.audio_active = False
+        mock_session.active_audio_recording_id = None
+        mock_session.audio_attempt_version = 0
+        mock_session.audio_chunk_tasks = set()
+
+        first_started = asyncio.Event()
+        release_first = asyncio.Event()
+        calls = 0
+
+        async def on_audio_start():
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                first_started.set()
+                await release_first.wait()
+            return True
+
+        mock_config = Mock()
+        mock_config.features.audio.enabled = True
+        mock_config.code.on_audio_start = AsyncMock(side_effect=on_audio_start)
+        mock_config.code.on_audio_cancel = AsyncMock(return_value=False)
+        mock_session.get_config.return_value = mock_config
+
+        mock_context = Mock()
+        mock_context.emitter.update_audio_connection = AsyncMock()
+
+        with patch.object(WebsocketSession, "require", return_value=mock_session):
+            with patch("chainlit.socket.init_ws_context", return_value=mock_context):
+                first = asyncio.create_task(
+                    audio_start("socket_123", {"recordingId": "recording-old"})
+                )
+                await first_started.wait()
+                await audio_start("socket_123", {"recordingId": "recording-new"})
+                release_first.set()
+                await first
+
+        assert mock_session.audio_active is True
+        assert mock_session.active_audio_recording_id == "recording-new"
+        assert mock_context.emitter.update_audio_connection.await_args_list[
+            -1
+        ].args == (
+            "on",
+            "recording-new",
+        )
+        assert not any(
+            call.args == ("on", "recording-old")
+            for call in mock_context.emitter.update_audio_connection.await_args_list
+        )
+
+    @pytest.mark.asyncio
+    async def test_audio_start_exception_resets_connection(self):
+        mock_session = Mock(spec=WebsocketSession)
+        mock_session.audio_active = False
+        mock_session.active_audio_recording_id = None
+        mock_session.audio_attempt_version = 0
+        mock_session.audio_chunk_tasks = set()
+
+        mock_config = Mock()
+        mock_config.features.audio.enabled = True
+        mock_config.code.on_audio_start = AsyncMock(side_effect=RuntimeError("boom"))
+        mock_session.get_config.return_value = mock_config
+
+        mock_context = Mock()
+        mock_context.emitter.update_audio_connection = AsyncMock()
+        mock_context.emitter.send_toast = AsyncMock()
+
+        with patch.object(WebsocketSession, "require", return_value=mock_session):
+            with patch("chainlit.socket.init_ws_context", return_value=mock_context):
+                await audio_start("socket_123", {"recordingId": "recording-1"})
+
+        assert mock_session.audio_active is False
+        assert mock_session.active_audio_recording_id is None
+        mock_context.emitter.update_audio_connection.assert_awaited_once_with(
+            "off", "recording-1"
+        )
+
+    @pytest.mark.asyncio
+    async def test_audio_cancel_skips_transcription_and_is_idempotent(self):
+        mock_session = Mock(spec=WebsocketSession)
+        mock_session.audio_active = True
+        mock_session.active_audio_recording_id = "recording-1"
+        mock_session.audio_chunk_tasks = set()
+
+        mock_config = Mock()
+        mock_config.code.on_audio_cancel = AsyncMock(return_value=False)
+        mock_config.code.on_audio_end = AsyncMock(return_value=False)
+        mock_session.get_config.return_value = mock_config
+
+        mock_context = Mock()
+        mock_context.emitter.update_audio_connection = AsyncMock()
+        mock_context.emitter.task_start = AsyncMock()
+        mock_context.emitter.task_end = AsyncMock()
+        mock_context.emitter.init_thread = AsyncMock()
+
+        with patch.object(WebsocketSession, "require", return_value=mock_session):
+            with patch("chainlit.socket.init_ws_context", return_value=mock_context):
+                payload = {
+                    "recordingId": "recording-1",
+                    "reason": "test_cancel",
+                }
+                await audio_cancel("socket_123", payload)
+                await audio_cancel("socket_123", payload)
+
+        mock_config.code.on_audio_cancel.assert_awaited_once()
+        mock_config.code.on_audio_end.assert_not_awaited()
+        mock_context.emitter.update_audio_connection.assert_awaited_once_with(
+            "off", "recording-1"
+        )
+        mock_context.emitter.task_start.assert_not_awaited()
+        mock_context.emitter.task_end.assert_not_awaited()
+        mock_context.emitter.init_thread.assert_not_called()
+        assert mock_session.audio_active is False
+        assert mock_session.active_audio_recording_id is None
+
+    @pytest.mark.asyncio
+    async def test_stale_audio_cancel_does_not_interrupt_current_recording(self):
+        release_chunk = asyncio.Event()
+
+        async def pending_chunk():
+            await release_chunk.wait()
+
+        task = asyncio.create_task(pending_chunk())
+        await asyncio.sleep(0)
+
+        mock_session = Mock(spec=WebsocketSession)
+        mock_session.audio_active = True
+        mock_session.active_audio_recording_id = "recording-new"
+        mock_session.audio_chunk_tasks = {task}
+
+        mock_config = Mock()
+        mock_config.code.on_audio_cancel = AsyncMock(return_value=False)
+        mock_session.get_config.return_value = mock_config
+
+        mock_context = Mock()
+        mock_context.emitter.update_audio_connection = AsyncMock()
+
+        with patch.object(WebsocketSession, "require", return_value=mock_session):
+            with patch("chainlit.socket.init_ws_context", return_value=mock_context):
+                await audio_cancel(
+                    "socket_123",
+                    {"recordingId": "recording-old", "reason": "late_cancel"},
+                )
+
+        assert not task.cancelled()
+        assert mock_session.audio_chunk_tasks == {task}
+        assert mock_session.audio_active is True
+        assert mock_session.active_audio_recording_id == "recording-new"
+        mock_config.code.on_audio_cancel.assert_not_awaited()
+        mock_context.emitter.update_audio_connection.assert_not_awaited()
+
+        release_chunk.set()
+        await task
 
 
 class TestSocketEdgeCases:

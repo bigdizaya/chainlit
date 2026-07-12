@@ -1,7 +1,8 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { toast } from 'sonner';
 
+import { audioSessionController } from './audioSessionController';
 import {
   audioConnectionState,
   isAiSpeakingState,
@@ -17,96 +18,132 @@ const useAudio = () => {
   const wavStreamPlayer = useRecoilValue(wavStreamPlayerState);
   const isAiSpeaking = useRecoilValue(isAiSpeakingState);
 
-  const { startAudioStream, endAudioStream } = useChatInteract();
+  const { startAudioStream, endAudioStream, cancelAudioStream } =
+    useChatInteract();
 
   const stopLocalAudio = useCallback(async () => {
-    setAudioConnection('off');
     try {
       await wavRecorder.end();
     } catch {
       // Best-effort cleanup. The recorder handles stale mobile audio contexts.
     }
     try {
-      await wavStreamPlayer.interrupt();
+      if (typeof wavStreamPlayer.close === 'function') {
+        await wavStreamPlayer.close();
+      } else {
+        await wavStreamPlayer.interrupt();
+      }
     } catch {
       // The player may already be disconnected.
     }
-  }, [setAudioConnection, wavRecorder, wavStreamPlayer]);
+  }, [wavRecorder, wavStreamPlayer]);
+
+  const cancelAttempt = useCallback(
+    async (recordingId: string, reason: string, message?: string) => {
+      if (!audioSessionController.beginStop(recordingId)) return false;
+      await stopLocalAudio();
+      cancelAudioStream(recordingId, reason);
+      audioSessionController.finish(recordingId);
+      setAudioConnection('off');
+      if (message) toast.warning(message);
+      return true;
+    },
+    [cancelAudioStream, setAudioConnection, stopLocalAudio]
+  );
 
   const startConversation = useCallback(async () => {
+    if (audioConnection !== 'off') return false;
+
+    const staleAttemptId = audioSessionController.currentId();
+    if (staleAttemptId && audioSessionController.beginStop(staleAttemptId)) {
+      await stopLocalAudio();
+      cancelAudioStream(staleAttemptId, 'superseded_local_attempt');
+      audioSessionController.finish(staleAttemptId);
+    }
     if (
       typeof wavRecorder.getStatus === 'function' &&
       wavRecorder.getStatus() !== 'ended'
     ) {
       await stopLocalAudio();
     }
+
+    const recordingId = audioSessionController.begin();
     setAudioConnection('connecting');
-    await startAudioStream();
-  }, [setAudioConnection, startAudioStream, stopLocalAudio, wavRecorder]);
 
-  const endConversation = useCallback(async () => {
-    await stopLocalAudio();
-    await endAudioStream();
-  }, [endAudioStream, stopLocalAudio]);
+    try {
+      // begin() is invoked directly from the user gesture. It creates the
+      // AudioContext and requests getUserMedia before yielding control.
+      await wavRecorder.begin();
+    } catch {
+      if (audioSessionController.isCurrent(recordingId)) {
+        await stopLocalAudio();
+        audioSessionController.finish(recordingId);
+        setAudioConnection('off');
+        toast.error(
+          'Le microphone n’a pas pu démarrer. Vérifiez son autorisation puis réessayez.'
+        );
+      }
+      return false;
+    }
 
-  useEffect(() => {
-    if (audioConnection !== 'connecting') return;
+    if (!audioSessionController.isCurrent(recordingId)) {
+      await stopLocalAudio();
+      return false;
+    }
 
-    const timeout = window.setTimeout(() => {
-      setAudioConnection('off');
-      toast.warning(
-        'Microphone connection timed out. Check your browser permission and try again.'
+    audioSessionController.transition(recordingId, 'waiting_server');
+    if (!startAudioStream(recordingId)) {
+      await cancelAttempt(
+        recordingId,
+        'socket_unavailable',
+        'La connexion au serveur est indisponible. Réessayez dans un instant.'
       );
-    }, 12000);
+      return false;
+    }
 
-    return () => window.clearTimeout(timeout);
-  }, [audioConnection, setAudioConnection]);
-
-  useEffect(() => {
-    const stopIfActive = () => {
-      const shouldNotifyServer = audioConnection !== 'off';
-      const recorderStatus =
-        typeof wavRecorder.getStatus === 'function'
-          ? wavRecorder.getStatus()
-          : 'ended';
-
-      if (!shouldNotifyServer && recorderStatus === 'ended') return;
-
-      void stopLocalAudio().finally(() => {
-        if (shouldNotifyServer) {
-          endAudioStream();
-        }
-      });
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        stopIfActive();
-        return;
-      }
-
-      if (audioConnection === 'off') {
-        stopIfActive();
-      } else if (
-        audioConnection === 'on' &&
-        typeof wavRecorder.resume === 'function'
-      ) {
-        void wavRecorder.resume().catch(() => {});
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('pagehide', stopIfActive);
-    window.addEventListener('pageshow', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('pagehide', stopIfActive);
-      window.removeEventListener('pageshow', handleVisibilityChange);
-    };
+    audioSessionController.armConnectionTimeout(recordingId, () =>
+      cancelAttempt(
+        recordingId,
+        'connection_timeout',
+        'Le microphone met trop de temps à se connecter. Réessayez.'
+      )
+    );
+    return true;
   }, [
     audioConnection,
+    cancelAudioStream,
+    cancelAttempt,
+    setAudioConnection,
+    startAudioStream,
+    stopLocalAudio,
+    wavRecorder
+  ]);
+
+  const endConversation = useCallback(async () => {
+    const recordingId = audioSessionController.currentId();
+    if (!recordingId) return false;
+    const phase = audioSessionController.currentPhase();
+
+    if (phase === 'flushing' || phase === 'stopping') return false;
+    if (phase !== 'recording') {
+      return cancelAttempt(recordingId, 'user_cancelled_before_audio');
+    }
+
+    if (!audioSessionController.beginFlush(recordingId)) return false;
+    setAudioConnection('connecting');
+    try {
+      await wavRecorder.pause();
+    } catch {
+      // The final partial buffer is best-effort if mobile audio was suspended.
+    }
+    if (!audioSessionController.beginStop(recordingId)) return false;
+    await stopLocalAudio();
+    endAudioStream(recordingId);
+    return true;
+  }, [
+    cancelAttempt,
     endAudioStream,
+    setAudioConnection,
     stopLocalAudio,
     wavRecorder
   ]);

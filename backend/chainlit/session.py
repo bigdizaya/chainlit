@@ -260,6 +260,9 @@ class WebsocketSession(BaseSession):
         self.thread_queues: Dict[str, ThreadQueue] = {}
         self.audio_chunk_lock = asyncio.Lock()
         self.audio_chunk_tasks: set[asyncio.Task] = set()
+        self.audio_active = False
+        self.active_audio_recording_id: Optional[str] = None
+        self.audio_attempt_version = 0
         self.mcp_sessions = {}
 
         match = (

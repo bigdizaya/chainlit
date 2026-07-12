@@ -2,14 +2,8 @@ import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
 
-import {
-  useAudio,
-  useAuth,
-  useChatData,
-  useConfig
-} from '@chainlit/react-client';
+import { useAuth, useChatData, useConfig } from '@chainlit/react-client';
 
-import AudioPresence from '@/components/AudioPresence';
 import ButtonLink from '@/components/ButtonLink';
 import { Settings } from '@/components/icons/Settings';
 import { Button } from '@/components/ui/button';
@@ -35,7 +29,6 @@ import { ThemeToggle } from './ThemeToggle';
 import UserNav from './UserNav';
 
 const Header = memo(() => {
-  const { audioConnection } = useAudio();
   const navigate = useNavigate();
   const { data } = useAuth();
   const { config } = useConfig();
@@ -62,7 +55,11 @@ const Header = memo(() => {
       id="header"
     >
       <div className="flex items-center">
-        {historyEnabled && !sidebarHidden ? !sidebarOpen ? <SidebarTrigger /> : null : null}
+        {historyEnabled && !sidebarHidden ? (
+          !sidebarOpen ? (
+            <SidebarTrigger />
+          ) : null
+        ) : null}
         {historyEnabled && !sidebarHidden ? (
           !sidebarOpen ? (
             <NewChatButton navigate={navigate} />
@@ -72,18 +69,6 @@ const Header = memo(() => {
         )}
 
         <ChatProfiles navigate={navigate} />
-      </div>
-
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        {audioConnection === 'on' ? (
-          <AudioPresence
-            type="server"
-            height={35}
-            width={70}
-            barCount={4}
-            barSpacing={2}
-          />
-        ) : null}
       </div>
 
       <div />
