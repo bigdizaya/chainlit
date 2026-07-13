@@ -56,6 +56,11 @@ const Message = memo(
     const skip = toolCallSkip || hiddenSkip;
     const showInputSection = Boolean(message.input && message.showInput);
     const shouldRenderOutput = !showInputSection || Boolean(message.output);
+    const assistantEyebrow = message.isError
+      ? 'INFORMATION IMPORTANTE'
+      : isRunning || message.streaming
+      ? 'RECHERCHE EN COURS'
+      : 'RÉPONSE DOCUMENTÉE';
 
     const userMessageContent = useMemo(
       () => (
@@ -107,12 +112,14 @@ const Message = memo(
                   </UserMessage>
                 </div>
               ) : (
-                <div className="ai-message flex gap-4 w-full">
+                <div className="bayyan-ai-message ai-message flex gap-4 w-full">
                   {!isStep || !indent ? (
-                    <MessageAvatar
-                      author={message.metadata?.avatarName || message.name}
-                      isError={message.isError}
-                    />
+                    <div className="bayyan-message-avatar">
+                      <MessageAvatar
+                        author={message.metadata?.avatarName || message.name}
+                        isError={message.isError}
+                      />
+                    </div>
                   ) : null}
                   {/* Display the step and its children */}
                   {isStep ? (
@@ -157,7 +164,10 @@ const Message = memo(
                     </Step>
                   ) : (
                     // Display an assistant message
-                    <div className="flex flex-col items-start min-w-[150px] flex-grow gap-2">
+                    <article className="bayyan-answer-document flex flex-col items-start min-w-[150px] flex-grow gap-2">
+                      <div className="bayyan-answer-document__eyebrow">
+                        {assistantEyebrow}
+                      </div>
                       <MessageContent
                         ref={contentRef}
                         elements={elements}
@@ -181,7 +191,7 @@ const Message = memo(
                         }
                         contentRef={contentRef}
                       />
-                    </div>
+                    </article>
                   )}
                 </div>
               )}

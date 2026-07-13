@@ -74,7 +74,7 @@ export default function WelcomeScreen(props: Props) {
       }
     }
 
-    return <Logo className="w-[200px] mb-2" />;
+    return <Logo className="bayyan-welcome-logo" />;
   }, [chatProfiles, chatProfile]);
 
   if (hasMessage(messages)) return null;
@@ -83,13 +83,24 @@ export default function WelcomeScreen(props: Props) {
     <div
       id="welcome-screen"
       className={cn(
-        'flex flex-col gap-4 w-full flex-grow items-center justify-start pt-20 pb-28 welcome-screen mx-auto transition-opacity duration-500 opacity-0 delay-100 md:-mt-[60px] md:justify-center md:pt-0 md:pb-0',
+        'bayyan-welcome-screen flex flex-col w-full flex-grow items-stretch justify-start welcome-screen mx-auto transition-opacity duration-500 opacity-0 delay-100',
         isVisible && 'opacity-100'
       )}
     >
-      {logo}
+      <div className="bayyan-welcome-brand">{logo}</div>
+      <div className="bayyan-welcome-copy">
+        <p>RECHERCHE DOCUMENTAIRE</p>
+        <h1>Que souhaitez-vous éclaircir&nbsp;?</h1>
+        <span>
+          Interrogez la bibliothèque et retrouvez les passages utilisés dans
+          chaque réponse.
+        </span>
+      </div>
       <MessageComposer {...props} />
-      <Starters />
+      <div className="bayyan-starters-block">
+        <p>Quelques points de départ</p>
+        <Starters />
+      </div>
     </div>
   );
 }

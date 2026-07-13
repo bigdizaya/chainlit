@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import { useMemo, useState } from 'react';
 
-import { useChatSession, useConfig } from '@chainlit/react-client';
+import { IStarter, useChatSession, useConfig } from '@chainlit/react-client';
 
 import Starter from './Starter';
 import StarterCategory from './StarterCategory';
@@ -9,6 +9,24 @@ import StarterCategory from './StarterCategory';
 interface Props {
   className?: string;
 }
+
+const BAYYAN_DEFAULT_STARTERS: IStarter[] = [
+  {
+    label: "Comprendre une divergence d'avis",
+    message:
+      "Comment comprendre une divergence d'avis entre plusieurs savants ?"
+  },
+  {
+    label: 'Comparer plusieurs références',
+    message:
+      'Compare plusieurs références reconnues sur une même question et explique leurs différences.'
+  },
+  {
+    label: 'Retrouver un passage précis',
+    message:
+      'Aide-moi à retrouver un passage précis dans la bibliothèque et indique-moi sa source.'
+  }
+];
 
 export default function Starters({ className }: Props) {
   const { chatProfile } = useChatSession();
@@ -24,7 +42,7 @@ export default function Starters({ className }: Props) {
         return selectedChatProfile.starters;
       }
     }
-    return config?.starters;
+    return config?.starters?.length ? config.starters : BAYYAN_DEFAULT_STARTERS;
   }, [config, chatProfile]);
 
   const starterCategories = config?.starterCategories;

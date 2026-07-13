@@ -1,13 +1,13 @@
-const openChatSettingsModal = () => {
-  cy.step('Open chat settings modal');
+const openChatSettingsSidebar = () => {
+  cy.step('Open chat settings sidebar');
 
-  cy.get('#chat-settings-open-modal').should('exist').click();
-  cy.get('#chat-settings').should('exist').and('be.visible');
+  cy.get('#chat-settings-header-button').should('exist').click();
+  cy.get('#chat-settings-sidebar-content').should('exist').and('be.visible');
 };
 
 describe('Customize chat settings', () => {
   it('should update inputs', () => {
-    openChatSettingsModal();
+    openChatSettingsSidebar();
 
     cy.step('Update inputs');
 
@@ -39,7 +39,7 @@ describe('Customize chat settings', () => {
     cy.get('.step').should('have.length', 1);
     cy.get('.step').eq(0).should('contain', 'Settings updated!');
 
-    openChatSettingsModal();
+    openChatSettingsSidebar();
 
     cy.step('Check inputs are updated');
 
@@ -68,6 +68,6 @@ describe('Customize chat settings', () => {
     cy.step('Check if modal is correctly closed');
 
     cy.contains('Cancel').click();
-    cy.get('#chat-settings').should('not.exist');
+    cy.get('#chat-settings-sidebar-content').should('not.exist');
   });
 });

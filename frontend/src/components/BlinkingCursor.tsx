@@ -1,5 +1,3 @@
-import { cn } from '@/lib/utils';
-
 export const CURSOR_PLACEHOLDER = '\u200B';
 
 interface Props {
@@ -7,12 +5,18 @@ interface Props {
 }
 
 export default function BlinkingCursor({ whitespace }: Props) {
+  if (!whitespace) {
+    return (
+      <span className="sr-only" role="status">
+        Recherche en cours
+      </span>
+    );
+  }
+
   return (
     <span
-      className={cn(
-        'inline-block h-3.5 w-3.5 bg-foreground rounded-full animate-pulse',
-        whitespace && 'ml-2'
-      )}
+      aria-hidden="true"
+      className="bayyan-stream-cursor ml-1.5 inline-block"
     />
   );
 }

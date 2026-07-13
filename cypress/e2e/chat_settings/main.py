@@ -1,5 +1,8 @@
 import chainlit as cl
+from chainlit.config import config
 from chainlit.input_widget import Select, Slider, Switch
+
+config.ui.chat_settings_location = "sidebar"
 
 
 @cl.on_chat_start

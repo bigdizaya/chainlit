@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import { MessageContext } from 'contexts/MessageContext';
-import { memo, useContext, useMemo, useState } from 'react';
 import { Star } from 'lucide-react';
+import { memo, useContext, useMemo, useState } from 'react';
 import { useSetRecoilState } from 'recoil';
 
 import {
@@ -62,7 +62,7 @@ const UserMessage = memo(function UserMessage({
   };
 
   return (
-    <div className="flex flex-col w-full gap-1">
+    <div className="bayyan-user-message flex flex-col w-full gap-1">
       <InlinedElements elements={inlineElements} className="items-end" />
 
       <div className="flex flex-row items-center gap-1 w-full group">
@@ -97,7 +97,7 @@ const UserMessage = memo(function UserMessage({
         )}
         <div
           className={cn(
-            'px-5 py-2.5 relative bg-accent rounded-3xl',
+            'bayyan-user-question px-5 py-2.5 relative bg-accent rounded-3xl',
             inlineElements.length ? 'rounded-tr-lg' : '',
             isEditing ? 'w-full flex-grow' : 'max-w-[70%] flex-grow-0',
             editable ? '' : 'ml-auto'
@@ -128,6 +128,9 @@ const UserMessage = memo(function UserMessage({
             </div>
           ) : (
             <div className="flex flex-col">
+              <span className="bayyan-user-question__label">
+                Votre question
+              </span>
               {message.command ? (
                 <div className="font-bold text-[#08f] command-span">
                   {message.command}

@@ -33,10 +33,13 @@ const hasActiveToolStep = (step: IStep): boolean => {
   );
 };
 
-const hasAssistantMessage = (step: IStep): boolean => {
+const hasVisibleAssistantOutput = (step: IStep): boolean => {
   return (
     step.steps?.some(
-      (s) => s.type === 'assistant_message' || hasAssistantMessage(s)
+      (s) =>
+        ((s.type === 'assistant_message' || s.type === 'system_message') &&
+          Boolean(s.output)) ||
+        hasVisibleAssistantOutput(s)
     ) || false
   );
 };
@@ -71,7 +74,7 @@ const Messages = memo(
               : false;
 
             const showHiddenCoTLoader = isHiddenCoT
-              ? isRunning && !hasAssistantMessage(m)
+              ? isRunning && !hasVisibleAssistantOutput(m)
               : false;
             // Ignore on_chat_start for scorable run
             const scorableRun =

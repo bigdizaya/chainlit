@@ -1,3 +1,4 @@
+import { cn, hasMessage } from '@/lib/utils';
 import {
   MutableRefObject,
   useCallback,
@@ -5,7 +6,7 @@ import {
   useRef,
   useState
 } from 'react';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,19 +17,16 @@ import {
   useAuth,
   useChatData,
   useChatInteract,
-  useConfig
+  useChatMessages
 } from '@chainlit/react-client';
 import type { IMode, IModeOption } from '@chainlit/react-client';
 import { modesState } from '@chainlit/react-client';
 
-import { Settings } from '@/components/icons/Settings';
-import { Button } from '@/components/ui/button';
 import { useTranslation } from 'components/i18n/Translator';
 
 import { useQuery } from '@/hooks/query';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-import { chatSettingsOpenState } from '@/state/project';
 import {
   IAttachment,
   attachmentsState,
@@ -42,7 +40,9 @@ import FavoriteButton from './FavoriteButton';
 import Input, { InputMethods } from './Input';
 import McpButton from './Mcp';
 import ModePicker from './ModePicker';
-import ResponseLevelPicker from './ResponseLevelPicker';
+import ResponseLevelPicker, {
+  syncStoredResponseLevel
+} from './ResponseLevelPicker';
 import SubmitButton from './SubmitButton';
 import UploadButton from './UploadButton';
 import VoiceButton from './VoiceButton';
@@ -68,8 +68,6 @@ export default function MessageComposer({
     persistentCommandState
   );
   const commands = useRecoilValue(commandsState);
-  const setChatSettingsOpen = useSetRecoilState(chatSettingsOpenState);
-
   // Pre-select the command marked as selected by the backend
   useEffect(() => {
     const defaultSelected = commands.find((c) => c.selected);
@@ -79,6 +77,9 @@ export default function MessageComposer({
   }, [commands]);
   const [attachments, setAttachments] = useRecoilState(attachmentsState);
   const { t } = useTranslation();
+  const { messages } = useChatMessages();
+  const hasConversation = hasMessage(messages);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     valueRef.current = value;
@@ -86,14 +87,10 @@ export default function MessageComposer({
 
   const { user } = useAuth();
   const { sendMessage, replyMessage } = useChatInteract();
-  const { askUser, chatSettingsInputs, disabled: _disabled } = useChatData();
+  const { askUser, disabled: _disabled } = useChatData();
 
-  const disabled = _disabled || !!attachments.find((a) => !a.uploaded);
-
-  const { config } = useConfig();
-  const showSettingsInComposer =
-    config?.ui?.chat_settings_location !== 'sidebar' &&
-    chatSettingsInputs.length > 0;
+  const disabled =
+    _disabled || submitting || !!attachments.find((a) => !a.uploaded);
 
   const isMobile = useIsMobile();
 
@@ -210,7 +207,13 @@ export default function MessageComposer({
   );
 
   const onSubmit = useCallback(
-    (msg: string, attachments?: IAttachment[], selectedCommand?: string) => {
+    async (
+      msg: string,
+      attachments?: IAttachment[],
+      selectedCommand?: string
+    ) => {
+      await syncStoredResponseLevel();
+
       // Build modes dict: only include modes that have selections
       const modesDict: Record<string, string> = {};
       modes.forEach((mode) => {
@@ -271,7 +274,7 @@ export default function MessageComposer({
     [user, replyMessage, autoScrollRef]
   );
 
-  const submit = useCallback(() => {
+  const submit = useCallback(async () => {
     const currentValue = valueRef.current;
 
     if (
@@ -283,9 +286,21 @@ export default function MessageComposer({
       return;
     }
 
-    const sent = askUser
-      ? onReply(currentValue)
-      : onSubmit(currentValue, attachments, selectedCommand?.id);
+    setSubmitting(true);
+    let sent = false;
+
+    try {
+      sent = askUser
+        ? onReply(currentValue)
+        : await onSubmit(currentValue, attachments, selectedCommand?.id);
+    } catch {
+      toast.error(
+        "Le mode de réponse n'a pas pu être confirmé. Réessayez dans un instant."
+      );
+      return;
+    } finally {
+      setSubmitting(false);
+    }
 
     if (!sent) {
       return;
@@ -323,7 +338,10 @@ export default function MessageComposer({
   return (
     <div
       id="message-composer"
-      className="bg-accent dark:bg-card rounded-3xl p-3 px-4 w-full min-h-24 flex flex-col"
+      className={cn(
+        'bayyan-message-composer bg-accent dark:bg-card rounded-3xl p-3 px-4 w-full min-h-24 flex flex-col',
+        hasConversation ? 'is-conversation' : 'is-welcome'
+      )}
     >
       {attachments.length > 0 ? (
         <div className="mb-1">
@@ -341,61 +359,73 @@ export default function MessageComposer({
         onEnter={submit}
         placeholder={t('chat.input.placeholder')}
       />
-      <div className="flex items-center justify-between">
-        <div className="flex items-center -ml-1.5">
-          <VoiceButton disabled={disabled} />
-          <UploadButton
-            disabled={disabled}
-            fileSpec={fileSpec}
-            onFileUploadError={onFileUploadError}
-            onFileUpload={onFileUpload}
-          />
-          {showSettingsInComposer && (
-            <Button
-              id="chat-settings-open-modal"
-              disabled={disabled}
-              onClick={() => setChatSettingsOpen(true)}
-              className="hover:bg-muted rounded-full"
-              variant="ghost"
-              size="icon"
-            >
-              <Settings className="!size-6" />
-            </Button>
-          )}
+      {!hasConversation ? (
+        <div className="bayyan-welcome-controls">
           <ResponseLevelPicker disabled={disabled} />
-          <McpButton disabled={disabled} />
-          {modes.map((mode) => (
-            <ModePicker
-              key={mode.id}
-              mode={mode}
-              disabled={disabled}
-              selectedOptionId={getSelectedOptionId(mode)}
-              onOptionSelect={handleModeSelect}
+          <div className="bayyan-welcome-actions">
+            <div className="bayyan-welcome-utilities">
+              <VoiceButton disabled={disabled} />
+              <UploadButton
+                disabled={disabled}
+                fileSpec={fileSpec}
+                onFileUploadError={onFileUploadError}
+                onFileUpload={onFileUpload}
+              />
+            </div>
+            <SubmitButton
+              onSubmit={submit}
+              disabled={
+                disabled ||
+                (!value.trim() && !selectedCommand && attachments.length === 0)
+              }
             />
-          ))}
-          <CommandButton
-            disabled={disabled}
-            selectedCommandId={selectedCommand?.id}
-            onCommandSelect={setSelectedCommand}
-          />
-          <CommandButtons
-            disabled={disabled}
-            selectedCommandId={selectedCommand?.id}
-            onCommandSelect={setSelectedCommand}
-          />
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center -ml-1.5">
+            <VoiceButton disabled={disabled} />
+            <UploadButton
+              disabled={disabled}
+              fileSpec={fileSpec}
+              onFileUploadError={onFileUploadError}
+              onFileUpload={onFileUpload}
+            />
+            <ResponseLevelPicker disabled={disabled} compact />
+            <McpButton disabled={disabled} />
+            {modes.map((mode) => (
+              <ModePicker
+                key={mode.id}
+                mode={mode}
+                disabled={disabled}
+                selectedOptionId={getSelectedOptionId(mode)}
+                onOptionSelect={handleModeSelect}
+              />
+            ))}
+            <CommandButton
+              disabled={disabled}
+              selectedCommandId={selectedCommand?.id}
+              onCommandSelect={setSelectedCommand}
+            />
+            <CommandButtons
+              disabled={disabled}
+              selectedCommandId={selectedCommand?.id}
+              onCommandSelect={setSelectedCommand}
+            />
 
-          <FavoriteButton disabled={disabled} onSelect={onFavoriteSelect} />
+            <FavoriteButton disabled={disabled} onSelect={onFavoriteSelect} />
+          </div>
+          <div className="flex items-center gap-1">
+            <SubmitButton
+              onSubmit={submit}
+              disabled={
+                disabled ||
+                (!value.trim() && !selectedCommand && attachments.length === 0)
+              }
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <SubmitButton
-            onSubmit={submit}
-            disabled={
-              disabled ||
-              (!value.trim() && !selectedCommand && attachments.length === 0)
-            }
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 }

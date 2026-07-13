@@ -30,7 +30,7 @@ const FALLBACK_LEVELS: ResponseLevelOption[] = [
     value: 'concise',
     label: 'Rapide fiable',
     short_label: 'Rapide',
-    description: 'Reponse directe, sourcee, 1 point.'
+    description: 'Réponse directe, sourcée, 1 point.'
   },
   {
     value: 'deep',
@@ -56,7 +56,7 @@ function normalizeLevel(value: unknown) {
   return 'concise';
 }
 
-function readStoredLevel() {
+export function readStoredResponseLevel() {
   try {
     return normalizeLevel(window.localStorage.getItem(STORAGE_KEY));
   } catch {
@@ -98,13 +98,30 @@ function normalizeOptions(options: unknown) {
   return levels.length ? levels : FALLBACK_LEVELS;
 }
 
+export async function syncStoredResponseLevel() {
+  const response = await fetch('/api/response-level', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ level: readStoredResponseLevel() })
+  });
+
+  const payload = (await response.json()) as ResponseLevelPayload;
+  if (!response.ok || payload.success === false) {
+    throw new Error('response-level sync failed');
+  }
+  return payload;
+}
+
 export default function ResponseLevelPicker({
-  disabled = false
+  disabled = false,
+  compact = false
 }: {
   disabled?: boolean;
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [level, setLevel] = useState(readStoredLevel);
+  const [level, setLevel] = useState(readStoredResponseLevel);
   const [levels, setLevels] = useState<ResponseLevelOption[]>(FALLBACK_LEVELS);
   const [syncing, setSyncing] = useState(false);
 
@@ -184,6 +201,41 @@ export default function ResponseLevelPicker({
     },
     [level, syncLevel]
   );
+
+  if (!compact) {
+    return (
+      <fieldset
+        className="bayyan-response-level"
+        disabled={disabled || syncing}
+      >
+        <legend>Format de réponse</legend>
+        <div className="bayyan-response-level__segments">
+          {levels.map((item) => {
+            const selected = item.value === level;
+            return (
+              <label
+                className={cn(
+                  'bayyan-response-level__option',
+                  selected && 'is-selected'
+                )}
+                key={item.value}
+              >
+                <input
+                  type="radio"
+                  name="bayyan-response-level"
+                  value={item.value}
+                  checked={selected}
+                  onChange={() => selectLevel(item.value)}
+                />
+                <span>{item.short_label || item.label}</span>
+              </label>
+            );
+          })}
+        </div>
+        <p aria-live="polite">{selectedLevel.description}</p>
+      </fieldset>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
