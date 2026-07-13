@@ -5,7 +5,7 @@ import svgr from 'vite-plugin-svgr';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 const bayyanAssetVersion =
-  process.env.BAYYAN_ASSET_VERSION || '20260713-brand-mobile-pwa-1';
+  process.env.BAYYAN_ASSET_VERSION || '20260713-remove-generic-starters-1';
 
 // https://vitejs.dev/config/
 export default defineConfig({

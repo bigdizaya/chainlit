@@ -97,10 +97,7 @@ export default function WelcomeScreen(props: Props) {
         </span>
       </div>
       <MessageComposer {...props} />
-      <div className="bayyan-starters-block">
-        <p>Quelques points de départ</p>
-        <Starters />
-      </div>
+      <Starters />
     </div>
   );
 }
