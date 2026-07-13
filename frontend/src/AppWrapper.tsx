@@ -10,7 +10,8 @@ import {
   useApi,
   useAuth,
   useChatInteract,
-  useConfig
+  useConfig,
+  withBayyanLocale
 } from '@chainlit/react-client';
 
 export default function AppWrapper() {
@@ -70,7 +71,9 @@ export default function AppWrapper() {
     window.location.pathname !== getRouterBasename() + '/login' &&
     window.location.pathname !== getRouterBasename() + '/login/callback'
   ) {
-    window.location.replace(getRouterBasename() + '/login');
+    window.location.replace(
+      withBayyanLocale(getRouterBasename() + '/login', languageInUse)
+    );
     return null;
   }
   return <App />;

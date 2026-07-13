@@ -7,13 +7,16 @@ import { useTheme } from '@/components/ThemeProvider';
 
 import { useQuery } from 'hooks/query';
 
-import { ChainlitContext, useAuth } from 'client-types/*';
+import {
+  ChainlitContext,
+  useAuth,
+  useBayyanLocale,
+  withBayyanLocale
+} from 'client-types/*';
 
 export const LoginError = new Error(
   'Error logging in. Please try again later.'
 );
-
-const FRESH_CHAT_URL = '/?new=1';
 
 export default function Login() {
   const query = useQuery();
@@ -22,6 +25,8 @@ export default function Login() {
   const apiClient = useContext(ChainlitContext);
   const navigate = useNavigate();
   const { variant } = useTheme();
+  const { language } = useBayyanLocale();
+  const freshChatUrl = withBayyanLocale('/?new=1', language);
   const isDarkMode = variant === 'dark';
 
   const handleCookieAuth = (json: any): void => {
@@ -51,7 +56,7 @@ export default function Login() {
   const handleHeaderAuth = async () => {
     const jsonPromise = apiClient.headerAuth();
 
-    await handleAuth(jsonPromise, FRESH_CHAT_URL);
+    await handleAuth(jsonPromise, freshChatUrl);
   };
 
   const handlePasswordLogin = async (email: string, password: string) => {
@@ -72,15 +77,15 @@ export default function Login() {
       return;
     }
     if (!config.requireLogin) {
-      navigate(FRESH_CHAT_URL, { replace: true });
+      navigate(freshChatUrl, { replace: true });
     }
     if (config.headerAuth && !user) {
       handleHeaderAuth();
     }
     if (user) {
-      navigate(FRESH_CHAT_URL, { replace: true });
+      navigate(freshChatUrl, { replace: true });
     }
-  }, [config, user]);
+  }, [config, user, freshChatUrl]);
 
   return (
     <div className="grid min-h-[100dvh] overflow-y-auto lg:grid-cols-2">
@@ -92,13 +97,16 @@ export default function Login() {
           <div className="w-full max-w-xs">
             <LoginForm
               error={error}
-              callbackUrl={FRESH_CHAT_URL}
+              callbackUrl={freshChatUrl}
               providers={config?.oauthProviders || []}
               onPasswordSignIn={
                 config?.passwordAuth ? handlePasswordLogin : undefined
               }
               onOAuthSignIn={async (provider: string) => {
-                window.location.href = apiClient.getOAuthEndpoint(provider);
+                window.location.href = withBayyanLocale(
+                  apiClient.getOAuthEndpoint(provider),
+                  language
+                );
               }}
             />
           </div>
