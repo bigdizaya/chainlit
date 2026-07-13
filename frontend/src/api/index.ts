@@ -1,7 +1,11 @@
 import getRouterBasename from '@/lib/router';
 import { toast } from 'sonner';
 
-import { ChainlitAPI, ClientError } from '@chainlit/react-client';
+import {
+  ChainlitAPI,
+  ClientError,
+  withBayyanLocale
+} from '@chainlit/react-client';
 
 const devServer =
   (import.meta.env.VITE_API_URL || 'http://localhost:8000') +
@@ -34,7 +38,7 @@ const isExpectedAuthError = (error: ClientError) => {
 const on401 = () => {
   if (!isAuthRoute()) {
     // The credentials aren't correct, remove the token and redirect to login
-    window.location.href = getRouterBasename() + '/login';
+    window.location.href = withBayyanLocale(getRouterBasename() + '/login');
   }
 };
 

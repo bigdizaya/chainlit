@@ -27,22 +27,23 @@
       }
     </style>
     <script>
-      // Apply the saved/device locale before React paints to avoid a French/LTR flash.
+      // Apply the URL/saved/device locale before React paints to avoid a French/LTR flash.
       (function () {
         var supported = ['fr', 'ar', 'en', 'es'];
         var candidates = [];
+        var requestedLocale = '';
+        try {
+          requestedLocale =
+            new URL(window.location.href).searchParams.get('lang') || '';
+          candidates.push(requestedLocale);
+        } catch (error) {
+          // Explicit URL locale remains optional in embedded WebViews.
+        }
         try {
           candidates.push(localStorage.getItem('bayyan_locale') || '');
           candidates.push(localStorage.getItem('jawab_lang') || '');
         } catch (error) {
           // Storage can be unavailable in hardened or private WebViews.
-        }
-        try {
-          candidates.push(
-            new URL(window.location.href).searchParams.get('lang') || ''
-          );
-        } catch (error) {
-          // Explicit URL locale remains optional in embedded WebViews.
         }
         try {
           candidates = candidates.concat(navigator.languages || []);
@@ -67,6 +68,29 @@
         document.documentElement.lang = locale;
         document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
         document.documentElement.dataset.bayyanLocale = locale;
+
+        var normalizedRequest = String(requestedLocale || '')
+          .trim()
+          .replace('_', '-')
+          .split('-')[0]
+          .toLowerCase();
+        if (supported.indexOf(normalizedRequest) !== -1) {
+          var languageTags = {
+            fr: 'fr-FR',
+            ar: 'ar-SA',
+            en: 'en-US',
+            es: 'es'
+          };
+          try {
+            localStorage.setItem(
+              'bayyan_locale',
+              languageTags[normalizedRequest]
+            );
+            localStorage.setItem('jawab_lang', normalizedRequest);
+          } catch (error) {
+            // URL language still applies to this document without persistence.
+          }
+        }
       })();
     </script>
     <script>

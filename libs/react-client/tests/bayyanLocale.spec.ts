@@ -8,7 +8,8 @@ import {
   normalizeBayyanLocale,
   resolveBayyanLanguage,
   resolveBayyanLocale,
-  setBayyanLocale
+  setBayyanLocale,
+  withBayyanLocale
 } from '../src/utils/bayyanLocale';
 
 function setBrowserLanguages(languages: string[]) {
@@ -36,9 +37,18 @@ describe('BAYYAN locale resolution', () => {
     expect(normalizeBayyanLocale('it-IT')).toBeNull();
   });
 
-  it('gives bayyan_locale priority over the legacy key and phone', () => {
+  it('gives an explicit URL locale priority over stored preferences and phone', () => {
     setBrowserLanguages(['es-ES']);
     window.history.replaceState({}, '', '/?lang=fr');
+    window.localStorage.setItem(BAYYAN_PRIMARY_LOCALE_STORAGE_KEY, 'en-US');
+    window.localStorage.setItem(BAYYAN_LEGACY_LOCALE_STORAGE_KEY, 'ar');
+
+    expect(resolveBayyanLocale()).toBe('fr');
+    expect(resolveBayyanLanguage()).toBe('fr-FR');
+  });
+
+  it('gives bayyan_locale priority over the legacy key and phone without a URL locale', () => {
+    setBrowserLanguages(['es-ES']);
     window.localStorage.setItem(BAYYAN_PRIMARY_LOCALE_STORAGE_KEY, 'en-US');
     window.localStorage.setItem(BAYYAN_LEGACY_LOCALE_STORAGE_KEY, 'ar');
 
@@ -76,6 +86,15 @@ describe('BAYYAN locale resolution', () => {
     expect(resolveBayyanLanguage()).toBe('fr-FR');
   });
 
+  it('preserves existing URL state while adding a normalized locale', () => {
+    expect(withBayyanLocale('/?new=1#composer', 'ar-SA')).toBe(
+      '/?new=1&lang=ar#composer'
+    );
+    expect(withBayyanLocale('/login?error=signin', 'es-MX')).toBe(
+      '/login?error=signin&lang=es'
+    );
+  });
+
   it('applies an Arabic document direction', () => {
     expect(applyBayyanDocumentLocale('ar-SA')).toBe('ar');
     expect(document.documentElement.getAttribute('lang')).toBe('ar');
@@ -84,6 +103,30 @@ describe('BAYYAN locale resolution', () => {
     applyBayyanDocumentLocale('en-US');
     expect(document.documentElement.getAttribute('lang')).toBe('en');
     expect(document.documentElement.getAttribute('dir')).toBe('ltr');
+  });
+
+  it('keeps an explicit URL locale above an active session selection', () => {
+    setBayyanLocale('en');
+    window.history.replaceState({}, '', '/?lang=ar');
+
+    expect(resolveBayyanLocale()).toBe('ar');
+    expect(resolveBayyanLanguage()).toBe('ar-SA');
+  });
+
+  it('updates only the locale query when the active selection changes', () => {
+    window.history.replaceState(
+      { thread: '42' },
+      '',
+      '/thread/42?new=1&lang=fr#composer'
+    );
+
+    setBayyanLocale('ar');
+
+    expect(
+      `${window.location.pathname}${window.location.search}${window.location.hash}`
+    ).toBe('/thread/42?new=1&lang=ar#composer');
+    expect(window.history.state).toEqual({ thread: '42' });
+    expect(resolveBayyanLocale()).toBe('ar');
   });
 
   it('writes both preference keys, emits the bridge event and informs SW', async () => {

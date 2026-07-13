@@ -38,7 +38,52 @@ function readStoredLocale(key: string): BayyanLocale | null {
   }
 }
 
+function readRequestedLocale(): BayyanLocale | null {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    return normalizeBayyanLocale(
+      new URL(window.location.href).searchParams.get('lang')
+    );
+  } catch {
+    return null;
+  }
+}
+
+function persistBayyanLocale(locale: BayyanLocale): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(
+      BAYYAN_PRIMARY_LOCALE_STORAGE_KEY,
+      toBayyanLanguage(locale)
+    );
+    window.localStorage.setItem(BAYYAN_LEGACY_LOCALE_STORAGE_KEY, locale);
+  } catch {
+    // The current document can still use an explicit locale without storage.
+  }
+}
+
+function replaceCurrentUrlLocale(locale: BayyanLocale): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const localizedUrl = new URL(window.location.href);
+    localizedUrl.searchParams.set('lang', locale);
+    window.history.replaceState(
+      window.history.state,
+      '',
+      `${localizedUrl.pathname}${localizedUrl.search}${localizedUrl.hash}`
+    );
+  } catch {
+    // Some embedded WebViews expose location but restrict history updates.
+  }
+}
+
 export function resolveBayyanLocale(): BayyanLocale {
+  const requested = readRequestedLocale();
+  if (requested) return requested;
+
   if (activeSessionLocale) return activeSessionLocale;
 
   const primary = readStoredLocale(BAYYAN_PRIMARY_LOCALE_STORAGE_KEY);
@@ -46,17 +91,6 @@ export function resolveBayyanLocale(): BayyanLocale {
 
   const legacy = readStoredLocale(BAYYAN_LEGACY_LOCALE_STORAGE_KEY);
   if (legacy) return legacy;
-
-  if (typeof window !== 'undefined') {
-    try {
-      const requested = normalizeBayyanLocale(
-        new URL(window.location.href).searchParams.get('lang')
-      );
-      if (requested) return requested;
-    } catch {
-      // Embedded WebViews can expose a restricted or malformed location.
-    }
-  }
 
   if (typeof navigator !== 'undefined') {
     const browserLanguages = [
@@ -79,6 +113,30 @@ export function toBayyanLanguage(locale: BayyanLocale): BayyanLanguage {
 
 export function resolveBayyanLanguage(): BayyanLanguage {
   return toBayyanLanguage(resolveBayyanLocale());
+}
+
+export function withBayyanLocale(
+  url: string,
+  value: unknown = resolveBayyanLocale()
+): string {
+  const locale = normalizeBayyanLocale(value) || resolveBayyanLocale();
+
+  try {
+    const origin =
+      typeof window !== 'undefined'
+        ? window.location.origin
+        : 'https://bayyan.invalid';
+    const localizedUrl = new URL(url, origin);
+    localizedUrl.searchParams.set('lang', locale);
+
+    if (/^[a-z][a-z\d+.-]*:/i.test(url) || url.startsWith('//')) {
+      return localizedUrl.toString();
+    }
+    return `${localizedUrl.pathname}${localizedUrl.search}${localizedUrl.hash}`;
+  } catch {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}lang=${encodeURIComponent(locale)}`;
+  }
 }
 
 export function applyBayyanDocumentLocale(value: unknown): BayyanLocale {
@@ -119,16 +177,8 @@ export function setBayyanLocale(value: BayyanLocale): void {
   if (!locale || typeof window === 'undefined') return;
 
   activeSessionLocale = locale;
-
-  try {
-    window.localStorage.setItem(
-      BAYYAN_PRIMARY_LOCALE_STORAGE_KEY,
-      toBayyanLanguage(locale)
-    );
-    window.localStorage.setItem(BAYYAN_LEGACY_LOCALE_STORAGE_KEY, locale);
-  } catch {
-    // The current session can still change language without persistence.
-  }
+  replaceCurrentUrlLocale(locale);
+  persistBayyanLocale(locale);
 
   applyBayyanDocumentLocale(locale);
   postLocaleToServiceWorker(locale);
