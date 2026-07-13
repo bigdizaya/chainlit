@@ -9,12 +9,10 @@ import {
   PopoverContent,
   PopoverTrigger
 } from '@/components/ui/popover';
+import { useTranslation } from 'components/i18n/Translator';
 
 type ResponseLevelOption = {
   value: string;
-  label: string;
-  short_label?: string;
-  description?: string;
 };
 
 type ResponseLevelPayload = {
@@ -26,18 +24,8 @@ type ResponseLevelPayload = {
 const STORAGE_KEY = 'bayyan_response_level';
 
 const FALLBACK_LEVELS: ResponseLevelOption[] = [
-  {
-    value: 'concise',
-    label: 'Rapide fiable',
-    short_label: 'Rapide',
-    description: 'Réponse directe, sourcée, 1 point.'
-  },
-  {
-    value: 'deep',
-    label: 'Recherche approfondie',
-    short_label: 'Approfondie',
-    description: 'Recherche multi-angle, 3 points.'
-  }
+  { value: 'concise' },
+  { value: 'deep' }
 ];
 
 function normalizeLevel(value: unknown) {
@@ -82,16 +70,7 @@ function normalizeOptions(options: unknown) {
       if (!option || typeof option !== 'object') return null;
       const record = option as Record<string, unknown>;
       const value = normalizeLevel(record.value);
-      const label = String(record.label || record.short_label || value);
-      return {
-        value,
-        label,
-        short_label: String(record.short_label || label),
-        description:
-          record.description === undefined
-            ? undefined
-            : String(record.description)
-      };
+      return { value };
     })
     .filter(Boolean) as ResponseLevelOption[];
 
@@ -124,10 +103,27 @@ export default function ResponseLevelPicker({
   const [level, setLevel] = useState(readStoredResponseLevel);
   const [levels, setLevels] = useState<ResponseLevelOption[]>(FALLBACK_LEVELS);
   const [syncing, setSyncing] = useState(false);
+  const { t } = useTranslation();
+
+  const localizedLevels = useMemo(
+    () =>
+      levels.map((item) => {
+        const key = item.value === 'deep' ? 'deep' : 'concise';
+        return {
+          ...item,
+          label: t(`bayyan.responseLevel.${key}.label`),
+          short_label: t(`bayyan.responseLevel.${key}.short`),
+          description: t(`bayyan.responseLevel.${key}.description`)
+        };
+      }),
+    [levels, t]
+  );
 
   const selectedLevel = useMemo(
-    () => levels.find((item) => item.value === level) || levels[0],
-    [level, levels]
+    () =>
+      localizedLevels.find((item) => item.value === level) ||
+      localizedLevels[0],
+    [level, localizedLevels]
   );
 
   const applyPayload = useCallback((payload: ResponseLevelPayload) => {
@@ -195,11 +191,11 @@ export default function ResponseLevelPicker({
         .catch(() => {
           setLevel(previous);
           rememberLevel(previous);
-          toast.error('Impossible de changer le mode de recherche.');
+          toast.error(t('bayyan.responseLevel.changeError'));
         })
         .finally(() => setSyncing(false));
     },
-    [level, syncLevel]
+    [level, syncLevel, t]
   );
 
   if (!compact) {
@@ -208,9 +204,9 @@ export default function ResponseLevelPicker({
         className="bayyan-response-level"
         disabled={disabled || syncing}
       >
-        <legend>Format de réponse</legend>
+        <legend>{t('bayyan.responseLevel.legend')}</legend>
         <div className="bayyan-response-level__segments">
-          {levels.map((item) => {
+          {localizedLevels.map((item) => {
             const selected = item.value === level;
             return (
               <label
@@ -249,7 +245,7 @@ export default function ResponseLevelPicker({
             'inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-medium',
             'hover:bg-muted focus:outline-none focus-visible:ring-1 focus-visible:ring-ring'
           )}
-          aria-label="Mode de recherche"
+          aria-label={t('bayyan.responseLevel.ariaLabel')}
         >
           <Gauge className="!size-4 text-muted-foreground" />
           <span className="max-w-[110px] truncate">
@@ -260,14 +256,14 @@ export default function ResponseLevelPicker({
       </PopoverTrigger>
       <PopoverContent align="start" side="top" className="w-[280px] p-1">
         <div className="flex flex-col gap-1">
-          {levels.map((item) => {
+          {localizedLevels.map((item) => {
             const selected = item.value === level;
             return (
               <button
                 key={item.value}
                 type="button"
                 className={cn(
-                  'flex w-full items-start gap-2 rounded-md px-2 py-2 text-left text-sm',
+                  'flex w-full items-start gap-2 rounded-md px-2 py-2 text-start text-sm',
                   'hover:bg-accent hover:text-accent-foreground',
                   selected && 'bg-accent text-accent-foreground'
                 )}

@@ -15,6 +15,7 @@ import {
   IStep,
   commandsState,
   useAuth,
+  useBayyanLocale,
   useChatData,
   useChatInteract,
   useChatMessages
@@ -86,6 +87,7 @@ export default function MessageComposer({
   }, [value]);
 
   const { user } = useAuth();
+  const { locale } = useBayyanLocale();
   const { sendMessage, replyMessage } = useChatInteract();
   const { askUser, disabled: _disabled } = useChatData();
 
@@ -145,14 +147,12 @@ export default function MessageComposer({
       if (!data || typeof data !== 'object') return;
 
       if (data.type === 'bayyan_audio_transcription_error') {
-        toast.error(
-          data.message || 'La transcription vocale a échoué. Réessayez.'
-        );
+        toast.error(t('bayyan.voice.transcriptionError'));
         return;
       }
 
       if (data.type === 'bayyan_audio_transcription_empty') {
-        toast.warning(data.message || "Aucun texte vocal n'a été détecté.");
+        toast.warning(t('bayyan.voice.transcriptionEmpty'));
         return;
       }
 
@@ -177,7 +177,7 @@ export default function MessageComposer({
         'chainlit:window_message',
         handleAudioDraftMessage
       );
-  }, []);
+  }, [t]);
 
   const onFavoriteSelect = useCallback((content: string) => {
     draftInputTypeRef.current = undefined;
@@ -234,7 +234,8 @@ export default function MessageComposer({
         createdAt: new Date().toISOString(),
         metadata: {
           location: window.location.href,
-          input_type: draftInputTypeRef.current === 'audio' ? 'audio' : 'text'
+          input_type: draftInputTypeRef.current === 'audio' ? 'audio' : 'text',
+          ui_locale: locale
         }
       };
 
@@ -247,7 +248,7 @@ export default function MessageComposer({
       }
       return sendMessage(message, fileReferences);
     },
-    [user, sendMessage, autoScrollRef, modes, getSelectedOptionId]
+    [user, sendMessage, autoScrollRef, modes, getSelectedOptionId, locale]
   );
 
   const onReply = useCallback(
@@ -261,7 +262,8 @@ export default function MessageComposer({
         createdAt: new Date().toISOString(),
         metadata: {
           location: window.location.href,
-          input_type: draftInputTypeRef.current === 'audio' ? 'audio' : 'text'
+          input_type: draftInputTypeRef.current === 'audio' ? 'audio' : 'text',
+          ui_locale: locale
         }
       };
 
@@ -271,7 +273,7 @@ export default function MessageComposer({
       }
       return true;
     },
-    [user, replyMessage, autoScrollRef]
+    [user, replyMessage, autoScrollRef, locale]
   );
 
   const submit = useCallback(async () => {
@@ -294,9 +296,7 @@ export default function MessageComposer({
         ? onReply(currentValue)
         : await onSubmit(currentValue, attachments, selectedCommand?.id);
     } catch {
-      toast.error(
-        "Le mode de réponse n'a pas pu être confirmé. Réessayez dans un instant."
-      );
+      toast.error(t('bayyan.responseLevel.syncError'));
       return;
     } finally {
       setSubmitting(false);
@@ -318,7 +318,8 @@ export default function MessageComposer({
     selectedCommand,
     setAttachments,
     onSubmit,
-    onReply
+    onReply,
+    t
   ]);
 
   useEffect(() => {

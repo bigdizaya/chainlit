@@ -2,6 +2,9 @@ import { Share2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { useBayyanLocale } from '@chainlit/react-client';
+import type { BayyanLocale } from '@chainlit/react-client';
+
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -14,20 +17,26 @@ interface Props {
   content: unknown;
 }
 
-function labels() {
-  const lang = (navigator.language || 'en').split('-')[0].toLowerCase();
-  if (lang === 'fr') {
+export function shareLabels(locale: BayyanLocale) {
+  if (locale === 'fr') {
     return {
       button: 'Partager',
       copied: 'Texte copie pour partage',
       error: 'Impossible de partager cette reponse.'
     };
   }
-  if (lang === 'ar') {
+  if (locale === 'ar') {
     return {
       button: 'مشاركة',
       copied: 'تم نسخ النص للمشاركة',
       error: 'تعذرت مشاركة هذه الإجابة.'
+    };
+  }
+  if (locale === 'es') {
+    return {
+      button: 'Compartir',
+      copied: 'Texto copiado para compartir',
+      error: 'No se pudo compartir esta respuesta.'
     };
   }
   return {
@@ -47,8 +56,9 @@ function textFromContent(content: unknown) {
 
 export default function MessageShareButton({ content }: Props) {
   const [sharing, setSharing] = useState(false);
+  const { locale } = useBayyanLocale();
   const text = textFromContent(content);
-  const copy = labels();
+  const copy = shareLabels(locale);
 
   const share = async () => {
     if (!text || sharing) return;

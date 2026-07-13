@@ -10,11 +10,13 @@ import {
   IStep,
   modesState,
   useAuth,
+  useBayyanLocale,
   useChatData,
   useChatInteract
 } from '@chainlit/react-client';
 
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'components/i18n/Translator';
 
 import { persistentCommandState } from '@/state/chat';
 
@@ -31,6 +33,8 @@ export default function Starter({ starter }: StarterProps) {
   const { sendMessage } = useChatInteract();
   const { loading, connected } = useChatData();
   const { user } = useAuth();
+  const { locale } = useBayyanLocale();
+  const { t } = useTranslation();
 
   const disabled = loading || !connected;
 
@@ -38,9 +42,7 @@ export default function Starter({ starter }: StarterProps) {
     try {
       await syncStoredResponseLevel();
     } catch {
-      toast.error(
-        "Le mode de réponse n'a pas pu être confirmé. Réessayez dans un instant."
-      );
+      toast.error(t('bayyan.responseLevel.syncError'));
       return;
     }
 
@@ -64,11 +66,11 @@ export default function Starter({ starter }: StarterProps) {
       type: 'user_message',
       output: starter.message,
       createdAt: new Date().toISOString(),
-      metadata: { location: window.location.href }
+      metadata: { location: window.location.href, ui_locale: locale }
     };
 
     sendMessage(message, []);
-  }, [user, selectedCommand, modes, sendMessage, starter]);
+  }, [user, selectedCommand, modes, sendMessage, starter, t, locale]);
 
   return (
     <Button
@@ -90,7 +92,7 @@ export default function Starter({ starter }: StarterProps) {
             alt={starter.label}
           />
         ) : null}
-        <p className="min-w-0 flex-1 truncate text-left text-sm text-muted-foreground">
+        <p className="min-w-0 flex-1 truncate text-start text-sm text-muted-foreground">
           {starter.label}
         </p>
         <ArrowRight className="bayyan-starter__arrow size-4 shrink-0" />

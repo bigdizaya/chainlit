@@ -12,6 +12,7 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { Translator } from 'components/i18n';
+import { useTranslation } from 'components/i18n/Translator';
 
 import { Loader } from '../../Loader';
 import { Button } from '../../ui/button';
@@ -23,6 +24,7 @@ interface Props {
 const VoiceButton = ({ disabled }: Props) => {
   const { config } = useConfig();
   const { startConversation, endConversation, audioConnection } = useAudio();
+  const { t } = useTranslation();
   const isEnabled = !!config?.features.audio.enabled;
 
   useHotkeys(
@@ -71,10 +73,10 @@ const VoiceButton = ({ disabled }: Props) => {
 
   const buttonLabel =
     audioConnection === 'on'
-      ? 'Stop recording'
+      ? t('chat.speech.stop')
       : audioConnection === 'connecting'
-      ? 'Connecting microphone'
-      : 'Start recording';
+      ? t('chat.speech.connecting')
+      : t('chat.speech.start');
 
   return (
     <div className="flex items-center gap-1">

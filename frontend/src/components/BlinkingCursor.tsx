@@ -1,3 +1,5 @@
+import { useTranslation } from 'components/i18n/Translator';
+
 export const CURSOR_PLACEHOLDER = '\u200B';
 
 interface Props {
@@ -5,10 +7,12 @@ interface Props {
 }
 
 export default function BlinkingCursor({ whitespace }: Props) {
+  const { t } = useTranslation();
+
   if (!whitespace) {
     return (
       <span className="sr-only" role="status">
-        Recherche en cours
+        {t('bayyan.status.searchInProgress')}
       </span>
     );
   }

@@ -8,6 +8,8 @@ import {
   type IStep
 } from '@chainlit/react-client';
 
+import { useTranslation } from 'components/i18n/Translator';
+
 import { useLayoutMaxWidth } from 'hooks/useLayoutMaxWidth';
 
 import { Messages } from '..';
@@ -44,6 +46,7 @@ const Message = memo(
     const { allowHtml, cot, latex, renderUserMarkdown, onError } =
       useContext(MessageContext);
     const layoutMaxWidth = useLayoutMaxWidth();
+    const { t } = useTranslation();
     const contentRef = useRef<HTMLDivElement>(null);
     const isUserMessage = message.type === 'user_message';
     const isStep = !message.type.includes('message');
@@ -57,10 +60,10 @@ const Message = memo(
     const showInputSection = Boolean(message.input && message.showInput);
     const shouldRenderOutput = !showInputSection || Boolean(message.output);
     const assistantEyebrow = message.isError
-      ? 'INFORMATION IMPORTANTE'
+      ? t('bayyan.status.importantInformation')
       : isRunning || message.streaming
-      ? 'RECHERCHE EN COURS'
-      : 'RÉPONSE DOCUMENTÉE';
+      ? t('bayyan.status.searchInProgress')
+      : t('bayyan.status.documentedAnswer');
 
     const userMessageContent = useMemo(
       () => (
