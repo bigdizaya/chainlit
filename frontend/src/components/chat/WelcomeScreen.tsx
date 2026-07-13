@@ -17,6 +17,7 @@ import {
 
 import { Logo } from '@/components/Logo';
 import { Markdown } from '@/components/Markdown';
+import { useTranslation } from 'components/i18n/Translator';
 
 import MessageComposer from './MessageComposer';
 import Starters from './Starters';
@@ -33,6 +34,7 @@ export default function WelcomeScreen(props: Props) {
   const { config } = useConfig();
   const { chatProfile } = useChatSession();
   const { messages } = useChatMessages();
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
   const chatProfiles = config?.chatProfiles;
@@ -89,12 +91,9 @@ export default function WelcomeScreen(props: Props) {
     >
       <div className="bayyan-welcome-brand">{logo}</div>
       <div className="bayyan-welcome-copy">
-        <p>RECHERCHE DOCUMENTAIRE</p>
-        <h1>Que souhaitez-vous éclaircir&nbsp;?</h1>
-        <span>
-          Interrogez la bibliothèque et retrouvez les passages utilisés dans
-          chaque réponse.
-        </span>
+        <p>{t('bayyan.welcome.eyebrow')}</p>
+        <h1>{t('bayyan.welcome.title')}</h1>
+        <span>{t('bayyan.welcome.description')}</span>
       </div>
       <MessageComposer {...props} />
       <Starters />

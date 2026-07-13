@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,6 +26,49 @@
         background: #fafafa;
       }
     </style>
+    <script>
+      // Apply the saved/device locale before React paints to avoid a French/LTR flash.
+      (function () {
+        var supported = ['fr', 'ar', 'en', 'es'];
+        var candidates = [];
+        try {
+          candidates.push(localStorage.getItem('bayyan_locale') || '');
+          candidates.push(localStorage.getItem('jawab_lang') || '');
+        } catch (error) {
+          // Storage can be unavailable in hardened or private WebViews.
+        }
+        try {
+          candidates.push(
+            new URL(window.location.href).searchParams.get('lang') || ''
+          );
+        } catch (error) {
+          // Explicit URL locale remains optional in embedded WebViews.
+        }
+        try {
+          candidates = candidates.concat(navigator.languages || []);
+          candidates.push(navigator.language || '');
+        } catch (error) {
+          // French remains the deterministic fallback.
+        }
+
+        var locale = 'fr';
+        for (var index = 0; index < candidates.length; index += 1) {
+          var candidate = String(candidates[index] || '')
+            .trim()
+            .replace('_', '-')
+            .split('-')[0]
+            .toLowerCase();
+          if (supported.indexOf(candidate) !== -1) {
+            locale = candidate;
+            break;
+          }
+        }
+
+        document.documentElement.lang = locale;
+        document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+        document.documentElement.dataset.bayyanLocale = locale;
+      })();
+    </script>
     <script>
       const global = globalThis;
     </script>

@@ -16,6 +16,7 @@ import AutoResizeTextarea from '@/components/AutoResizeTextarea';
 import { Pencil } from '@/components/icons/Pencil';
 import { Button } from '@/components/ui/button';
 import { Translator } from 'components/i18n';
+import { useTranslation } from 'components/i18n/Translator';
 
 import { InlinedElements } from './Content/InlinedElements';
 
@@ -37,6 +38,7 @@ const UserMessage = memo(function UserMessage({
   const isFavorite = message.metadata?.favorite === true;
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
+  const { t } = useTranslation();
 
   const inlineElements = useMemo(() => {
     return elements.filter(
@@ -129,7 +131,7 @@ const UserMessage = memo(function UserMessage({
           ) : (
             <div className="flex flex-col">
               <span className="bayyan-user-question__label">
-                Votre question
+                {t('bayyan.message.userQuestion')}
               </span>
               {message.command ? (
                 <div className="font-bold text-[#08f] command-span">

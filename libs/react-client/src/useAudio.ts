@@ -10,8 +10,95 @@ import {
   wavStreamPlayerState
 } from './state';
 import { useChatInteract } from './useChatInteract';
+import {
+  type BayyanLocale,
+  useBayyanLocale
+} from './utils/bayyanLocale';
+
+type BayyanAudioMessageKey =
+  | 'startPermission'
+  | 'serverUnavailable'
+  | 'connectionTimeout'
+  | 'blockedOrUnavailable'
+  | 'browserUnsupported'
+  | 'startGeneric'
+  | 'noAudioReceived';
+
+const BAYYAN_AUDIO_MESSAGES: Record<
+  BayyanLocale,
+  Record<BayyanAudioMessageKey, string>
+> = {
+  fr: {
+    startPermission:
+      'Le microphone n’a pas pu démarrer. Vérifiez son autorisation puis réessayez.',
+    serverUnavailable:
+      'La connexion au serveur est indisponible. Réessayez dans un instant.',
+    connectionTimeout:
+      'Le microphone met trop de temps à se connecter. Réessayez.',
+    blockedOrUnavailable:
+      'Le microphone est bloqué ou indisponible. Vérifiez son autorisation puis réessayez.',
+    browserUnsupported:
+      'Le microphone n’a pas pu démarrer dans ce navigateur. Fermez puis rouvrez l’application.',
+    startGeneric: 'Le microphone n’a pas pu démarrer. Veuillez réessayer.',
+    noAudioReceived:
+      'Le microphone est ouvert, mais aucun son n’arrive. Vérifiez le micro puis réessayez.'
+  },
+  ar: {
+    startPermission:
+      'تعذّر تشغيل الميكروفون. تحقّق من منحه الإذن ثم أعد المحاولة.',
+    serverUnavailable:
+      'تعذّر الاتصال بالخادم. أعد المحاولة بعد قليل.',
+    connectionTimeout:
+      'يستغرق اتصال الميكروفون وقتًا أطول من المتوقع. أعد المحاولة.',
+    blockedOrUnavailable:
+      'الميكروفون محظور أو غير متاح. تحقّق من منحه الإذن ثم أعد المحاولة.',
+    browserUnsupported:
+      'تعذّر تشغيل الميكروفون في هذا المتصفح. أغلق التطبيق ثم افتحه من جديد.',
+    startGeneric: 'تعذّر تشغيل الميكروفون. أعد المحاولة.',
+    noAudioReceived:
+      'الميكروفون مفتوح، لكن لا يصل أي صوت. تحقّق من الميكروفون ثم أعد المحاولة.'
+  },
+  en: {
+    startPermission:
+      'The microphone could not start. Check its permission and try again.',
+    serverUnavailable:
+      'The server connection is unavailable. Please try again shortly.',
+    connectionTimeout:
+      'The microphone is taking too long to connect. Please try again.',
+    blockedOrUnavailable:
+      'The microphone is blocked or unavailable. Check its permission and try again.',
+    browserUnsupported:
+      'The microphone could not start in this browser. Close and reopen the app.',
+    startGeneric: 'The microphone could not start. Please try again.',
+    noAudioReceived:
+      'The microphone is open, but no audio is coming through. Check the microphone and try again.'
+  },
+  es: {
+    startPermission:
+      'No se pudo iniciar el micrófono. Compruebe el permiso e inténtelo de nuevo.',
+    serverUnavailable:
+      'La conexión con el servidor no está disponible. Inténtelo de nuevo en unos instantes.',
+    connectionTimeout:
+      'El micrófono está tardando demasiado en conectarse. Inténtelo de nuevo.',
+    blockedOrUnavailable:
+      'El micrófono está bloqueado o no está disponible. Compruebe el permiso e inténtelo de nuevo.',
+    browserUnsupported:
+      'No se pudo iniciar el micrófono en este navegador. Cierre y vuelva a abrir la aplicación.',
+    startGeneric: 'No se pudo iniciar el micrófono. Inténtelo de nuevo.',
+    noAudioReceived:
+      'El micrófono está abierto, pero no llega ningún sonido. Compruebe el micrófono e inténtelo de nuevo.'
+  }
+};
+
+export function getBayyanAudioMessage(
+  locale: BayyanLocale,
+  key: BayyanAudioMessageKey
+) {
+  return BAYYAN_AUDIO_MESSAGES[locale][key];
+}
 
 const useAudio = () => {
+  const { locale } = useBayyanLocale();
   const [audioConnection, setAudioConnection] =
     useRecoilState(audioConnectionState);
   const wavRecorder = useRecoilValue(wavRecorderState);
@@ -79,9 +166,7 @@ const useAudio = () => {
         await stopLocalAudio();
         audioSessionController.finish(recordingId);
         setAudioConnection('off');
-        toast.error(
-          'Le microphone n’a pas pu démarrer. Vérifiez son autorisation puis réessayez.'
-        );
+        toast.error(getBayyanAudioMessage(locale, 'startPermission'));
       }
       return false;
     }
@@ -96,7 +181,7 @@ const useAudio = () => {
       await cancelAttempt(
         recordingId,
         'socket_unavailable',
-        'La connexion au serveur est indisponible. Réessayez dans un instant.'
+        getBayyanAudioMessage(locale, 'serverUnavailable')
       );
       return false;
     }
@@ -105,7 +190,7 @@ const useAudio = () => {
       cancelAttempt(
         recordingId,
         'connection_timeout',
-        'Le microphone met trop de temps à se connecter. Réessayez.'
+        getBayyanAudioMessage(locale, 'connectionTimeout')
       )
     );
     return true;
@@ -113,6 +198,7 @@ const useAudio = () => {
     audioConnection,
     cancelAudioStream,
     cancelAttempt,
+    locale,
     setAudioConnection,
     startAudioStream,
     stopLocalAudio,

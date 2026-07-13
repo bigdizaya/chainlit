@@ -10,6 +10,7 @@ export * from './context';
 export * from './state';
 export * from './utils/message';
 export * from './utils/bayyanFreshChat';
+export * from './utils/bayyanLocale';
 
 export { Socket } from 'socket.io-client';
 

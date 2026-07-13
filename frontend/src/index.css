@@ -474,6 +474,21 @@ code {
   color: var(--bayyan-gold-ink);
 }
 
+html[dir='rtl'] #root .bayyan-welcome-copy,
+html[dir='rtl'] #root .bayyan-user-question,
+html[dir='rtl'] #root .bayyan-response-level {
+  text-align: right;
+}
+
+html[dir='rtl'] #root .bayyan-welcome-copy > p,
+html[dir='rtl'] #root .bayyan-user-question__label {
+  letter-spacing: 0.04em;
+}
+
+html[dir='rtl'] #root .bayyan-starter__arrow {
+  transform: rotate(180deg);
+}
+
 #root .step[data-step-type='user_message'],
 #root .step[data-step-type='assistant_message'] {
   width: min(100%, 430px);

@@ -58,8 +58,13 @@ import { OutputAudioChunk } from './types/audio';
 
 import { audioSessionController } from './audioSessionController';
 import { ChainlitContext } from './context';
+import { getBayyanAudioMessage } from './useAudio';
 import type { IToken } from './useChatData';
 import { bindBayyanFreshChatToThread } from './utils/bayyanFreshChat';
+import {
+  type BayyanLocale,
+  useBayyanLocale
+} from './utils/bayyanLocale';
 
 const THREAD_HISTORY_REFRESH_SIZE = 35;
 const BAYYAN_ACTIVITY_KEY = 'jawab_last_activity';
@@ -67,18 +72,18 @@ const BAYYAN_INACTIVITY_THRESHOLD_MS = 30 * 60 * 1000;
 const BAYYAN_FRESH_CHAT_URL = '/?new=1';
 let foregroundSyncOwner: symbol | null = null;
 
-function getAudioStartErrorMessage(error: unknown) {
+function getAudioStartErrorMessage(error: unknown, locale: BayyanLocale) {
   const detail = error instanceof Error ? error.message : String(error || '');
 
   if (/media stream|permission|denied|notallowed|notfound/i.test(detail)) {
-    return 'Le microphone est bloqué ou indisponible. Vérifiez son autorisation puis réessayez.';
+    return getBayyanAudioMessage(locale, 'blockedOrUnavailable');
   }
 
   if (/processor|worklet|audio/i.test(detail)) {
-    return 'Le microphone n’a pas pu démarrer dans ce navigateur. Fermez puis rouvrez l’application.';
+    return getBayyanAudioMessage(locale, 'browserUnsupported');
   }
 
-  return 'Le microphone n’a pas pu démarrer. Veuillez réessayer.';
+  return getBayyanAudioMessage(locale, 'startGeneric');
 }
 
 type AudioConnectionSignal =
@@ -171,6 +176,7 @@ function consumeBayyanFreshChatRequest() {
 }
 
 const useChatSession = () => {
+  const { locale } = useBayyanLocale();
   const client = useContext(ChainlitContext);
   const sessionId = useRecoilValue(sessionIdState);
 
@@ -698,7 +704,7 @@ const useChatSession = () => {
               await cancelSocketAudioAttempt(
                 recordingId,
                 'no_first_audio_chunk',
-                'Le microphone est ouvert, mais aucun son n’arrive. Vérifiez le micro puis réessayez.'
+                getBayyanAudioMessage(locale, 'noAudioReceived')
               );
               return;
             }
@@ -710,7 +716,7 @@ const useChatSession = () => {
             await cancelSocketAudioAttempt(
               recordingId,
               'client_start_failed',
-              getAudioStartErrorMessage(error)
+              getAudioStartErrorMessage(error, locale)
             );
             return;
           }
@@ -976,7 +982,8 @@ const useChatSession = () => {
       chatProfile,
       applyThread,
       closeAudioHardware,
-      refreshCurrentThread
+      refreshCurrentThread,
+      locale
     ]
   );
 

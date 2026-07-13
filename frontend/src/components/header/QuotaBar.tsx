@@ -1,6 +1,10 @@
 import { useRecoilValue } from 'recoil';
 
-import { quotaState, type QuotaData } from '@/state/quota';
+import { useTranslation } from 'components/i18n/Translator';
+
+import { type QuotaData, quotaState } from '@/state/quota';
+
+type Translate = ReturnType<typeof useTranslation>['t'];
 
 function QuotaValue({
   remaining,
@@ -27,17 +31,25 @@ function QuotaValue({
   );
 }
 
-function costLabel(name: string, cost: number | undefined, fallback: number) {
+function costLabel(
+  name: string,
+  cost: number | undefined,
+  fallback: number,
+  t: Translate
+) {
   const safeCost = cost || fallback;
-  return `${name} ${safeCost} ${safeCost > 1 ? 'points' : 'point'}`;
+  const unit = t(
+    safeCost > 1 ? 'bayyan.quota.pointsUnit' : 'bayyan.quota.point'
+  );
+  return `${name} ${safeCost} ${unit}`;
 }
 
-function quotaTitle(quota: QuotaData) {
+function quotaTitle(quota: QuotaData, t: Translate) {
   const costs = quota.units.costs || {};
   return [
-    costLabel('Simple', costs.concise, 1),
-    costLabel('Standard', costs.standard, 2),
-    costLabel('Approfondi', costs.deep, 3)
+    costLabel(t('bayyan.quota.concise'), costs.concise, 1, t),
+    costLabel(t('bayyan.quota.standard'), costs.standard, 2, t),
+    costLabel(t('bayyan.quota.deep'), costs.deep, 3, t)
   ].join(' | ');
 }
 
@@ -46,19 +58,23 @@ function quotaTitle(quota: QuotaData) {
  */
 export function QuotaInline() {
   const quota = useRecoilValue(quotaState);
+  const { t } = useTranslation();
 
   if (!quota) return null;
   const { units } = quota;
 
   return (
     <div
-      aria-label={`Points restants: ${units.remaining} sur ${units.limit}`}
+      aria-label={t('bayyan.quota.remainingLabel', {
+        remaining: units.remaining,
+        limit: units.limit
+      })}
       className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground mr-1"
-      title={quotaTitle(quota)}
+      title={quotaTitle(quota, t)}
     >
       <span className="text-[11px]">⚡</span>
       <span className="flex items-center gap-1">
-        <span className="font-semibold">Points</span>
+        <span className="font-semibold">{t('bayyan.quota.points')}</span>
         <QuotaValue remaining={units.remaining} limit={units.limit} />
       </span>
     </div>
@@ -70,19 +86,23 @@ export function QuotaInline() {
  */
 export default function QuotaBar() {
   const quota = useRecoilValue(quotaState);
+  const { t } = useTranslation();
 
   if (!quota) return null;
   const { units } = quota;
 
   return (
     <div
-      aria-label={`Points restants: ${units.remaining} sur ${units.limit}`}
+      aria-label={t('bayyan.quota.remainingLabel', {
+        remaining: units.remaining,
+        limit: units.limit
+      })}
       className="flex md:hidden items-center justify-center gap-1.5 h-7 bg-muted/50 border-b text-xs text-muted-foreground px-3 shrink-0"
-      title={quotaTitle(quota)}
+      title={quotaTitle(quota, t)}
     >
       <span>⚡</span>
       <span className="flex items-center gap-1">
-        <span className="font-semibold">Points</span>
+        <span className="font-semibold">{t('bayyan.quota.points')}</span>
         <QuotaValue remaining={units.remaining} limit={units.limit} />
       </span>
     </div>

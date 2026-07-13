@@ -1,9 +1,12 @@
+import { BAYYAN_TRANSLATIONS } from '@/i18n/bayyanTranslations';
 import getRouterBasename from '@/lib/router';
 import App from 'App';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
+  applyBayyanDocumentLocale,
+  normalizeBayyanLocale,
   useApi,
   useAuth,
   useChatInteract,
@@ -18,7 +21,21 @@ export default function AppWrapper() {
   const { windowMessage } = useChatInteract();
 
   function handleChangeLanguage(languageBundle: any): void {
-    i18n.addResourceBundle(languageInUse, 'translation', languageBundle);
+    const locale = normalizeBayyanLocale(languageInUse) || 'fr';
+    i18n.addResourceBundle(
+      languageInUse,
+      'translation',
+      languageBundle,
+      true,
+      true
+    );
+    i18n.addResourceBundle(
+      languageInUse,
+      'translation',
+      BAYYAN_TRANSLATIONS[locale],
+      true,
+      true
+    );
     i18n.changeLanguage(languageInUse);
   }
 
@@ -27,10 +44,15 @@ export default function AppWrapper() {
   );
 
   useEffect(() => {
+    applyBayyanDocumentLocale(languageInUse);
+    setTranslationLoaded(false);
+  }, [languageInUse]);
+
+  useEffect(() => {
     if (!translations) return;
     handleChangeLanguage(translations.translation);
     setTranslationLoaded(true);
-  }, [translations]);
+  }, [translations, languageInUse]);
 
   useEffect(() => {
     const handleWindowMessage = (event: MessageEvent) => {

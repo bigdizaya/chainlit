@@ -6,6 +6,7 @@ import type { IMessageElement, IStep } from '@chainlit/react-client';
 
 import { CURSOR_PLACEHOLDER } from '@/components/BlinkingCursor';
 import { Markdown } from '@/components/Markdown';
+import { Translator } from 'components/i18n';
 
 import { InlinedElements } from './InlinedElements';
 
@@ -67,7 +68,9 @@ const MessageContent = memo(
       const outputMarkdown = displayOutput ? (
         <>
           {!isMessage && displayInput && message.output ? (
-            <div className="font-medium">Output</div>
+            <div className="font-medium">
+              <Translator path="bayyan.status.output" />
+            </div>
           ) : null}
           <Markdown
             allowHtml={allowHtml}

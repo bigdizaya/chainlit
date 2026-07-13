@@ -178,6 +178,7 @@ const Input = forwardRef<InputMethods, Props>(
         <AutoResizeTextarea
           ref={textareaRef}
           id={id}
+          dir="auto"
           autoFocus={autoFocus}
           value={value}
           onChange={handleChange}
