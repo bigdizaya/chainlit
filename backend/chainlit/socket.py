@@ -202,14 +202,26 @@ async def connect(sid: str, environ: WSGIEnvironment, auth: WebSocketSessionAuth
 async def connection_successful(sid):
     context = init_ws_context(sid)
 
-    await context.emitter.task_end()
+    current_task = context.session.current_task
+    if current_task and not current_task.done():
+        # A reconnected client must keep showing the active run instead of
+        # interpreting the handshake as a completed task.
+        await context.emitter.task_start()
+    else:
+        await context.emitter.task_end()
     await context.emitter.clear("clear_ask")
     await context.emitter.clear("clear_call_fn")
 
-    if context.session.restored and not context.session.has_first_interaction:
-        if config.code.on_chat_start:
+    if context.session.restored:
+        if (
+            not context.session.has_first_interaction
+            and config.code.on_chat_start
+            and current_task is None
+        ):
             task = asyncio.create_task(config.code.on_chat_start())
             context.session.current_task = task
+        # The in-memory session already owns its thread and running task. Do not
+        # replace current_task with a new on_chat_start callback on reconnect.
         return
 
     if context.session.thread_id_to_resume and config.code.on_chat_resume:

@@ -15,6 +15,7 @@ from chainlit.socket import (
     audio_end,
     audio_start,
     clean_session,
+    connection_successful,
     is_fresh_chat_request,
     load_user_env,
     persist_user_session,
@@ -164,6 +165,78 @@ class TestRestoreExistingSession:
             )
 
             assert result is False
+
+
+class TestConnectionSuccessful:
+    """The handshake must expose the real task state after a reconnect."""
+
+    @pytest.mark.asyncio
+    async def test_reconnect_reports_a_still_running_task(self):
+        current_task = Mock()
+        current_task.done.return_value = False
+        context = Mock()
+        context.session.current_task = current_task
+        context.session.restored = True
+        context.session.has_first_interaction = True
+        context.emitter = AsyncMock()
+
+        with patch("chainlit.socket.init_ws_context", return_value=context):
+            await connection_successful("sid")
+
+        context.emitter.task_start.assert_awaited_once()
+        context.emitter.task_end.assert_not_awaited()
+        assert context.emitter.clear.await_count == 2
+
+    @pytest.mark.asyncio
+    async def test_reconnect_reports_a_completed_task(self):
+        context = Mock()
+        context.session.current_task = None
+        context.session.restored = True
+        context.session.has_first_interaction = True
+        context.emitter = AsyncMock()
+
+        with patch("chainlit.socket.init_ws_context", return_value=context):
+            await connection_successful("sid")
+
+        context.emitter.task_start.assert_not_awaited()
+        context.emitter.task_end.assert_awaited_once()
+        assert context.emitter.clear.await_count == 2
+
+    @pytest.mark.asyncio
+    async def test_reconnect_does_not_duplicate_running_chat_start(self):
+        current_task = Mock()
+        current_task.done.return_value = False
+        context = Mock()
+        context.session.current_task = current_task
+        context.session.restored = True
+        context.session.has_first_interaction = False
+        context.emitter = AsyncMock()
+
+        with patch("chainlit.socket.init_ws_context", return_value=context):
+            with patch("chainlit.socket.config") as mock_config:
+                mock_config.code.on_chat_start = AsyncMock()
+                await connection_successful("sid")
+
+        assert context.session.current_task is current_task
+        mock_config.code.on_chat_start.assert_not_awaited()
+
+    @pytest.mark.asyncio
+    async def test_reconnect_does_not_repeat_completed_chat_start(self):
+        current_task = Mock()
+        current_task.done.return_value = True
+        context = Mock()
+        context.session.current_task = current_task
+        context.session.restored = True
+        context.session.has_first_interaction = False
+        context.emitter = AsyncMock()
+
+        with patch("chainlit.socket.init_ws_context", return_value=context):
+            with patch("chainlit.socket.config") as mock_config:
+                mock_config.code.on_chat_start = AsyncMock()
+                await connection_successful("sid")
+
+        assert context.session.current_task is current_task
+        mock_config.code.on_chat_start.assert_not_awaited()
 
 
 class TestPersistUserSession:

@@ -153,20 +153,23 @@ class TestMessageBase:
 
     @pytest.mark.asyncio
     async def test_update_with_data_layer(self):
-        """Test update with data layer."""
+        """Persist an update before publishing it to the websocket."""
         with mock_chainlit_context() as ctx:
             msg = Message(content="test")
             mock_data_layer = AsyncMock()
+            events = []
+            mock_data_layer.update_step.side_effect = lambda _: events.append("persist")
+            ctx.emitter.update_step.side_effect = lambda _: events.append("emit")
 
             with patch("chainlit.message.chat_context"):
                 with patch(
                     "chainlit.message.get_data_layer", return_value=mock_data_layer
                 ):
-                    with patch("asyncio.create_task") as mock_create_task:
-                        await msg.update()
+                    await msg.update()
 
-                        mock_create_task.assert_called_once()
-                        ctx.emitter.update_step.assert_called_once()
+                    mock_data_layer.update_step.assert_awaited_once()
+                    ctx.emitter.update_step.assert_awaited_once()
+                    assert events == ["persist", "emit"]
 
     @pytest.mark.asyncio
     async def test_remove_from_chat_context(self):
@@ -281,6 +284,30 @@ class TestMessage:
                         assert msg.streaming is False
                         mock_chat_ctx.add.assert_called_once_with(msg)
                         ctx.emitter.send_step.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_message_send_persists_before_websocket_emission(self):
+        """A reconnect must be able to read a message as soon as it is emitted."""
+
+        with mock_chainlit_context() as ctx:
+            msg = Message(content="durable answer")
+            mock_data_layer = AsyncMock()
+            events = []
+            mock_data_layer.create_step.side_effect = lambda _: events.append("persist")
+            ctx.emitter.send_step.side_effect = lambda _: events.append("emit")
+
+            with patch("chainlit.message.chat_context"):
+                with patch(
+                    "chainlit.message.get_data_layer", return_value=mock_data_layer
+                ):
+                    with patch("chainlit.message.config") as mock_config:
+                        mock_config.code.author_rename = None
+
+                        await msg.send()
+
+            mock_data_layer.create_step.assert_awaited_once()
+            ctx.emitter.send_step.assert_awaited_once()
+            assert events == ["persist", "emit"]
 
     @pytest.mark.asyncio
     async def test_message_send_with_author_rename(self):

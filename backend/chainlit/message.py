@@ -113,7 +113,10 @@ class MessageBase(ABC):
         data_layer = get_data_layer()
         if data_layer:
             try:
-                asyncio.create_task(data_layer.update_step(step_dict))
+                # The UI may reconnect as soon as task_end is emitted. Persist the
+                # final state before publishing it so a thread refresh cannot race
+                # an unfinished database write.
+                await data_layer.update_step(step_dict)
             except Exception as e:
                 if self.fail_on_persist_error:
                     raise e
@@ -147,7 +150,9 @@ class MessageBase(ABC):
         data_layer = get_data_layer()
         if data_layer and not self.persisted:
             try:
-                asyncio.create_task(data_layer.create_step(step_dict))
+                # A sent message is the durable source of truth after a websocket
+                # interruption, so its database write must finish before emission.
+                await data_layer.create_step(step_dict)
                 self.persisted = True
             except Exception as e:
                 if self.fail_on_persist_error:
