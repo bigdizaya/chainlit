@@ -18,7 +18,6 @@ from typing import (
 import filetype
 from pydantic import Field
 from pydantic.dataclasses import dataclass
-from syncer import asyncio
 
 from chainlit.context import context
 from chainlit.data import get_data_layer
@@ -209,7 +208,9 @@ class Element:
 
         if (data_layer := get_data_layer()) and persist:
             try:
-                asyncio.create_task(data_layer.create_element(self))
+                # A thread refresh triggered by task_end must already be able to
+                # recover every element emitted with the final message.
+                await data_layer.create_element(self)
             except Exception as e:
                 logger.error(f"Failed to create element: {e!s}")
         if not self.url and (not self.chainlit_key or self.updatable):

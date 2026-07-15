@@ -61,10 +61,12 @@ import { ChainlitContext } from './context';
 import { getBayyanAudioMessage } from './useAudio';
 import type { IToken } from './useChatData';
 import { bindBayyanFreshChatToThread } from './utils/bayyanFreshChat';
+import { type BayyanLocale, useBayyanLocale } from './utils/bayyanLocale';
 import {
-  type BayyanLocale,
-  useBayyanLocale
-} from './utils/bayyanLocale';
+  fetchThreadWithRetry,
+  isCurrentThreadSnapshot,
+  mergeThreadSteps
+} from './utils/threadSync';
 
 const THREAD_HISTORY_REFRESH_SIZE = 35;
 const BAYYAN_ACTIVITY_KEY = 'jawab_last_activity';
@@ -212,6 +214,7 @@ const useChatSession = () => {
     useRecoilState(currentThreadIdState);
   const currentThreadIdRef = useRef(currentThreadId);
   const isRefreshingThreadRef = useRef(false);
+  const threadRefreshQueuedRef = useRef(false);
   const lastForegroundRefreshRef = useRef(0);
   const foregroundSyncOwnerRef = useRef(Symbol('foreground-sync-owner'));
   const taskStartedRef = useRef(false);
@@ -251,11 +254,16 @@ const useChatSession = () => {
   const applyThread = useCallback(
     (
       thread: IThread,
-      options: { handleResumeRedirect?: boolean; syncLoading?: boolean } = {}
+      options: {
+        handleResumeRedirect?: boolean;
+        preserveLiveSteps?: boolean;
+        syncLoading?: boolean;
+      } = {}
     ) => {
       const isReadOnlyView = Boolean(
         (thread as any)?.metadata?.viewer_read_only
       );
+      const isCurrentThread = currentThreadIdRef.current === thread.id;
       if (
         options.handleResumeRedirect &&
         !isReadOnlyView &&
@@ -281,7 +289,11 @@ const useChatSession = () => {
       if (thread.metadata?.chat_settings) {
         setChatSettingsValue(thread.metadata?.chat_settings);
       }
-      setMessages(messages);
+      setMessages((current) =>
+        isCurrentThread && options.preserveLiveSteps
+          ? mergeThreadSteps(messages, current)
+          : messages
+      );
       const elements = thread.elements || [];
       setTasklists(
         (elements as ITasklistElement[]).filter((e) => e.type === 'tasklist')
@@ -291,7 +303,7 @@ const useChatSession = () => {
           (e) => ['avatar', 'tasklist'].indexOf(e.type) === -1
         )
       );
-      if (options.syncLoading) {
+      if (options.syncLoading && !taskStartedRef.current) {
         const hasStreamingStep = thread.steps.some((step) => step.streaming);
         setLoading(hasStreamingStep);
       }
@@ -343,26 +355,55 @@ const useChatSession = () => {
   }, [client, setThreadHistory]);
 
   const refreshCurrentThread = useCallback(async () => {
-    if (isRefreshingThreadRef.current) return;
+    if (isRefreshingThreadRef.current) {
+      // A task_end arriving during a foreground refresh must trigger a second
+      // read after the first one, otherwise a pre-final snapshot can win.
+      threadRefreshQueuedRef.current = true;
+      return;
+    }
     if (isBayyanAuthRoute()) return;
     if (isBayyanFreshChatRequest()) return;
     if (isBayyanSessionStale()) return;
 
     isRefreshingThreadRef.current = true;
     try {
-      const threadId = currentThreadIdRef.current || idToResume;
-      if (!threadId) return;
+      do {
+        threadRefreshQueuedRef.current = false;
+        try {
+          const threadId = currentThreadIdRef.current || idToResume;
+          if (!threadId) return;
 
-      await refreshThreadHistory();
-      const thread = await client.getThread(threadId);
-      if (isBayyanFreshChatRequest() || isBayyanSessionStale()) return;
-      if (thread?.id) {
-        applyThread(thread, { syncLoading: true });
-        updateThreadInHistory(thread);
-      }
-    } catch {
-      // Data persistence can be disabled, or the user may not own the thread.
-      // In those cases the socket remains the source of truth.
+          // During an active stream, retain websocket steps that a slightly
+          // older database snapshot may not contain yet. Once task_end fires,
+          // the queued refresh treats the durable snapshot as canonical.
+          let preserveLiveSteps =
+            taskStartedRef.current ||
+            messagesRef.current.some((step) => step.streaming);
+          const thread = await fetchThreadWithRetry(
+            (id) => client.getThread(id),
+            threadId
+          );
+          if (isBayyanFreshChatRequest() || isBayyanSessionStale()) return;
+          preserveLiveSteps =
+            preserveLiveSteps ||
+            taskStartedRef.current ||
+            messagesRef.current.some((step) => step.streaming);
+          const activeThreadId = currentThreadIdRef.current || idToResume;
+          if (isCurrentThreadSnapshot(threadId, activeThreadId, thread)) {
+            applyThread(thread, {
+              preserveLiveSteps,
+              syncLoading: true
+            });
+            updateThreadInHistory(thread);
+          }
+          // Sidebar freshness is useful but must never block recovery of the
+          // answer itself.
+          refreshThreadHistory().catch(() => undefined);
+        } catch {
+          // Data persistence can be disabled, or the user may not own the
+          // thread. In those cases the socket remains the source of truth.
+        }
+      } while (threadRefreshQueuedRef.current);
     } finally {
       isRefreshingThreadRef.current = false;
     }
@@ -515,6 +556,11 @@ const useChatSession = () => {
         if (freshChatRequest) {
           markBayyanActivity();
         }
+        window.dispatchEvent(
+          new CustomEvent('chainlit:connected', {
+            detail: { recovered: Boolean(socket.recovered) }
+          })
+        );
         socket.emit('connection_successful');
         setSession((s) => ({ ...s!, error: false }));
         socket.emit('fetch_favorites');
@@ -593,10 +639,8 @@ const useChatSession = () => {
 
       socket.on('task_end', () => {
         setLoading(false);
-        if (taskStartedRef.current) {
-          taskStartedRef.current = false;
-          refreshCurrentThread();
-        }
+        taskStartedRef.current = false;
+        refreshCurrentThread();
       });
 
       socket.on('reload', () => {

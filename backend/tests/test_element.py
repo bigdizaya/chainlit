@@ -90,6 +90,24 @@ class TestElementBase:
             assert element.for_id == "message_123"
             ctx.emitter.send_element.assert_called_once()
 
+    async def test_element_send_persists_before_emission(
+        self, mock_chainlit_context, monkeypatch
+    ):
+        """A task_end refresh must already include emitted message elements."""
+        async with mock_chainlit_context as ctx:
+            element = File(name="test_file", url="https://example.com/file.pdf")
+            data_layer = AsyncMock()
+            events = []
+            data_layer.create_element.side_effect = lambda _: events.append("persist")
+            ctx.emitter.send_element.side_effect = lambda _: events.append("emit")
+            monkeypatch.setattr("chainlit.element.get_data_layer", lambda: data_layer)
+
+            await element.send(for_id="message_123")
+
+            data_layer.create_element.assert_awaited_once_with(element)
+            ctx.emitter.send_element.assert_awaited_once()
+            assert events == ["persist", "emit"]
+
     async def test_element_remove(self, mock_chainlit_context):
         """Test Element.remove() method."""
         async with mock_chainlit_context as ctx:
