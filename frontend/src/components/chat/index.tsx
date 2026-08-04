@@ -207,7 +207,7 @@ const Chat = () => {
       // Disable the onFocus and onBlur events in react-dropzone to avoid interfering with child trigger events
       onBlur={undefined}
       onFocus={undefined}
-      className="flex w-full h-full flex-col relative"
+      className="relative flex h-full min-h-0 w-full flex-col overflow-hidden"
     >
       {enableAttachments ? (
         <input id="#upload-drop-input" {...upload.getInputProps()} />

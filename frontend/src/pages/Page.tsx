@@ -91,19 +91,19 @@ const Page = ({ children }: Props) => {
   const showSettingsSidebar = config?.ui?.chat_settings_location === 'sidebar';
 
   const mainContent = (
-    <div className="flex flex-col h-full w-full">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
       <Header />
       {isLoggedIn && <QuotaBar />}
       <ResizablePanelGroup
         direction="horizontal"
-        className="flex flex-row flex-grow"
+        className="flex min-h-0 flex-row flex-grow overflow-hidden"
       >
         <ResizablePanel
-          className="flex flex-col h-full w-full"
+          className="flex h-full min-h-0 w-full flex-col overflow-hidden"
           minSize={40}
           defaultSize={60}
         >
-          <div className="flex flex-row flex-grow overflow-auto">
+          <div className="flex min-h-0 flex-row flex-grow overflow-hidden">
             {children}
           </div>
         </ResizablePanel>
