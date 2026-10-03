@@ -11,6 +11,7 @@ import {
 import { useChatMessages } from '@chainlit/react-client';
 
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'components/i18n/Translator';
 
 interface Props {
   autoScrollUserMessage?: boolean;
@@ -31,12 +32,19 @@ export default function ScrollContainer({
   const spacerRef = useRef<HTMLDivElement>(null);
   const lastUserMessageRef = useRef<HTMLDivElement | null>(null);
   const { messages } = useChatMessages();
+  const { t } = useTranslation();
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
 
   // Calculate and update spacer height
   const updateSpacerHeight = useCallback(() => {
     if (!ref.current) return;
+
+    // BAYYAN: the welcome title page opens at its top (nothing to follow
+    // yet). Scrolling to scrollHeight hid the logo under the header on short
+    // laptop screens, and a stale last-user-message ref left from the
+    // previous thread could size the spacer on resize.
+    if (ref.current.closest('[data-chat-state="welcome"]')) return;
 
     if (autoScrollUserMessage && lastUserMessageRef.current) {
       const containerHeight = ref.current.clientHeight;
@@ -210,12 +218,13 @@ export default function ScrollContainer({
       </div>
 
       {showScrollButton ? (
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+        <div className="bayyan-scroll-down absolute bottom-4 left-0 right-0 flex justify-center">
           <Button
             size="icon"
             variant="outline"
             className="rounded-full"
             onClick={scrollToBottom}
+            aria-label={t('bayyan.navigation.scrollToBottom')}
           >
             <ArrowDown className="size-4" />
           </Button>

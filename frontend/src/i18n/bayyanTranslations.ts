@@ -6,7 +6,13 @@ type BayyanTranslation = {
     welcome: {
       eyebrow: string;
       title: string;
+      titleLead: string;
+      titleAccent: string;
       description: string;
+      imprint: {
+        originalTexts: string;
+        traceableSources: string;
+      };
     };
     responseLevel: {
       legend: string;
@@ -31,7 +37,11 @@ type BayyanTranslation = {
       documentedAnswer: string;
       output: string;
     };
-    navigation: { themeToggle: string; userImage: string };
+    navigation: {
+      themeToggle: string;
+      userImage: string;
+      scrollToBottom: string;
+    };
     message: { userQuestion: string };
     voice: { transcriptionError: string; transcriptionEmpty: string };
   };
@@ -50,8 +60,14 @@ export const BAYYAN_TRANSLATIONS: Record<BayyanLocale, BayyanTranslation> = {
       welcome: {
         eyebrow: 'RECHERCHE DOCUMENTAIRE',
         title: 'Que souhaitez-vous éclaircir ?',
+        titleLead: 'Que souhaitez-vous',
+        titleAccent: 'éclaircir ?',
         description:
-          'Interrogez la bibliothèque et retrouvez les passages utilisés dans chaque réponse.'
+          'Interrogez la bibliothèque et retrouvez les passages utilisés dans chaque réponse.',
+        imprint: {
+          originalTexts: 'Textes arabes originaux',
+          traceableSources: 'Sources traçables'
+        }
       },
       responseLevel: {
         legend: 'Format de réponse',
@@ -87,7 +103,8 @@ export const BAYYAN_TRANSLATIONS: Record<BayyanLocale, BayyanTranslation> = {
       },
       navigation: {
         themeToggle: 'Changer de thème',
-        userImage: 'Photo de profil'
+        userImage: 'Photo de profil',
+        scrollToBottom: 'Aller en bas'
       },
       message: { userQuestion: 'Votre question' },
       voice: {
@@ -108,7 +125,13 @@ export const BAYYAN_TRANSLATIONS: Record<BayyanLocale, BayyanTranslation> = {
       welcome: {
         eyebrow: 'بحث موثّق',
         title: 'ما الذي ترغب في توضيحه؟',
-        description: 'اسأل المكتبة واعثر على المقاطع المستخدمة في كل إجابة.'
+        titleLead: 'ما الذي ترغب',
+        titleAccent: 'في توضيحه؟',
+        description: 'اسأل المكتبة واعثر على المقاطع المستخدمة في كل إجابة.',
+        imprint: {
+          originalTexts: 'نصوص عربية أصلية',
+          traceableSources: 'مصادر قابلة للتتبّع'
+        }
       },
       responseLevel: {
         legend: 'صيغة الإجابة',
@@ -143,7 +166,8 @@ export const BAYYAN_TRANSLATIONS: Record<BayyanLocale, BayyanTranslation> = {
       },
       navigation: {
         themeToggle: 'تغيير السمة',
-        userImage: 'الصورة الشخصية'
+        userImage: 'الصورة الشخصية',
+        scrollToBottom: 'الانتقال إلى الأسفل'
       },
       message: { userQuestion: 'سؤالك' },
       voice: {
@@ -164,8 +188,14 @@ export const BAYYAN_TRANSLATIONS: Record<BayyanLocale, BayyanTranslation> = {
       welcome: {
         eyebrow: 'DOCUMENTARY RESEARCH',
         title: 'What would you like to clarify?',
+        titleLead: 'What would you like',
+        titleAccent: 'to clarify?',
         description:
-          'Search the library and find the passages used in every answer.'
+          'Search the library and find the passages used in every answer.',
+        imprint: {
+          originalTexts: 'Original Arabic texts',
+          traceableSources: 'Traceable sources'
+        }
       },
       responseLevel: {
         legend: 'Answer format',
@@ -201,7 +231,8 @@ export const BAYYAN_TRANSLATIONS: Record<BayyanLocale, BayyanTranslation> = {
       },
       navigation: {
         themeToggle: 'Change theme',
-        userImage: 'Profile picture'
+        userImage: 'Profile picture',
+        scrollToBottom: 'Scroll to bottom'
       },
       message: { userQuestion: 'Your question' },
       voice: {
@@ -222,8 +253,14 @@ export const BAYYAN_TRANSLATIONS: Record<BayyanLocale, BayyanTranslation> = {
       welcome: {
         eyebrow: 'INVESTIGACIÓN DOCUMENTAL',
         title: '¿Qué desea aclarar?',
+        titleLead: '¿Qué desea',
+        titleAccent: 'aclarar?',
         description:
-          'Consulte la biblioteca y encuentre los pasajes utilizados en cada respuesta.'
+          'Consulte la biblioteca y encuentre los pasajes utilizados en cada respuesta.',
+        imprint: {
+          originalTexts: 'Textos árabes originales',
+          traceableSources: 'Fuentes rastreables'
+        }
       },
       responseLevel: {
         legend: 'Formato de respuesta',
@@ -260,7 +297,8 @@ export const BAYYAN_TRANSLATIONS: Record<BayyanLocale, BayyanTranslation> = {
       },
       navigation: {
         themeToggle: 'Cambiar tema',
-        userImage: 'Foto de perfil'
+        userImage: 'Foto de perfil',
+        scrollToBottom: 'Ir al final'
       },
       message: { userQuestion: 'Su pregunta' },
       voice: {

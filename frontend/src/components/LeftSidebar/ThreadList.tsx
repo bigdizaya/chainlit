@@ -369,7 +369,7 @@ export function ThreadList({
                                 </span>
                                 <div
                                   className={cn(
-                                    'absolute w-10 bottom-0 top-0 right-0 bg-gradient-to-l from-[hsl(var(--sidebar-background))] to-transparent'
+                                    'bayyan-thread-fade absolute w-10 bottom-0 top-0 end-0 bg-gradient-to-l rtl:bg-gradient-to-r from-[hsl(var(--sidebar-background))] to-transparent'
                                   )}
                                 />
                                 <ThreadOptions
@@ -386,7 +386,7 @@ export function ThreadList({
                                       : undefined
                                   }
                                   className={cn(
-                                    'absolute z-20 bottom-0 top-0 right-0 bg-sidebar-accent hover:bg-sidebar-accent hover:text-primary flex opacity-0 group-hover/thread:opacity-100',
+                                    'absolute z-20 bottom-0 top-0 end-0 bg-sidebar-accent hover:bg-sidebar-accent hover:text-primary flex opacity-0 group-hover/thread:opacity-100',
                                     isSelected &&
                                       'bg-sidebar-accent opacity-100'
                                   )}

@@ -40,7 +40,7 @@ const MessageButtons = ({ message, actions, run, contentRef }: Props) => {
   }
 
   return (
-    <div className="-ml-1.5 flex items-center flex-wrap">
+    <div className="bayyan-message-actions -ms-1.5 flex items-center flex-wrap">
       {showCopyButton ? (
         <>
           <CopyButton content={message.output} contentRef={contentRef} />

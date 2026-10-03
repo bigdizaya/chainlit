@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useChatInteract, useConfig } from '@chainlit/react-client';
 
@@ -76,6 +77,7 @@ const NewChatButton = ({ navigate, onConfirm, ...buttonProps }: Props) => {
   const [open, setOpen] = useState(false);
   const { clear } = useChatInteract();
   const { config } = useConfig();
+  const { t } = useTranslation();
 
   const handleClickOpen = () => {
     if (config?.ui?.confirm_new_chat === false) {
@@ -110,6 +112,7 @@ const NewChatButton = ({ navigate, onConfirm, ...buttonProps }: Props) => {
               id="new-chat-button"
               className="text-muted-foreground hover:text-muted-foreground"
               onClick={handleClickOpen}
+              aria-label={t('navigation.newChat.dialog.tooltip')}
               {...buttonProps}
             >
               <EditSquare className="!size-6" />

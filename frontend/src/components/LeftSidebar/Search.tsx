@@ -98,6 +98,7 @@ export default function SearchChats() {
               size="icon"
               variant="ghost"
               className="text-muted-foreground hover:text-muted-foreground"
+              aria-label={t('threadHistory.sidebar.filters.search')}
             >
               <Search className="!size-5" />
             </Button>

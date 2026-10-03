@@ -14,80 +14,83 @@ code {
   font-family: var(--font-mono);
 }
 
+/* shadcn / Chainlit tokens, rebased on BAYYAN « Encre & Or »:
+   Parchemin (light) in :root, Encre (dark) in .dark. Every Tailwind utility of
+   the fork (bg-background, bg-card, text-muted-foreground, border…) follows. */
 @layer base {
   :root {
-    --font-sans: 'Inter', sans-serif;
-    --font-mono: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-      monospace;
-    --background: 60 20% 95.1%;
-    --foreground: 0 0% 17.6%;
+    --font-sans: 'Geist', 'IBM Plex Sans Arabic', system-ui, -apple-system,
+      'Segoe UI', sans-serif;
+    --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --background: 40 47.4% 96.3%; /* #faf7f1 ivory canvas */
+    --foreground: 40 17.6% 6.7%; /* #14120e ink */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 17.6%;
+    --card-foreground: 40 17.6% 6.7%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 17.6%;
-    --primary: 36 27.4% 39.4%;
-    --primary-hover: 34.8 29.4% 33.3%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 60 20% 95.1%;
-    --secondary-foreground: 0 0% 17.6%;
-    --muted: 0 0% 90%;
-    --muted-foreground: 0 0% 36%;
-    --accent: 60 20% 95.1%;
-    --accent-foreground: 0 0% 17.6%;
-    --destructive: 5.5 50.2% 47.3%;
+    --popover-foreground: 40 17.6% 6.7%;
+    --primary: 36.2 31.2% 36.5%; /* #7a6340 gold ink (AA on ivory) */
+    --primary-hover: 37 32% 30%;
+    --primary-foreground: 40 47.4% 96.3%;
+    --secondary: 40 42.9% 93.1%;
+    --secondary-foreground: 40 17.6% 6.7%;
+    --muted: 40 42.9% 93.1%; /* #f5f0e6 */
+    --muted-foreground: 34.3 10.9% 37.8%; /* #6b6256 */
+    --accent: 40 38.5% 92.4%; /* #f3eee4 */
+    --accent-foreground: 40 17.6% 6.7%;
+    --destructive: 6 52% 44%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 36 27.4% 39.4%;
-    --chart-1: 37.5 25.4% 50.6%;
-    --chart-2: 162.1 51.1% 36.1%;
-    --chart-3: 36 27.4% 39.4%;
-    --chart-4: 35.1 64.2% 52.9%;
-    --chart-5: 156.3 87.7% 25.5%;
-    --radius: 0.75rem;
-    --sidebar-background: 60 20% 95.1%;
-    --sidebar-foreground: 0 0% 17.6%;
-    --sidebar-primary: 36 27.4% 39.4%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 100%;
-    --sidebar-accent-foreground: 0 0% 17.6%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 36 27.4% 39.4%;
+    --border: 39 28.6% 86.3%; /* #e6dfd2 */
+    --input: 39 28.6% 86.3%;
+    --ring: 38 25.4% 50.6%; /* #a18961 */
+    --chart-1: 38 25.4% 50.6%;
+    --chart-2: 36.2 31.2% 36.5%;
+    --chart-3: 39.7 39.4% 67.6%;
+    --chart-4: 34.3 10.9% 37.8%;
+    --chart-5: 40 17.6% 6.7%;
+    --radius: 0.875rem;
+    --sidebar-background: 40 38.5% 92.4%; /* #f3eee4 raised parchment */
+    --sidebar-foreground: 37.9 14.7% 25.3%;
+    --sidebar-primary: 36.2 31.2% 36.5%;
+    --sidebar-primary-foreground: 40 47.4% 96.3%;
+    --sidebar-accent: 40 30% 88.5%;
+    --sidebar-accent-foreground: 40 17.6% 6.7%;
+    --sidebar-border: 39 28.6% 86.3%;
+    --sidebar-ring: 38 25.4% 50.6%;
   }
   .dark {
-    --background: 0 0% 13%;
-    --foreground: 0 0% 93%;
-    --card: 0 0% 18%;
-    --card-foreground: 210 40% 98%;
-    --popover: 0 0% 18%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 36 27.4% 39.4%;
-    --primary-hover: 34.8 29.4% 33.3%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 19%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 0 1% 26%;
-    --muted-foreground: 0 0% 71%;
-    --accent: 0 0% 26%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 5.5 50.2% 47.3%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 0 1% 26%;
-    --input: 0 1% 26%;
-    --ring: 37.2 37.6% 62.9%;
-    --chart-1: 37.2 37.6% 62.9%;
-    --chart-2: 162.1 51.1% 36.1%;
-    --chart-3: 37.5 25.4% 50.6%;
-    --chart-4: 35.1 64.2% 52.9%;
-    --chart-5: 156.3 87.7% 25.5%;
-    --sidebar-background: 0 0% 9%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 36 27.4% 39.4%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 13%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 37.2 37.6% 62.9%;
+    --background: 40 15.8% 3.7%; /* #0b0a08 ink */
+    --foreground: 38.8 41.5% 92%; /* #f3ede2 */
+    --card: 40 16.7% 7.1%; /* #15130f */
+    --card-foreground: 38.8 41.5% 92%;
+    --popover: 36 19.2% 10.2%; /* #1f1b15 */
+    --popover-foreground: 38.8 41.5% 92%;
+    --primary: 39.7 39.4% 67.6%; /* #cdb78c gold light */
+    --primary-hover: 41.9 54.6% 81%;
+    --primary-foreground: 40 15.8% 3.7%;
+    --secondary: 37.5 17.4% 9%;
+    --secondary-foreground: 38.8 41.5% 92%;
+    --muted: 37.5 17.4% 9%; /* #1b1813 */
+    --muted-foreground: 36.9 10.8% 52.9%; /* #948a7a */
+    --accent: 37.5 17.4% 9%;
+    --accent-foreground: 38.8 41.5% 92%;
+    --destructive: 6 55% 52%;
+    --destructive-foreground: 38.8 41.5% 92%;
+    --border: 38.2 16.9% 12.7%; /* #26221b */
+    --input: 38.2 16.9% 12.7%;
+    --ring: 39.7 39.4% 67.6%;
+    --chart-1: 39.7 39.4% 67.6%;
+    --chart-2: 38 25.4% 50.6%;
+    --chart-3: 41.9 54.6% 81%;
+    --chart-4: 36.9 10.8% 52.9%;
+    --chart-5: 38.8 41.5% 92%;
+    --sidebar-background: 36 20% 4.9%; /* #0f0d0a */
+    --sidebar-foreground: 38.6 19.2% 71.4%;
+    --sidebar-primary: 39.7 39.4% 67.6%;
+    --sidebar-primary-foreground: 40 15.8% 3.7%;
+    --sidebar-accent: 37.5 17.4% 9%;
+    --sidebar-accent-foreground: 38.8 41.5% 92%;
+    --sidebar-border: 38.2 16.9% 12.7%;
+    --sidebar-ring: 39.7 39.4% 67.6%;
   }
 }
 
@@ -185,503 +188,1466 @@ code {
   }
 }
 
-/* BAYYAN — document-first mobile experience */
+/* =============================================================================
+   BAYYAN — « Encre & Or »
+   The landing hero carried into the app: a night study lit by one lamp, and
+   answers set like a page from a good edition. Ink and gold carry the brand,
+   Newsreader and Amiri carry the reading, the khatam star is the only ornament.
+
+   This file styles everything React renders (shell, welcome, composer, thread,
+   answer document and the server markup inside it, Radix portals). The app's
+   public/style.css styles only the UI injected by the app JS (support note and
+   pill, search timer, source reader, library link). The --bn-* token layer below
+   is shared with public/style.css and must stay identical in both files.
+   ============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   0. ARABIC COMPANION FACES
+   Amiri re-declared under private names with size-adjust, restricted to the
+   Arabic block. Placed after a Latin face in a stack, Latin glyphs stay in the
+   Latin face and Arabic glyphs come out size-matched:
+     BN Naskh   ×1.18 — Arabic islands inside French reading text
+     BN Naskh L ×1.36 — Arabic titles inside small Geist (references, meta)
+   Italic contexts map to the upright file (Arabic is never slanted).
+   ----------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'BN Naskh';
+  font-style: normal;
+  font-weight: 300 550;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/amiri/v30/J7aRnpd8CGxBHpUrtLMS7JNKIjk.woff2)
+    format('woff2');
+  size-adjust: 118%;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFC;
+}
+@font-face {
+  font-family: 'BN Naskh';
+  font-style: normal;
+  font-weight: 551 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/amiri/v30/J7acnpd8CGxBHp2VkaY6zp5gGDAbnCA.woff2)
+    format('woff2');
+  size-adjust: 118%;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFC;
+}
+@font-face {
+  font-family: 'BN Naskh';
+  font-style: italic;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/amiri/v30/J7aRnpd8CGxBHpUrtLMS7JNKIjk.woff2)
+    format('woff2');
+  size-adjust: 118%;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFC;
+}
+@font-face {
+  font-family: 'BN Naskh L';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/amiri/v30/J7aRnpd8CGxBHpUrtLMS7JNKIjk.woff2)
+    format('woff2');
+  size-adjust: 136%;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFC;
+}
+@font-face {
+  font-family: 'BN Naskh L';
+  font-style: italic;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/amiri/v30/J7aRnpd8CGxBHpUrtLMS7JNKIjk.woff2)
+    format('woff2');
+  size-adjust: 136%;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFC;
+}
+
+/* -----------------------------------------------------------------------------
+   1. TOKENS — the --bn-* semantic layer (shared with public/style.css, keep the
+   two copies identical), then a few fork-only helpers (--bnx-*).
+   ----------------------------------------------------------------------------- */
 :root {
-  --bayyan-primary: #806a49;
-  --bayyan-primary-hover: #6e593c;
-  --bayyan-gold: #806a49;
-  --bayyan-gold-light: #c4a97d;
-  --bayyan-gold-ink: #6e593c;
-  --bayyan-gold-heritage: #a18961;
-  --bayyan-tint: #f5f5f0;
-  --bayyan-surface: #ffffff;
-  --bayyan-background: #f5f5f0;
-  --bayyan-ink: #2d2d2d;
-  --bayyan-ink-secondary: #555555;
-  --bayyan-ink-muted: #777777;
-  --bayyan-success: #2d8b6f;
-  --bayyan-nouraniya: #087a4d;
-  --bayyan-warning: #d4943a;
-  --bayyan-danger: #b5473c;
-  --bayyan-border: #dedede;
-  --bayyan-border-subtle: #eeeae3;
-  --bayyan-disabled-background: #ece9e4;
-  --bayyan-disabled-ink: #77726b;
-  --bayyan-floating-surface: rgba(255, 255, 255, 0.96);
-  --bayyan-shadow: 0 12px 40px rgba(17, 17, 17, 0.1);
+  /* --- BAYYAN semantic layer: Parchemin --- */
+  --bn-canvas: #faf7f1;
+  --bn-raised: #f3eee4;
+  --bn-surface: #ffffff;
+  --bn-surface-2: #f5f0e6;
+  --bn-paper: #fbf9f5;
+  --bn-elevated: #ffffff;
+  --bn-glass: rgba(250, 247, 241, 0.78);
+  --bn-hair: rgba(11, 10, 8, 0.08);
+  --bn-hair-strong: rgba(11, 10, 8, 0.14);
+  --bn-text: #14120e;
+  --bn-body: #2b261e;
+  --bn-text-2: #4a4337;
+  --bn-muted: #6b6256;
+  --bn-gold: #a18961; /* decorative gold: icons, rules, markers */
+  --bn-gold-text: #7a6340; /* gold used for text (5.3:1 on ivory) */
+  --bn-gold-strong: #5f4c2e;
+  --bn-gold-light: #cdb78c;
+  --bn-gold-bright: #e9d9b4;
+  --bn-gold-tint: rgba(161, 137, 97, 0.12);
+  --bn-gold-tint-2: rgba(161, 137, 97, 0.2);
+  --bn-gold-border: rgba(161, 137, 97, 0.38);
+  --bn-gold-border-soft: rgba(161, 137, 97, 0.24);
+  --bn-hover: rgba(11, 10, 8, 0.045);
+  --bn-row-active: #ffffff;
+  /* question card ("QUESTION" ink bubble from HeroDemo) */
+  --bn-q-bg: #14120e;
+  --bn-q-text: #f6f1e7;
+  --bn-q-label: #cdb78c;
+  --bn-q-border: #14120e;
+  --bn-q-shadow: 0 18px 40px -22px rgba(20, 15, 5, 0.55);
+  /* segmented control */
+  --bn-seg-on-bg: #14120e;
+  --bn-seg-on-text: #f6f1e7;
+  /* gradients */
+  --bn-grad-cta: linear-gradient(135deg, #c9b083 0%, #b0956a 48%, #957b52 100%);
+  --bn-grad-disc: linear-gradient(
+    135deg,
+    #b89d6f 0%,
+    #a18961 45%,
+    #87704a 100%
+  );
+  --bn-grad-text: linear-gradient(
+    100deg,
+    #7a6340 0%,
+    #b39463 28%,
+    #8a7148 52%,
+    #b9a06f 78%,
+    #7a6340 100%
+  );
+  --bn-grad-hair: linear-gradient(
+    90deg,
+    transparent,
+    rgba(161, 137, 97, 0.45),
+    transparent
+  );
+  /* shadows (long, negative-spread, warm) */
+  --bn-shadow-1: 0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 1px 2px rgba(60, 45, 20, 0.06);
+  --bn-shadow-2: 0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 18px 40px -26px rgba(60, 45, 20, 0.4);
+  --bn-shadow-3: 0 30px 80px -30px rgba(40, 30, 10, 0.45),
+    0 2px 6px rgba(40, 30, 10, 0.06);
+  --bn-shadow-cta: inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    0 8px 22px -10px rgba(135, 112, 74, 0.7);
+  --bn-shadow-cta-hover: inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 14px 30px -12px rgba(135, 112, 74, 0.85);
+  --bn-backdrop: rgba(20, 16, 10, 0.38);
+  --bn-scroll: rgba(11, 10, 8, 0.16);
+  --bn-skeleton: rgba(161, 137, 97, 0.16);
+  --bn-focus: #a18961;
+  --bn-pattern-opacity: 0.11;
+  --bn-aurora-a: rgba(205, 183, 140, 0.32);
+  --bn-aurora-b: rgba(161, 137, 97, 0.14);
+  --bn-logo: url('/public/logo_light.png');
+
+  /* type */
+  --bn-font-ui: 'Geist', 'IBM Plex Sans Arabic', 'Noto Emoji', system-ui,
+    -apple-system, 'Segoe UI', sans-serif;
+  --bn-font-display: 'Libre Caslon Display', 'EB Garamond', 'Instrument Serif',
+    'Amiri', 'Noto Emoji', Georgia, serif;
+  --bn-font-arabic: 'Amiri', 'IBM Plex Sans Arabic', 'Geeza Pro', 'Noto Emoji',
+    serif;
+  --bn-font-quote: 'Amiri', 'Newsreader', 'Noto Emoji', serif;
+  --bn-font-mono: 'Geist Mono', 'IBM Plex Sans Arabic', ui-monospace,
+    SFMono-Regular, Menlo, monospace;
+  /* reading text face (answers only): Newsreader + size-matched Amiri islands */
+  --bn-font-text: 'Newsreader', 'BN Naskh', 'Noto Emoji', 'Iowan Old Style',
+    Georgia, serif;
+  /* script-aware reference face: Latin refs in Geist, Arabic titles in Amiri ×1.36 */
+  --bn-font-ref: 'Geist', 'BN Naskh L', 'Amiri', 'Noto Emoji', system-ui,
+    sans-serif;
+
+  /* geometry */
+  --bn-column: 700px; /* cards, composer, steps */
+  --bn-measure: 640px; /* running text: ≈ 72–76 characters of Newsreader 18px */
+  --bn-r-pill: 9999px;
+  --bn-r-card: 22px;
+  --bn-r-panel: 28px;
+  --bn-r-inner: 14px;
+
+  /* motion */
+  --bn-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --bn-ease-soft: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ornaments (data-URI SVG; CSP allows data: images) */
+  --bn-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1.5L14.37 6.27L19.42 4.58L17.73 9.63L22.5 12L17.73 14.37L19.42 19.42L14.37 17.73L12 22.5L9.63 17.73L4.58 19.42L6.27 14.37L1.5 12L6.27 9.63L4.58 4.58L9.63 6.27Z'/%3E%3C/svg%3E");
+  --bn-star-outline: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.5' stroke-linejoin='round'%3E%3Cpath d='M12 1.6L15.18 4.82L19.36 4.64L19.18 8.82L22.4 12L19.18 15.18L19.36 19.36L15.18 19.18L12 22.4L8.82 19.18L4.64 19.36L4.82 15.18L1.6 12L4.82 8.82L4.64 4.64L8.82 4.82Z'/%3E%3Ccircle cx='12' cy='12' r='3.2'/%3E%3C/svg%3E");
+  --bn-tile-book: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a18961' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 7v14'/%3E%3Cpath d='M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z'/%3E%3C/svg%3E");
+  --bn-khatam: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23A18961' stroke-width='0.6'%3E%3Cpath d='M40 12 L48 32 L68 40 L48 48 L40 68 L32 48 L12 40 L32 32 Z'/%3E%3Cpath d='M20.2 20.2 L40 28 L59.8 20.2 L52 40 L59.8 59.8 L40 52 L20.2 59.8 L28 40 Z'/%3E%3Ccircle cx='40' cy='40' r='6'/%3E%3Cpath d='M0 0 L12 12 M80 0 L68 12 M0 80 L12 68 M80 80 L68 68'/%3E%3C/g%3E%3C/svg%3E");
+  --bn-medallion: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cg fill='none' stroke='%23A18961' stroke-width='0.7'%3E%3Crect x='45' y='45' width='110' height='110'/%3E%3Crect x='45' y='45' width='110' height='110' transform='rotate(45 100 100)'/%3E%3Crect x='62' y='62' width='76' height='76'/%3E%3Crect x='62' y='62' width='76' height='76' transform='rotate(45 100 100)'/%3E%3Ccircle cx='100' cy='100' r='96'/%3E%3Ccircle cx='100' cy='100' r='78'/%3E%3Ccircle cx='100' cy='100' r='30'/%3E%3Ccircle cx='100' cy='100' r='18'/%3E%3C/g%3E%3C/svg%3E");
+  --bn-i-book: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 7v14'/%3E%3Cpath d='M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z'/%3E%3C/svg%3E");
+  --bn-i-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 7h10v10'/%3E%3Cpath d='M7 17 17 7'/%3E%3C/svg%3E");
+  --bn-i-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --bn-i-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  --bn-i-check-white: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  --bn-i-contrib: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/%3E%3Cpath d='M12 7v6'/%3E%3Cpath d='M9 10h6'/%3E%3C/svg%3E");
+  --bn-i-heart: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z'/%3E%3C/svg%3E");
+  --bn-i-info: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E");
+  --bn-i-close: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 6 6 18'/%3E%3Cpath d='m6 6 12 12'/%3E%3C/svg%3E");
+  /* khatam loader: two interlaced squares + inner ring (Lazward shamsa, simplified) */
+  --bn-khatam-mark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'%3E%3Crect x='11' y='11' width='26' height='26' rx='1.5'/%3E%3Crect x='11' y='11' width='26' height='26' rx='1.5' transform='rotate(45 24 24)'/%3E%3Ccircle cx='24' cy='24' r='6.5'/%3E%3C/svg%3E");
 }
 
 .dark {
-  --bayyan-primary: #806a49;
-  --bayyan-primary-hover: #6e593c;
-  --bayyan-gold: #806a49;
-  --bayyan-gold-light: #c4a97d;
-  --bayyan-gold-ink: #c4a97d;
-  --bayyan-gold-heritage: #a18961;
-  --bayyan-tint: #2a261f;
-  --bayyan-surface: #211f1c;
-  --bayyan-background: #171614;
-  --bayyan-ink: #f6f1e8;
-  --bayyan-ink-secondary: #c9c1b5;
-  --bayyan-ink-muted: #aaa196;
-  --bayyan-border: #454038;
-  --bayyan-border-subtle: #37332d;
-  --bayyan-disabled-background: #302d28;
-  --bayyan-disabled-ink: #8f887e;
-  --bayyan-floating-surface: rgba(33, 31, 28, 0.97);
-  --bayyan-shadow: 0 16px 44px rgba(0, 0, 0, 0.34);
+  /* --- BAYYAN semantic layer: Encre --- */
+  --bn-canvas: #0b0a08;
+  --bn-raised: #0f0d0a;
+  --bn-surface: #15130f;
+  --bn-surface-2: #1b1813;
+  --bn-paper: #12100c;
+  --bn-elevated: #1f1b15;
+  --bn-glass: rgba(11, 10, 8, 0.72);
+  --bn-hair: rgba(233, 217, 180, 0.1);
+  --bn-hair-strong: rgba(233, 217, 180, 0.17);
+  --bn-text: #f3ede2;
+  --bn-body: #d9d0c0; /* a touch below headings: less halation on long reads */
+  --bn-text-2: #c4baa8;
+  --bn-muted: #948a7a;
+  --bn-gold: #a18961;
+  --bn-gold-text: #cdb78c;
+  --bn-gold-strong: #e9d9b4;
+  --bn-gold-tint: rgba(205, 183, 140, 0.11);
+  --bn-gold-tint-2: rgba(205, 183, 140, 0.19);
+  --bn-gold-border: rgba(205, 183, 140, 0.34);
+  --bn-gold-border-soft: rgba(205, 183, 140, 0.2);
+  --bn-hover: rgba(233, 217, 180, 0.05);
+  --bn-row-active: rgba(233, 217, 180, 0.07);
+  --bn-q-bg: #1d1913;
+  --bn-q-text: #f3ede2;
+  --bn-q-label: #cdb78c;
+  --bn-q-border: rgba(205, 183, 140, 0.24);
+  --bn-q-shadow: 0 1px 0 rgba(233, 217, 180, 0.07) inset,
+    0 24px 50px -30px rgba(0, 0, 0, 0.9);
+  --bn-seg-on-bg: #cdb78c;
+  --bn-seg-on-text: #0b0a08;
+  --bn-grad-text: linear-gradient(
+    100deg,
+    #b69a6a 0%,
+    #e9d9b4 30%,
+    #a18961 55%,
+    #e9d9b4 80%,
+    #b69a6a 100%
+  );
+  --bn-grad-hair: linear-gradient(
+    90deg,
+    transparent,
+    rgba(205, 183, 140, 0.4),
+    transparent
+  );
+  --bn-shadow-1: 0 1px 0 rgba(233, 217, 180, 0.05) inset;
+  --bn-shadow-2: 0 1px 0 rgba(233, 217, 180, 0.06) inset,
+    0 24px 50px -28px rgba(0, 0, 0, 0.85);
+  --bn-shadow-3: 0 1px 0 rgba(233, 217, 180, 0.06) inset,
+    0 50px 120px -40px rgba(0, 0, 0, 0.9);
+  --bn-shadow-cta: inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 8px 24px -8px rgba(161, 137, 97, 0.55);
+  --bn-shadow-cta-hover: inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    0 14px 34px -10px rgba(161, 137, 97, 0.75);
+  --bn-backdrop: rgba(0, 0, 0, 0.62);
+  --bn-scroll: rgba(233, 217, 180, 0.14);
+  --bn-skeleton: rgba(205, 183, 140, 0.12);
+  --bn-focus: #cdb78c;
+  --bn-pattern-opacity: 0.13;
+  --bn-aurora-a: rgba(161, 137, 97, 0.3);
+  --bn-aurora-b: rgba(120, 92, 52, 0.28);
+  --bn-logo: url('/public/logo_dark.png');
 }
 
-#root .bayyan-welcome-screen {
-  width: min(100%, 430px);
+/* fork-only helpers (not part of the shared --bn-* contract) */
+:root {
+  /* reading direction of the answer being laid out (see §7.0) */
+  --bnx-dir: ltr;
+  --bnx-from-start: 90deg;
+  --bnx-i-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.6-3.6'/%3E%3C/svg%3E");
+  --bnx-i-warning: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='M12 17h.01'/%3E%3C/svg%3E");
+  --bnx-i-stopped: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Crect x='9' y='9' width='6' height='6' rx='1'/%3E%3C/svg%3E");
+  --bnx-i-error: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='m15 9-6 6'/%3E%3Cpath d='m9 9 6 6'/%3E%3C/svg%3E");
+  --bnx-i-wait: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 22h14'/%3E%3Cpath d='M5 2h14'/%3E%3Cpath d='M17 22v-4.17a2 2 0 0 0-.59-1.42L12 12l-4.41 4.41A2 2 0 0 0 7 17.83V22'/%3E%3Cpath d='M7 2v4.17a2 2 0 0 0 .59 1.42L12 12l4.41-4.41A2 2 0 0 0 17 6.17V2'/%3E%3C/svg%3E");
+  --bnx-i-quota: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='m5.6 5.6 12.8 12.8'/%3E%3C/svg%3E");
+  --bnx-i-tip: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5'/%3E%3Cpath d='M9 18h6'/%3E%3Cpath d='M10 22h4'/%3E%3C/svg%3E");
+}
+html[dir='rtl'] {
+  --bnx-dir: rtl;
+  --bnx-from-start: 270deg;
+}
+
+/* -----------------------------------------------------------------------------
+   2. BASE
+   ----------------------------------------------------------------------------- */
+html {
+  background: var(--bn-canvas);
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
+}
+html.dark {
+  color-scheme: dark;
+}
+body {
+  background: var(--bn-canvas);
+  color: var(--bn-text);
+  font-family: var(--bn-font-ui);
+  font-feature-settings: 'ss01' 0;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+#root {
+  background: var(--bn-canvas);
+}
+
+/* Atomic theme switch: ThemeProvider adds html.theme-switching for ~120 ms,
+   so every surface changes in the same frame (no colour transition cascade). */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition: none !important;
+}
+
+::selection {
+  background: rgba(205, 183, 140, 0.42);
+  color: inherit;
+}
+
+/* thin warm scrollbars, transparent tracks (no black stripe in dark) */
+:is(#root, [data-mobile='true'], [role='dialog']) * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bn-scroll) transparent;
+}
+:is(#root, [data-mobile='true'], [role='dialog']) ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+:is(#root, [data-mobile='true'], [role='dialog']) ::-webkit-scrollbar-track {
+  background: transparent;
+}
+:is(#root, [data-mobile='true'], [role='dialog']) ::-webkit-scrollbar-thumb {
+  background: var(--bn-scroll);
+  border: 3px solid transparent;
+  border-radius: 10px;
+  background-clip: content-box;
+}
+
+/* one visible focus ring everywhere (the composer field shows its glow instead) */
+#root
+  :is(
+    a,
+    button,
+    summary,
+    [role='button'],
+    input:not([type='radio'])
+  ):focus-visible,
+:is([data-mobile='true'], [data-radix-popper-content-wrapper], [role='dialog'])
+  :is(a, button, [role='menuitem'], input:not([cmdk-input])):focus-visible {
+  outline: 2px solid var(--bn-focus);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* shared micro-label (eyebrows, labels) */
+#root .bayyan-answer-document__eyebrow,
+#root .bayyan-user-question__label,
+#root .bayyan-welcome-copy > p {
+  font-family: var(--bn-font-ui);
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Arabic is never slanted or tracked */
+#root :is([lang='ar'], [data-script='ar']) {
+  letter-spacing: 0;
+  font-synthesis: none;
+}
+
+/* -----------------------------------------------------------------------------
+   3. APP SHELL — canvas, sidebar, header
+   ----------------------------------------------------------------------------- */
+#root main {
+  background: var(--bn-canvas);
+  isolation: isolate;
+}
+#root main > div {
+  position: relative;
+  z-index: 1;
+}
+
+/* Atmosphere: khatam lattice + one gold lamp, ONLY behind the welcome state.
+   The lattice drifts by transform (composited, no repaint per frame): an
+   oversized tile layer slides two tiles over 90 s and loops seamlessly; main
+   clips it. The vignette that fades it out is painted by ::after in the canvas
+   colour, so it stays put while the tiles move. */
+#root main:has([data-chat-state='welcome']) {
+  overflow: hidden;
+  overflow: clip;
+}
+#root main:has([data-chat-state='welcome'])::before,
+#root main:has([data-chat-state='welcome'])::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+#root main:has([data-chat-state='welcome'])::before {
+  inset: -160px 0 0 -160px;
+  background-image: var(--bn-khatam);
+  background-size: 80px 80px;
+  background-position: center -6px;
+  opacity: var(--bn-pattern-opacity);
+  will-change: transform;
+  animation: bn-pattern-drift 90s linear infinite;
+}
+#root main:has([data-chat-state='welcome'])::after {
+  background: radial-gradient(
+      ellipse 46% 34% at 50% 70%,
+      var(--bn-aurora-a),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 40% 40% at 12% 0%,
+      var(--bn-aurora-b),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 34% 30% at 92% 8%,
+      var(--bn-aurora-b),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 58% 52% at 50% 40%,
+      transparent 18%,
+      var(--bn-canvas) 78%
+    );
+}
+
+/* ---------- Sidebar ----------
+   The phone sidebar is a Radix Sheet portaled into <body> (outside #root):
+   every sidebar rule is scoped to #root OR that sheet ([data-mobile="true"]).
+   In the Arabic UI the sidebar is rendered side="right"; all spacing is logical. */
+:is(
+    #root [data-sidebar='sidebar'],
+    [data-sidebar='sidebar'][data-mobile='true']
+  ) {
+  background: var(--bn-raised);
+  border-inline-end: 1px solid var(--bn-hair);
+  color: var(--bn-text-2);
+}
+:is(#root, [data-mobile='true']) [data-sidebar='header'] {
+  padding: 12px 10px 6px;
+}
+:is(#root, [data-mobile='true']) [data-sidebar='header'] > div {
+  min-height: 40px;
+  /* brand mark in the app chrome (the header has none) */
+  background-image: var(--bn-logo);
+  background-repeat: no-repeat;
+  background-size: auto 19px;
+  background-position: 46px 52%;
+}
+:is(#root, [data-mobile='true']) [data-sidebar='header'] button,
+#root #header #sidebar-trigger-button,
+#root #header #new-chat-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: var(--bn-text-2);
+  transition: background-color 0.3s var(--bn-ease), color 0.3s var(--bn-ease);
+}
+:is(#root, [data-mobile='true']) [data-sidebar='header'] button:hover,
+#root #header #sidebar-trigger-button:hover,
+#root #header #new-chat-button:hover {
+  background: var(--bn-gold-tint);
+  color: var(--bn-gold-text);
+}
+:is(#root, [data-mobile='true']) [data-sidebar='header'] button svg,
+#root #header #sidebar-trigger-button svg,
+#root #header #new-chat-button svg {
+  width: 19px !important;
+  height: 19px !important;
+}
+:is(#root, [data-mobile='true']) [data-sidebar='content'] {
+  padding: 4px 4px 24px;
+}
+:is(#root, [data-mobile='true'])
+  [data-sidebar='content']
+  [data-sidebar='group'] {
+  padding-block: 2px;
+  padding-inline: 6px;
+}
+:is(#root, [data-mobile='true']) #thread-history [data-sidebar='group'] {
+  padding: 0 0 10px;
+}
+:is(#root, [data-mobile='true']) [data-sidebar='group-label'] {
+  height: 30px;
+  margin-top: 6px;
+  padding-inline: 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bn-muted);
+}
+:is(#root, [data-mobile='true']) [data-sidebar='group-content'] ul {
+  gap: 1px;
+}
+:is(#root, [data-mobile='true']) [data-sidebar='menu-button'] {
+  position: relative;
+  height: 36px;
+  padding-inline: 12px 10px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 450;
+  color: var(--bn-text-2);
+  text-align: start;
+  transition: background-color 0.35s var(--bn-ease), color 0.35s var(--bn-ease);
+}
+/* the title box fills the row, so a short title starts where a truncated one
+   starts; plaintext gives each title its own direction and puts the ellipsis at
+   the end of the text, whatever the UI direction */
+:is(#root, [data-mobile='true'])
+  [data-sidebar='menu-button']
+  > span:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+:is(#root, [data-mobile='true']) [data-sidebar='menu-button'] .truncate {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+:is(#root, [data-mobile='true'])
+  [data-collapsible='icon']
+  [data-sidebar='header']
+  > div {
+  background-image: none;
+}
+:is(#root, [data-mobile='true']) [data-sidebar='menu-button']:hover {
+  background: var(--bn-hover);
+  color: var(--bn-text);
+}
+:is(#root, [data-mobile='true'])
+  [data-sidebar='menu-button'][data-active='true'] {
+  padding-inline-end: 38px;
+  background: var(--bn-row-active);
+  color: var(--bn-text);
+  font-weight: 550;
+  box-shadow: var(--bn-shadow-1), 0 0 0 1px var(--bn-hair);
+}
+:is(#root, [data-mobile='true'])
+  [data-sidebar='menu-button'][data-active='true']::before {
+  content: '';
+  position: absolute;
+  inset-block: 10px;
+  inset-inline-start: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--bn-grad-disc);
+}
+/* the 40px fade painted a box at the end of every row: rely on the ellipsis */
+:is(#root, [data-mobile='true']) .bayyan-thread-fade {
+  display: none;
+}
+:is(#root, [data-mobile='true']) #thread-options {
+  background: transparent;
+  color: var(--bn-muted);
+  border-radius: 8px;
+}
+:is(#root, [data-mobile='true']) #thread-options:hover {
+  color: var(--bn-gold-text);
+  background: var(--bn-gold-tint);
+}
+:is(#root, [data-mobile='true'])
+  [data-sidebar='menu-button']:not([data-active='true'])
+  #thread-options {
+  background: linear-gradient(
+    to var(--bnx-to-start, left),
+    var(--bn-raised) 60%,
+    transparent
+  );
+}
+/* on a hovered row the fade takes the row's own composite colour (the
+   translucent hover fill over the raised sidebar), so the pill keeps its
+   rounded end and the title fades into the right colour */
+:is(#root, [data-mobile='true'])
+  [data-sidebar='menu-button']:not([data-active='true']):is(
+    :hover,
+    :focus-within
+  )
+  #thread-options {
+  background: linear-gradient(
+      to var(--bnx-to-start, left),
+      var(--bn-hover) 60%,
+      transparent
+    ),
+    linear-gradient(
+      to var(--bnx-to-start, left),
+      var(--bn-raised) 60%,
+      transparent
+    );
+}
+html[dir='rtl'] :is(#root, [data-mobile='true']) {
+  --bnx-to-start: right;
+}
+
+/* ---------- Header ----------
+   Nothing scrolls beneath it (the scroller starts under the bar), so it is a
+   plain canvas bar with a hairline: no backdrop-filter cost on low-end Android. */
+#root #header {
+  height: 60px;
+  padding-inline: 14px;
+  background: var(--bn-canvas);
+  border-bottom: 1px solid var(--bn-hair);
+  z-index: 5;
+}
+#root #header::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 100%;
+  height: 18px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bn-canvas) 92%, transparent),
+    transparent
+  );
+  pointer-events: none;
+}
+#root main:has([data-chat-state='welcome']) #header::after {
+  content: none;
+}
+#root main:has([data-chat-state='welcome']) #header {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+#root #header .bayyan-header__end {
+  gap: 6px;
+}
+
+/* Lisez-moi: quiet text button */
+#root #readme-button {
+  height: 36px;
+  padding-inline: 12px;
+  border-radius: var(--bn-r-pill);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--bn-text-2);
+}
+#root #readme-button:hover {
+  background: var(--bn-hover);
+  color: var(--bn-text);
+}
+
+/* Quota: a meter chip signed with the khatam star (the ⚡ icon is hidden) */
+#root .bayyan-quota {
+  font-family: var(--bn-font-ui);
+}
+#root .bayyan-quota__icon {
+  display: none;
+}
+#root .bayyan-quota::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  flex: none;
+  background: var(--bn-gold);
+  -webkit-mask: var(--bn-star) center / contain no-repeat;
+  mask: var(--bn-star) center / contain no-repeat;
+}
+#root .bayyan-quota--inline {
+  height: 32px;
+  padding-inline: 10px 12px;
+  margin-inline: 4px;
+  gap: 7px;
+  border-radius: var(--bn-r-pill);
+  background: var(--bn-surface-2);
+  box-shadow: inset 0 0 0 1px var(--bn-hair);
+  color: var(--bn-muted);
+  font-size: 12.5px;
+}
+#root .bayyan-quota__body {
+  gap: 5px;
+}
+#root .bayyan-quota__label {
+  font-weight: 500;
+  color: var(--bn-text-2);
+}
+#root .bayyan-quota__value {
+  font-family: var(--bn-font-ui);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--bn-text);
+  letter-spacing: 0.01em;
+}
+#root .bayyan-quota__value[data-level='low'] {
+  color: var(--bn-gold-text);
+}
+#root .bayyan-quota__value[data-level='empty'] {
+  color: hsl(var(--destructive));
+}
+#root .bayyan-quota:has(.bayyan-quota__value[data-level='low']) {
+  background: var(--bn-gold-tint);
+  box-shadow: inset 0 0 0 1px var(--bn-gold-border);
+}
+#root .bayyan-quota:has(.bayyan-quota__value[data-level='empty']) {
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, hsl(var(--destructive)) 45%, transparent);
+}
+
+/* Contribuer (feedback menu): hairline pill with a contribution icon —
+   the heart belongs to donation */
+#root #header button:has(> svg.lucide-heart) {
+  height: 36px;
+  padding-inline: 12px 15px;
+  gap: 8px;
+  border-radius: var(--bn-r-pill);
+  border: 1px solid var(--bn-hair-strong);
+  background: color-mix(in srgb, var(--bn-surface) 55%, transparent);
+  color: var(--bn-text-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  box-shadow: none;
+  transition: background-color 0.4s var(--bn-ease),
+    border-color 0.4s var(--bn-ease), color 0.4s var(--bn-ease),
+    transform 0.4s var(--bn-ease);
+}
+#root #header button:has(> svg.lucide-heart):hover {
+  background: var(--bn-gold-tint);
+  border-color: var(--bn-gold-border);
+  color: var(--bn-gold-text);
+  transform: translateY(-1px);
+}
+#root #header button:has(> svg.lucide-heart) > svg {
+  display: none;
+}
+#root #header button:has(> svg.lucide-heart)::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: var(--bn-i-contrib) center / contain no-repeat;
+  mask: var(--bn-i-contrib) center / contain no-repeat;
+}
+
+/* theme toggle: round ghost button */
+#root #theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--bn-text-2);
+}
+#root #theme-toggle:hover {
+  background: var(--bn-gold-tint);
+  color: var(--bn-gold-text);
+}
+#root #theme-toggle svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke-width: 1.7;
+}
+
+/* avatar: ink monogram with a gold ring */
+#root #user-nav-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  margin-inline-start: 2px;
+  border-radius: 50%;
+  background: transparent;
+}
+#root #user-nav-button > span {
+  width: 34px;
+  height: 34px;
+  padding: 1.5px;
+  border-radius: 50%;
+  background: var(--bn-grad-disc);
+  transition: box-shadow 0.3s var(--bn-ease);
+}
+#root #user-nav-button:hover > span {
+  box-shadow: 0 0 0 3px var(--bn-gold-tint-2);
+}
+#root #user-nav-button > span > span {
+  background: var(--bn-q-bg);
+  color: var(--bn-gold-light);
+  font-family: var(--bn-font-display);
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1;
+}
+#root #user-nav-button > span > img {
+  border-radius: 50%;
+}
+
+/* -----------------------------------------------------------------------------
+   4. WELCOME — a title page
+   logo · flanked eyebrow · two-line title · description · composer · imprint
+   ----------------------------------------------------------------------------- */
+#root #welcome-screen.bayyan-welcome-screen {
+  width: min(100%, 760px);
   min-height: 100%;
   margin-inline: auto;
-  padding: 26px 20px 34px;
-  gap: 18px;
-  color: var(--bayyan-ink);
-  background: var(--bayyan-background);
-}
-
-#root .bayyan-welcome-brand {
-  min-height: 44px;
+  padding: 24px 4px 56px;
   display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--bayyan-border);
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-align: center;
+  color: var(--bn-text);
 }
-
+#root .bayyan-welcome-brand {
+  display: flex;
+  justify-content: center;
+  min-height: 0;
+  margin-bottom: 34px;
+  border: 0;
+  animation: bn-rise 0.9s var(--bn-ease) both;
+}
 #root .bayyan-welcome-logo {
-  width: 113px;
-  height: 27px;
+  width: auto;
+  height: 38px;
   object-fit: contain;
 }
-
 #root .bayyan-welcome-copy {
   display: grid;
-  gap: 10px;
+  justify-items: center;
+  gap: 0;
 }
-
-#root .bayyan-welcome-copy > p,
-#root .bayyan-answer-document__eyebrow,
-#root .bayyan-user-question__label {
-  margin: 0;
-  color: var(--bayyan-gold-ink);
-  font-size: 10px;
-  line-height: 1.2;
-  font-weight: 750;
-  letter-spacing: 0.15em;
+#root .bayyan-welcome-copy > p {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 22px;
+  color: var(--bn-gold-text);
+  animation: bn-rise 0.9s 0.06s var(--bn-ease) both;
 }
-
+#root .bayyan-welcome-copy > p::before,
+#root .bayyan-welcome-copy > p::after {
+  content: '';
+  width: 30px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
+}
 #root .bayyan-welcome-copy > h1 {
+  max-width: 100%;
   margin: 0;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(31px, 9vw, 38px);
+  font-family: var(--bn-font-display);
+  font-size: clamp(46px, 4.9vw, 70px);
   line-height: 1.02;
-  letter-spacing: -0.035em;
-  font-weight: 600;
+  letter-spacing: -0.022em;
+  font-weight: 400;
+  font-style: normal;
+  color: var(--bn-text);
   text-wrap: balance;
+  animation: bn-rise 1s 0.12s var(--bn-ease) both;
+}
+#root .bayyan-welcome-title__lead {
+  display: block;
+}
+/* the accent phrase: italic, lit by the gold gradient (one accent per title) */
+#root .bayyan-welcome-title__accent {
+  display: inline-block;
+  padding-inline: 0.08em;
+  padding-bottom: 0.06em;
+  font-style: italic;
+  color: transparent;
+  background-image: var(--bn-grad-text);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: bn-shimmer 9s linear infinite;
+}
+#root .bayyan-welcome-copy > span {
+  max-width: 34em;
+  margin-top: 22px;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--bn-text-2);
+  text-wrap: balance;
+  animation: bn-rise 1s 0.2s var(--bn-ease) both;
+}
+/* imprint line under the composer */
+#root .bayyan-welcome-imprint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  row-gap: 4px;
+  margin: 26px 0 0;
+  font-family: var(--bn-font-ui);
+  font-size: 10.5px;
+  line-height: 1.9;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bn-muted);
+  animation: bn-rise 1s 0.32s var(--bn-ease) both;
+}
+#root .bayyan-welcome-imprint > span {
+  white-space: nowrap;
+}
+/* separators hang after each claim (not before the next one), so they stay
+   between the items in RTL too, where the last item is an LTR island */
+#root .bayyan-welcome-imprint > span:not(:last-child)::after {
+  content: '·';
+  display: inline-block;
+  margin-inline: 1.15em;
+  letter-spacing: 0;
 }
 
-#root .bayyan-welcome-copy > span {
-  color: var(--bayyan-ink-secondary);
-  font-size: 14px;
+/* -----------------------------------------------------------------------------
+   5. COMPOSER — one object, two sizes
+   ----------------------------------------------------------------------------- */
+#root #message-composer.bayyan-message-composer {
+  position: relative;
+  min-height: 0;
+  border: 1px solid var(--bn-hair-strong);
+  background: var(--bn-surface);
+  color: var(--bn-text);
+  box-shadow: var(--bn-shadow-2);
+  transition: border-color 0.4s var(--bn-ease), box-shadow 0.4s var(--bn-ease);
+}
+/* gold focus glow: a lamp lighting the desk, not a blue ring (the field is
+   autofocused on desktop, so the resting state must stay quiet) */
+#root #message-composer.bayyan-message-composer:focus-within {
+  border-color: var(--bn-gold-border);
+  box-shadow: var(--bn-shadow-2), 0 22px 60px -24px var(--bn-aurora-a);
+}
+#root #message-composer.is-welcome:focus-within {
+  box-shadow: var(--bn-shadow-3), 0 26px 70px -26px var(--bn-aurora-a);
+}
+.dark #root #message-composer.bayyan-message-composer {
+  background: linear-gradient(180deg, #1a1712, #15130f);
+}
+#root #message-composer #chat-input {
+  font-family: var(--bn-font-ui);
+  color: var(--bn-text);
+  caret-color: var(--bn-gold);
+  background: transparent;
+}
+#root #message-composer #chat-input::placeholder {
+  color: var(--bn-muted);
+  opacity: 1;
+}
+
+/* welcome size */
+#root #message-composer.is-welcome {
+  margin-top: 40px;
+  padding-block: 18px 14px;
+  padding-inline: 22px 18px;
+  border-radius: 26px;
+  box-shadow: var(--bn-shadow-3);
+  text-align: start;
+  animation: bn-rise 1s 0.26s var(--bn-ease) both;
+}
+#root #message-composer.is-welcome > .relative {
+  min-height: 0;
+}
+#root #message-composer.is-welcome #chat-input {
+  min-height: 56px;
+  padding: 4px 0 8px;
+  font-size: 17px;
   line-height: 1.55;
 }
-
-#root #message-composer.bayyan-message-composer.is-welcome {
-  min-height: 244px;
-  padding: 17px !important;
-  border: 1px solid var(--bayyan-border);
-  border-radius: 16px !important;
-  color: var(--bayyan-ink);
-  background: var(--bayyan-surface) !important;
-  box-shadow: 0 8px 24px rgba(17, 17, 17, 0.07);
+/* An empty field never keeps a stale autosize height. Only while the
+   placeholder shows, so typing still grows the field.
+   !important: beats the inline max-height written by the autosize hook. */
+#root #message-composer #chat-input:placeholder-shown {
+  max-height: 56px !important;
 }
-
-#root #message-composer.is-welcome > .relative {
-  min-height: 105px;
-  flex: 1 1 auto;
+#root #message-composer.is-conversation #chat-input:placeholder-shown {
+  max-height: 40px !important;
 }
-
-#root #message-composer.is-welcome #chat-input {
-  min-height: 96px;
-  padding: 4px 0 10px;
-  color: var(--bayyan-ink);
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 18px;
-  line-height: 1.45;
-}
-
-#root #message-composer.is-welcome #chat-input::placeholder {
-  color: var(--bayyan-ink-muted);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 14px;
-}
-
 #root .bayyan-welcome-controls {
-  padding-top: 12px;
-  border-top: 1px solid var(--bayyan-border-subtle);
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-top: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--bn-hair);
 }
-
 #root .bayyan-response-level {
   min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
 }
-
+#root .bayyan-response-level:disabled {
+  opacity: 0.62;
+}
 #root .bayyan-response-level > legend {
-  margin-bottom: 7px;
-  color: var(--bayyan-ink-secondary);
-  font-size: 11px;
-  line-height: 1.2;
-  font-weight: 700;
-}
-
-#root .bayyan-response-level__segments {
-  min-height: 52px;
-  padding: 3px;
-  border: 1px solid rgba(161, 137, 97, 0.28);
-  border-radius: 13px;
-  display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
-  gap: 3px;
-  background: var(--bayyan-tint);
-}
-
-#root .bayyan-response-level__option {
-  min-width: 0;
-  min-height: 44px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  color: var(--bayyan-ink-secondary);
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 680;
-  cursor: pointer;
-  transition: color 160ms ease, border-color 160ms ease,
-    background-color 160ms ease, box-shadow 160ms ease;
-}
-
-#root .bayyan-response-level__option input {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+#root .bayyan-response-level__segments {
+  display: inline-flex;
+  min-height: 0;
+  padding: 3px;
+  gap: 2px;
+  border: 0;
+  border-radius: var(--bn-r-pill);
+  background: var(--bn-surface-2);
+  box-shadow: inset 0 0 0 1px var(--bn-hair);
+}
+#root .bayyan-response-level__option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding-inline: 16px;
+  border: 0;
+  border-radius: var(--bn-r-pill);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--bn-text-2);
+  cursor: pointer;
+  transition: background-color 0.45s var(--bn-ease), color 0.45s var(--bn-ease),
+    box-shadow 0.45s var(--bn-ease);
+}
+#root .bayyan-response-level__option:hover {
+  color: var(--bn-text);
+}
+#root .bayyan-response-level__option input {
+  position: absolute;
   opacity: 0;
+  width: 1px;
+  height: 1px;
   pointer-events: none;
 }
-
 #root .bayyan-response-level__option.is-selected {
-  color: var(--bayyan-ink);
-  border-color: rgba(161, 137, 97, 0.62);
-  background: var(--bayyan-surface);
-  box-shadow: 0 2px 7px rgba(17, 17, 17, 0.08);
+  background: var(--bn-seg-on-bg);
+  color: var(--bn-seg-on-text);
+  box-shadow: 0 6px 14px -8px rgba(20, 15, 5, 0.6);
 }
-
 #root .bayyan-response-level__option:has(input:focus-visible) {
-  outline: 3px solid rgba(161, 137, 97, 0.3);
+  outline: 2px solid var(--bn-focus);
   outline-offset: 2px;
 }
-
-#root .bayyan-response-level:disabled {
-  opacity: 0.62;
-}
-
 #root .bayyan-response-level > p {
-  min-height: 17px;
-  margin: 6px 2px 0;
-  color: var(--bayyan-ink-muted);
-  font-size: 11px;
-  line-height: 1.45;
+  min-height: 0;
+  margin: 0;
+  max-width: 46ch;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--bn-muted);
+  text-align: start;
 }
-
-#root .bayyan-welcome-actions,
+#root .bayyan-welcome-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
+}
 #root .bayyan-welcome-utilities {
   display: flex;
   align-items: center;
-}
-
-#root .bayyan-welcome-actions {
-  justify-content: space-between;
-}
-
-#root .bayyan-welcome-utilities {
   gap: 2px;
 }
 
+/* mic: round ghost button */
+#root #message-composer button:has(> svg.lucide-mic) {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: var(--bn-text-2);
+  transition: background-color 0.3s var(--bn-ease), color 0.3s var(--bn-ease);
+}
+#root #message-composer button:has(> svg.lucide-mic):hover {
+  background: var(--bn-gold-tint);
+  color: var(--bn-gold-text);
+}
+#root #message-composer button:has(> svg.lucide-mic) svg {
+  width: 19px !important;
+  height: 19px !important;
+  stroke-width: 1.7;
+}
+
+/* send: a gold disc with the landing sheen */
+#root #message-composer #chat-submit,
+#root #message-composer #stop-button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bn-grad-disc);
+  color: #fff;
+  box-shadow: var(--bn-shadow-cta);
+  opacity: 1;
+  transition: transform 0.4s var(--bn-ease), box-shadow 0.4s var(--bn-ease),
+    background 0.4s var(--bn-ease);
+}
+#root #message-composer #chat-submit::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    110deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 75%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.9s var(--bn-ease);
+}
+#root #message-composer #chat-submit:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: var(--bn-shadow-cta-hover);
+}
+#root #message-composer #chat-submit:not(:disabled):hover::after {
+  transform: translateX(120%);
+}
+#root #message-composer #chat-submit svg {
+  width: 26px !important;
+  height: 26px !important;
+}
+/* waiting for input: a quiet gold disc, still on brand */
+#root #message-composer #chat-submit:disabled {
+  background: var(--bn-gold-tint-2);
+  color: var(--bn-gold-text);
+  box-shadow: inset 0 0 0 1px var(--bn-gold-border-soft);
+}
 #root #message-composer.is-welcome #chat-submit,
 #root #message-composer.is-welcome #stop-button {
   width: 46px;
   height: 46px;
-  color: #ffffff;
-  background: var(--bayyan-gold);
-  box-shadow: 0 6px 14px rgba(125, 103, 69, 0.24);
 }
 
-#root #message-composer.is-welcome #chat-submit:hover,
-#root #message-composer.is-welcome #stop-button:hover {
-  background: var(--bayyan-primary-hover);
-}
-
-#root #message-composer.is-welcome #chat-submit:disabled {
-  color: var(--bayyan-disabled-ink);
-  background: var(--bayyan-disabled-background);
-  box-shadow: none;
-}
-
-#root .bayyan-starters-block {
-  display: grid;
-  gap: 7px;
-}
-
-#root .bayyan-starters-block > p {
-  margin: 0 0 1px;
-  color: var(--bayyan-ink-muted);
-  font-size: 11px;
-  line-height: 1.4;
-  font-weight: 650;
-}
-
-#root .bayyan-starters-block #starters {
+/* conversation size */
+#root #message-composer.is-conversation {
   width: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0;
-}
-
-#root .bayyan-starter {
-  width: 100% !important;
-  min-height: 52px;
-  padding: 0 !important;
-  border: 0 !important;
-  border-bottom: 1px solid var(--bayyan-border-subtle) !important;
-  border-radius: 0 !important;
-  color: var(--bayyan-ink);
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-#root .bayyan-starter p {
-  color: var(--bayyan-ink) !important;
-  font-weight: 650;
-}
-
-#root .bayyan-starter__arrow {
-  color: var(--bayyan-gold-ink);
-}
-
-html[dir='rtl'] #root .bayyan-welcome-copy,
-html[dir='rtl'] #root .bayyan-user-question,
-html[dir='rtl'] #root .bayyan-response-level {
-  text-align: right;
-}
-
-html[dir='rtl'] #root .bayyan-welcome-copy > p,
-html[dir='rtl'] #root .bayyan-user-question__label {
-  letter-spacing: 0.04em;
-}
-
-html[dir='rtl'] #root .bayyan-starter__arrow {
-  transform: rotate(180deg);
-}
-
-#root .step[data-step-type='user_message'],
-#root .step[data-step-type='assistant_message'] {
-  width: min(100%, 430px);
+  max-width: var(--bn-column);
+  min-height: 0;
   margin-inline: auto;
+  padding-block: 12px 10px;
+  padding-inline: 18px 10px;
+  border-radius: 24px;
+}
+#root #message-composer.is-conversation #chat-input {
+  min-height: 28px;
+  padding: 6px 0 4px;
+  font-size: 15.5px;
+  line-height: 1.5;
+}
+#root #message-composer.is-conversation > div:last-child {
+  margin-top: 4px;
+}
+/* compact response level (Popover trigger) */
+#root #message-composer button[aria-haspopup='dialog'] {
+  height: 32px;
+  padding-inline: 10px 9px;
+  gap: 6px;
+  border-radius: var(--bn-r-pill);
+  border: 1px solid var(--bn-hair-strong);
+  background: transparent;
+  color: var(--bn-text-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: border-color 0.3s var(--bn-ease), color 0.3s var(--bn-ease);
+}
+#root #message-composer button[aria-haspopup='dialog']:hover {
+  border-color: var(--bn-gold-border);
+  color: var(--bn-gold-text);
+}
+#root #message-composer button[aria-haspopup='dialog'] svg:first-child {
+  color: var(--bn-gold);
 }
 
+/* the dock under the thread: a 64px canvas veil above the composer, so no
+   line is ever sliced mid-glyph (cheaper than a mask on the scroller) */
+#root .bayyan-composer-dock {
+  position: relative;
+}
+#root [data-chat-state='conversation'] .bayyan-composer-dock::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: 100%;
+  height: 64px;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bn-canvas) 0%, transparent) 0%,
+    color-mix(in srgb, var(--bn-canvas) 70%, transparent) 45%,
+    var(--bn-canvas) 92%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+/* disclaimer under the composer */
+#root .bayyan-composer-dock .watermark {
+  justify-content: center;
+  width: 100%;
+  max-width: var(--bn-column);
+  text-align: center;
+}
+#root .bayyan-composer-dock .watermark .prose,
+#root .bayyan-composer-dock .watermark [role='article'] {
+  margin: 0;
+  font-family: var(--bn-font-ui);
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--bn-muted);
+  letter-spacing: 0.01em;
+}
+#root .bayyan-composer-dock .watermark a {
+  color: inherit;
+}
+
+/* scroll-to-bottom: a small paper disc above the veil */
+#root .bayyan-scroll-down {
+  bottom: 18px;
+  z-index: 3;
+  pointer-events: none;
+}
+#root .bayyan-scroll-down > button {
+  pointer-events: auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--bn-hair-strong);
+  background: var(--bn-surface);
+  color: var(--bn-gold-text);
+  box-shadow: var(--bn-shadow-2);
+  transition: transform 0.4s var(--bn-ease), border-color 0.4s var(--bn-ease);
+}
+#root .bayyan-scroll-down > button:hover {
+  transform: translateY(1px);
+  border-color: var(--bn-gold-border);
+  background: var(--bn-surface);
+}
+#root [data-chat-state='welcome'] .bayyan-scroll-down {
+  display: none;
+}
+
+/* -----------------------------------------------------------------------------
+   6. THREAD — column + question card
+   ----------------------------------------------------------------------------- */
+#root .step[data-step-type] {
+  width: 100%;
+  max-width: var(--bn-column);
+  margin-inline: auto;
+  padding-block: 0;
+}
+/* the last exchanges rise in (a new question and its answer; on a resumed
+   thread, the last two exchanges once on open). Opacity + transform only:
+   a blur on a multi-thousand-pixel answer would build huge filter layers. */
+#root .step[data-step-type]:nth-last-child(-n + 4) {
+  animation: bn-rise-step 0.8s var(--bn-ease) both;
+}
+/* !important: beats the inline max-width (layout "wide") */
+#root .step[data-step-type] > div {
+  max-width: none !important;
+}
+#root .step[data-step-type='user_message'] {
+  padding-top: 34px;
+  padding-bottom: 10px;
+}
+#root .step[data-step-type='assistant_message'],
+#root .step[data-step-type='system_message'] {
+  padding-top: 8px;
+  padding-bottom: 30px;
+}
 #root .bayyan-user-message {
-  padding-top: 14px;
+  padding-top: 0;
 }
-
 #root .bayyan-user-message .group {
+  justify-content: flex-end;
   align-items: flex-start;
 }
-
+#root .bayyan-user-message .group > button {
+  width: 34px;
+  height: 34px;
+  margin-top: 8px;
+  border-radius: 50%;
+  color: var(--bn-muted);
+}
+#root .bayyan-user-message .group > button:hover {
+  color: var(--bn-gold-text);
+  background: var(--bn-gold-tint);
+}
+/* edit / favourite: Tailwind "invisible group-hover:visible" left them out of
+   reach of the keyboard; they fade in on hover AND on focus instead */
+#root .bayyan-user-message .group > button {
+  visibility: visible;
+  opacity: 0;
+  transition: opacity 0.3s var(--bn-ease), color 0.3s var(--bn-ease),
+    background-color 0.3s var(--bn-ease);
+}
+#root .bayyan-user-message .group:hover > button,
+#root .bayyan-user-message .group > button:focus-visible,
+#root .bayyan-user-message .group > button.text-yellow-500 {
+  opacity: 1;
+}
+/* touch screens have no hover: keep them visible, quietly, at 44px */
+@media (hover: none) {
+  #root .bayyan-user-message .group > button {
+    width: 44px;
+    height: 44px;
+    margin-top: 3px;
+    opacity: 0.7;
+  }
+}
 #root .bayyan-user-question {
-  width: 100% !important;
-  max-width: 100% !important;
-  margin-left: 0 !important;
-  padding: 7px 0 20px !important;
-  border-bottom: 1px solid var(--bayyan-border);
-  border-radius: 0 !important;
-  color: var(--bayyan-ink);
-  background: transparent !important;
+  width: auto;
+  max-width: min(88%, 620px);
+  margin: 0;
+  padding: 16px 22px 18px;
+  border: 1px solid var(--bn-q-border);
+  border-start-start-radius: 22px;
+  border-start-end-radius: 22px;
+  border-end-end-radius: 6px;
+  border-end-start-radius: 22px;
+  background: var(--bn-q-bg);
+  color: var(--bn-q-text);
+  box-shadow: var(--bn-q-shadow);
 }
-
+/* the inline editor keeps the card but becomes a paper field */
+#root .bayyan-user-question:has(#edit-chat-input) {
+  max-width: 100%;
+  background: var(--bn-surface);
+  color: var(--bn-text);
+  border-color: var(--bn-gold-border);
+  box-shadow: var(--bn-shadow-2);
+}
+#root .bayyan-user-question #edit-chat-input {
+  font-family: var(--bn-font-ui);
+  font-size: 16px;
+  color: var(--bn-text);
+  background: transparent;
+}
+#root .bayyan-user-question:has(#edit-chat-input) > div {
+  background: transparent;
+}
+#root .bayyan-user-question:has(#edit-chat-input) button {
+  min-height: 38px;
+  padding-inline: 16px;
+  border-radius: var(--bn-r-pill);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--bn-text-2);
+}
+#root .bayyan-user-question:has(#edit-chat-input) button:hover {
+  background: var(--bn-hover);
+  color: var(--bn-text);
+}
+#root .bayyan-user-question:has(#edit-chat-input) button.confirm-edit {
+  background: var(--bn-grad-cta);
+  color: #14120e;
+  font-weight: 600;
+  box-shadow: var(--bn-shadow-cta);
+}
+#root .bayyan-user-question:has(#edit-chat-input) button.confirm-edit:hover {
+  background: var(--bn-grad-cta);
+  color: #14120e;
+  box-shadow: var(--bn-shadow-cta-hover);
+}
 #root .bayyan-user-question__label {
-  margin-bottom: 9px;
+  display: block;
+  margin-bottom: 7px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--bn-q-label);
 }
-
 #root .bayyan-user-question .prose {
   max-width: none;
-  color: var(--bayyan-ink);
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(27px, 7.4vw, 32px);
-  line-height: 1.08;
-  letter-spacing: -0.03em;
-  font-weight: 600;
+  font-family: var(--bn-font-display);
+  font-size: 23px;
+  line-height: 1.28;
+  letter-spacing: -0.005em;
+  font-weight: 400;
+  color: var(--bn-q-text);
 }
-
 #root .bayyan-user-question .prose [role='article'] {
-  margin: 0 !important;
+  margin: 0;
   line-height: inherit;
+  unicode-bidi: plaintext;
+  text-align: start;
 }
 
+/* -----------------------------------------------------------------------------
+   7. ANSWER DOCUMENT
+   ----------------------------------------------------------------------------- */
 #root .bayyan-ai-message {
   gap: 0;
 }
-
 #root .bayyan-ai-message > .bayyan-message-avatar {
   display: none;
 }
-
 #root .bayyan-answer-document {
   width: 100%;
-  padding: 8px 0 24px;
-  color: var(--bayyan-ink);
-}
-
-#root .bayyan-answer-document__eyebrow {
-  margin: 0 0 17px;
-}
-
-/* Quiet documentary progress — one useful sentence, no technical checklist. */
-#root .bayyan-answer-document:has(.loading-steps) {
-  padding-bottom: 16px;
-}
-
-#root
-  .bayyan-answer-document:has(.loading-steps)
-  .bayyan-answer-document__eyebrow {
-  margin-bottom: 10px;
-}
-
-#root .bayyan-answer-document .loading-steps {
-  position: relative;
-  max-width: 100%;
-  margin: 0;
+  min-width: 0;
   padding: 0;
-  border: 0;
-  border-radius: 0;
-  overflow: visible;
-  color: var(--bayyan-ink-secondary);
-  background: transparent;
-  box-shadow: none;
+  gap: 0;
+  color: var(--bn-body);
 }
 
-#root .bayyan-answer-document .loading-steps::before {
-  content: none;
-  display: none;
-  animation: none !important;
-}
-
-#root .bayyan-answer-document .loading-step {
-  position: relative;
-  z-index: auto;
-  min-height: 48px;
-  margin: 0;
-  padding: 0 0 15px;
-  border: 0;
-  border-radius: 0;
-  display: grid;
-  grid-template-columns: 8px minmax(0, 1fr);
+/* eyebrow: ✦ RÉPONSE DOCUMENTÉE ————————————— */
+#root .bayyan-answer-document__eyebrow {
+  display: flex;
   align-items: center;
-  gap: 12px;
-  overflow: visible;
-  color: var(--bayyan-ink-secondary);
-  background: transparent;
-  box-shadow: none;
-  animation: bayyan-status-enter 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  gap: 10px;
+  width: 100%;
+  margin: 0 0 20px;
+  color: var(--bn-gold-text);
 }
-
-#root .bayyan-answer-document .loading-step::after {
+#root .bayyan-answer-document__eyebrow::before {
   content: '';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 20px;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  background: var(--bn-gold);
+  -webkit-mask: var(--bn-star) center / contain no-repeat;
+  mask: var(--bn-star) center / contain no-repeat;
+}
+#root .bayyan-answer-document__eyebrow::after {
+  content: '';
+  flex: 1;
   height: 1px;
   background: linear-gradient(
-    90deg,
-    var(--bayyan-gold),
-    rgba(161, 137, 97, 0.14)
+    var(--bnx-from-start),
+    var(--bn-gold-border),
+    transparent 85%
   );
 }
-
-#root .bayyan-answer-document .loading-step-done,
-#root .bayyan-answer-document .step-check {
+/* an error answer: the information mark instead of the star */
+#root
+  .bayyan-answer-document[data-state='error']
+  .bayyan-answer-document__eyebrow::before {
+  width: 14px;
+  height: 14px;
+  -webkit-mask-image: var(--bn-i-info);
+  mask-image: var(--bn-i-info);
+}
+/* follow-up suggestions are not an answer: no eyebrow */
+#root
+  .bayyan-answer-document[data-kind='system_message'][data-state='done']:has(
+    .bayyan-message-actions > button:not(.w-9)
+  )
+  .bayyan-answer-document__eyebrow {
   display: none;
-}
-
-#root .bayyan-answer-document .loading-icon,
-#root .bayyan-answer-document .loading-step-active .loading-icon,
-#root .bayyan-answer-document .loading-step-active .loading-icon-index {
-  width: 7px;
-  height: 7px;
-  min-width: 7px;
-  min-height: 7px;
-  border: 0;
-  border-radius: 999px;
-  display: block;
-  color: transparent;
-  background: var(--bayyan-gold);
-  box-shadow: 0 0 0 4px rgba(161, 137, 97, 0.12);
-  filter: none;
-  animation: none !important;
-}
-
-#root .bayyan-answer-document .loading-icon-index::before,
-#root .bayyan-answer-document .loading-step-active .loading-icon-index::before {
-  content: none;
-  display: none;
-}
-
-#root .bayyan-answer-document .loading-text,
-#root .bayyan-answer-document .loading-step-active .loading-text {
-  position: static;
-  min-width: 0;
-  display: block;
-  color: var(--bayyan-ink-secondary) !important;
-  background: none !important;
-  font-size: 15.5px;
-  line-height: 1.5;
-  font-weight: 610;
-  letter-spacing: -0.005em;
-  -webkit-text-fill-color: currentColor;
-  overflow-wrap: anywhere;
-  animation: none !important;
-}
-
-#root .bayyan-answer-document .loading-text::after,
-#root .bayyan-answer-document .loading-step-active .loading-text::after {
-  content: none;
-  display: none;
-}
-
-#root .bayyan-stream-cursor {
-  width: 2px;
-  height: 1.05em;
-  border-radius: 999px;
-  vertical-align: -0.12em;
-  background: var(--bayyan-gold);
-  opacity: 0.72;
-}
-
-@keyframes bayyan-status-enter {
-  from {
-    opacity: 0;
-    transform: translateY(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 #root .bayyan-answer-document .message-content,
@@ -690,343 +1656,2438 @@ html[dir='rtl'] #root .bayyan-starter__arrow {
   max-width: none;
 }
 
+/* 7.0 Reading direction of the answer.
+   Every block carries dir="auto"; the containers (lists, quotes, details,
+   bibliography) follow the answer's own language: a French answer inside the
+   Arabic UI is laid out LTR, an Arabic answer inside a Latin UI is laid out RTL.
+   The lede (first paragraph, not a Qur'an verse) decides. */
+html[dir='rtl']
+  #root
+  .bayyan-answer-document
+  .prose:has(
+    > div[role='article']:first-of-type:not([data-script='ar'], .bayyan-ayah)
+  ) {
+  direction: ltr;
+  --bnx-dir: ltr;
+  --bnx-from-start: 90deg;
+}
+html:not([dir='rtl'])
+  #root
+  .bayyan-answer-document
+  .prose:has(
+    > div[role='article']:first-of-type[data-script='ar']:not(.bayyan-ayah)
+  ) {
+  direction: rtl;
+  --bnx-dir: rtl;
+  --bnx-from-start: 270deg;
+}
+
+/* Reading text: a real book face for a 5–10 minute read. Newsreader 18/1.7,
+   optical sizing, ~74 characters per line; Arabic islands come out in Amiri
+   ×1.18 through the BN Naskh alias. No auto-hyphenation (it split
+   transliterations: "Salaf Sa-/lih"); text-wrap: pretty avoids orphans. */
 #root .bayyan-answer-document .prose {
-  color: var(--bayyan-ink);
-  font-size: 16.5px;
-  line-height: 1.72;
+  font-family: var(--bn-font-text);
+  font-size: 18px;
+  line-height: 1.7;
+  font-optical-sizing: auto;
+  font-variant-numeric: oldstyle-nums proportional-nums;
+  color: var(--bn-body);
+  overflow-wrap: break-word;
+  hyphens: manual;
 }
-
 #root .bayyan-answer-document .prose [role='article'] {
-  margin-top: 0;
-  margin-bottom: 17px;
-  line-height: 1.72;
+  max-width: var(--bn-measure);
+  margin: 0 0 18px;
+  line-height: inherit;
+  unicode-bidi: plaintext;
+  text-align: start;
+  text-wrap: pretty;
+}
+#root
+  .bayyan-answer-document
+  .prose
+  > [role='article']:first-child:not(.bayyan-notice, .bayyan-ayah) {
+  font-size: 19.5px;
+  line-height: 1.62;
+  color: var(--bn-text);
+}
+/* Arabic paragraphs: taller lines for the naskh (Amiri x1.18 through the
+   BN Naskh alias needs ~1.95). The second selector keeps the Arabic lede
+   too: the lede rule above out-specifies the plain one. */
+#root .bayyan-answer-document .prose [role='article'][data-script='ar'],
+#root
+  .bayyan-answer-document
+  .prose
+  > [role='article']:first-child[data-script='ar']:not(
+    .bayyan-notice,
+    .bayyan-ayah
+  ) {
+  line-height: 1.95;
 }
 
-#root .bayyan-answer-document .prose h1,
-#root .bayyan-answer-document .prose h2,
-#root .bayyan-answer-document .prose h3,
-#root .bayyan-answer-document .prose h4 {
-  color: var(--bayyan-ink);
-  font-family: Georgia, 'Times New Roman', serif;
+/* headings — Instrument Serif, size-only hierarchy (one weight) */
+#root .bayyan-answer-document .prose :is(h1, h2, h3, h4) {
+  scroll-margin-top: 80px;
+  color: var(--bn-text);
+  unicode-bidi: plaintext;
+  text-align: start;
+  border: 0;
+  padding: 0;
+  text-wrap: balance;
+}
+#root .bayyan-answer-document .prose h1 {
+  margin: 44px 0 16px;
+  font-family: var(--bn-font-display);
+  font-size: 38px;
+  line-height: 1.08;
+  font-weight: 400;
   letter-spacing: -0.02em;
 }
+#root .bayyan-answer-document .prose h2 {
+  margin: 46px 0 16px;
+  font-family: var(--bn-font-display);
+  font-size: 32px;
+  line-height: 1.12;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+}
+#root .bayyan-answer-document .prose h3 {
+  position: relative;
+  max-width: var(--bn-measure);
+  margin: 42px 0 12px;
+  font-family: var(--bn-font-display);
+  font-size: 28px;
+  line-height: 1.18;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+#root .bayyan-answer-document .prose h4 {
+  margin: 28px 0 8px;
+  font-family: var(--bn-font-ui);
+  font-size: 16.5px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+#root .bayyan-answer-document .prose :is(h1, h2, h3, h4):first-child {
+  margin-top: 0;
+}
+/* rubricated section numeral: "1." in gold */
+#root .bayyan-answer-document .prose .bayyan-heading-num {
+  color: var(--bn-gold-text);
+  font-variant-numeric: lining-nums;
+  margin-inline-end: 0.04em;
+}
+#root .bayyan-answer-document .prose h4 .bayyan-heading-num {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+/* section ornament: a small khatam star hanging in the inline-start margin,
+   on screens wide enough to have a margin */
+@media (min-width: 1100px) {
+  #root .bayyan-answer-document .prose h3::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: -30px;
+    top: 0.42em;
+    width: 12px;
+    height: 12px;
+    background: var(--bn-gold);
+    opacity: 0.85;
+    -webkit-mask: var(--bn-star) center / contain no-repeat;
+    mask: var(--bn-star) center / contain no-repeat;
+  }
+}
 
-#root .bayyan-answer-document .prose h1 {
-  margin: 0 0 19px;
-  font-size: 30px;
-  line-height: 1.08;
+/* emphasis — the text face has a true bold and a true italic */
+#root .bayyan-answer-document .prose .font-bold {
+  font-weight: 600;
+  color: var(--bn-text);
+}
+#root .bayyan-answer-document .prose span.italic,
+#root .bayyan-answer-document .prose em {
+  font-family: var(--bn-font-text);
+  font-style: italic;
+  letter-spacing: 0;
+}
+#root .bayyan-answer-document .prose code {
+  font-family: var(--bn-font-mono);
+  font-size: 0.82em;
+  font-weight: 500;
+  padding: 0.12em 0.4em;
+  border-radius: 6px;
+  background: var(--bn-surface-2);
+  color: var(--bn-text);
+}
+
+/* lists: the marker hangs in the item's own inline-start margin, so a French
+   item and an Arabic item each put their bullet on their own side */
+#root .bayyan-answer-document .prose :is(ul, ol) {
+  max-width: var(--bn-measure);
+  margin: 4px 0 20px;
+  padding: 0;
+}
+#root .bayyan-answer-document .prose li {
+  margin: 0 0 8px;
+  margin-inline-start: 1.25em;
+  padding-inline-start: 6px;
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+#root .bayyan-answer-document .prose ol > li {
+  margin-inline-start: 1.5em;
+}
+#root .bayyan-answer-document .prose li > [role='article'] {
+  margin-bottom: 6px;
+}
+#root .bayyan-answer-document .prose li > :is(ul, ol) {
+  margin: 6px 0 4px;
+}
+#root .bayyan-answer-document .prose ul > li::marker {
+  color: var(--bn-gold);
+  font-size: 0.9em;
+}
+#root .bayyan-answer-document .prose ol > li::marker {
+  color: var(--bn-gold-text);
+  font-family: var(--bn-font-ui);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8em;
   font-weight: 600;
 }
 
-#root .bayyan-answer-document .prose h2 {
-  margin: 34px 0 17px;
-  padding: 23px 0 0;
-  border-width: 1px 0 0;
-  border-color: var(--bayyan-border);
-  color: var(--bayyan-gold-ink);
-  font-size: 25px;
-  line-height: 1.16;
-  font-weight: 620;
+/* links (non-source) */
+#root
+  .bayyan-answer-document
+  .prose
+  a:not(.bayyan-cite, .bayyan-source-entry, .element-link) {
+  color: var(--bn-gold-text);
+  text-decoration: underline;
+  text-decoration-color: var(--bn-gold-border);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color 0.3s var(--bn-ease);
+}
+#root
+  .bayyan-answer-document
+  .prose
+  a:not(.bayyan-cite, .bayyan-source-entry, .element-link):hover {
+  text-decoration-color: currentColor;
 }
 
-#root .bayyan-answer-document .prose h3 {
-  margin: 24px 0 10px;
+/* ---------- Evidence block: « matn » → translation → attribution ---------- */
+#root .bayyan-answer-document .prose blockquote.bayyan-quote {
+  position: relative;
+  max-width: none;
+  margin: 22px 0 24px;
+  padding-block: 18px 16px;
+  padding-inline: 24px 22px;
+  border: 0;
+  border-inline-start: 2px solid var(--bn-gold);
+  border-radius: 0;
+  border-start-end-radius: 16px;
+  border-end-end-radius: 16px;
+  background: linear-gradient(
+    var(--bnx-from-start),
+    var(--bn-gold-tint),
+    transparent 92%
+  );
+  font-style: normal;
+  color: var(--bn-body);
+}
+#root
+  .bayyan-answer-document
+  .prose
+  blockquote.bayyan-quote
+  > [role='article'] {
+  max-width: none;
+  margin: 0 0 10px;
+}
+#root
+  .bayyan-answer-document
+  .prose
+  blockquote.bayyan-quote
+  > [role='article']:last-child {
+  margin-bottom: 0;
+}
+/* the matn: Amiri, RTL by content, then a hairline. The attribution line is
+   the paragraph that carries the citation tag (Arabic answers have no
+   translation, so the tag is what tells the two apart). */
+#root
+  .bayyan-answer-document
+  .prose
+  .bayyan-quote--evidence
+  > [data-script='ar']:not(:has(> a.bayyan-cite)) {
+  font-family: var(--bn-font-quote);
   font-size: 22px;
-  line-height: 1.2;
-  font-weight: 620;
+  line-height: 1.9;
+  font-style: normal;
+  font-variant-numeric: normal;
+  color: var(--bn-text);
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+#root
+  .bayyan-answer-document
+  .prose
+  .bayyan-quote--evidence
+  > [data-script='ar']:not(:has(> a.bayyan-cite)):has(+ [role='article']) {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--bn-hair);
+}
+/* translation + attribution: the attribution is the bare text after the
+   translation — small Geist, Arabic titles size-matched through BN Naskh L */
+#root
+  .bayyan-answer-document
+  .prose
+  blockquote
+  > [role='article']:is(
+    :has(> .bayyan-translation),
+    :not(:first-child):has(> a.bayyan-cite)
+  ) {
+  font-family: var(--bn-font-ref);
+  font-size: 12.5px;
+  line-height: 1.75;
+  font-style: normal;
+  font-variant-numeric: lining-nums;
+  color: var(--bn-muted);
+}
+/* the attribution reads in the answer's direction, whatever script its title
+   starts with ("— مجموع فتاوى … , vol. 4" in a French answer stays LTR) */
+#root
+  .bayyan-answer-document
+  .prose
+  blockquote
+  > [role='article']:not(:first-child):has(> a.bayyan-cite) {
+  unicode-bidi: isolate;
+  direction: var(--bnx-dir);
+}
+/* translation in the text face's true italic */
+#root .bayyan-answer-document .prose .bayyan-translation {
+  font-family: var(--bn-font-text);
+  font-size: 17px;
+  line-height: 1.62;
+  font-style: italic;
+  font-variant-numeric: oldstyle-nums;
+  color: var(--bn-text-2);
+}
+#root
+  .bayyan-answer-document
+  .prose
+  blockquote
+  > [role='article']:has(> .bayyan-translation)
+  > .bayyan-translation {
+  display: inline;
+}
+/* a quiet note (indirect-evidence disclaimer, editorial remark) */
+#root .bayyan-answer-document .prose blockquote.bayyan-quote--note {
+  padding-block: 12px;
+  padding-inline: 20px 18px;
+  border-inline-start-color: var(--bn-gold-border);
+  background: none;
+  border-radius: 0;
+}
+#root
+  .bayyan-answer-document
+  .prose
+  blockquote.bayyan-quote--note
+  > [role='article'] {
+  font-size: 16.5px;
+  line-height: 1.62;
+  font-style: italic;
+  color: var(--bn-text-2);
 }
 
-#root .bayyan-answer-document .prose blockquote {
-  margin: 23px 0;
-  padding: 4px 0 4px 16px;
-  border-left: 2px solid var(--bayyan-gold);
-  color: var(--bayyan-ink-secondary);
+/* ---------- Qur'an verse ﴿ … ﴾ ---------- */
+#root .bayyan-answer-document .prose .bayyan-ayah {
+  position: relative;
+  max-width: var(--bn-measure);
+  margin: 30px 0 26px;
+  padding: 26px 12px 6px;
+  font-family: var(--bn-font-arabic);
+  font-size: 25px;
+  line-height: 2.05;
+  font-style: normal;
+  font-variant-numeric: normal;
+  letter-spacing: 0;
+  color: var(--bn-text);
+  text-align: center;
+  text-align-last: center;
+  text-wrap: balance;
+}
+#root .bayyan-answer-document .prose .bayyan-ayah::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  background: var(--bn-gold);
+  -webkit-mask: var(--bn-star) center / contain no-repeat;
+  mask: var(--bn-star) center / contain no-repeat;
+}
+
+/* ---------- Notices (⚠ ⏹ ❌ ⏳ ⛔ ℹ 💡, emoji stripped by the renderer) ---------- */
+#root .bayyan-answer-document .prose .bayyan-notice {
+  --bnx-notice-icon: var(--bn-i-info);
+  --bnx-notice-ink: var(--bn-gold);
+  position: relative;
+  max-width: var(--bn-measure);
+  margin: 0 0 18px;
+  padding-block: 12px;
+  padding-inline: 46px 18px;
+  border: 1px solid var(--bn-gold-border-soft);
+  border-radius: var(--bn-r-inner);
+  background: var(--bn-gold-tint);
+  font-family: var(--bn-font-ui);
+  font-size: 14.5px;
+  line-height: 1.6;
+  font-variant-numeric: lining-nums;
+  color: var(--bn-text-2);
+}
+#root .bayyan-answer-document .prose .bayyan-notice::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 16px;
+  top: 14px;
+  width: 18px;
+  height: 18px;
+  background: var(--bnx-notice-ink);
+  -webkit-mask: var(--bnx-notice-icon) center / contain no-repeat;
+  mask: var(--bnx-notice-icon) center / contain no-repeat;
+}
+#root .bayyan-answer-document .prose .bayyan-notice .italic {
+  font-family: inherit;
   font-style: normal;
 }
-
-#root .bayyan-answer-document .prose li::marker {
-  color: var(--bayyan-gold);
-  font-weight: 700;
+#root .bayyan-answer-document .prose .bayyan-notice[data-notice='warning'] {
+  --bnx-notice-icon: var(--bnx-i-warning);
+}
+#root .bayyan-answer-document .prose .bayyan-notice[data-notice='stopped'] {
+  --bnx-notice-icon: var(--bnx-i-stopped);
+  --bnx-notice-ink: var(--bn-muted);
+  border-color: var(--bn-hair-strong);
+  background: var(--bn-surface-2);
+}
+#root .bayyan-answer-document .prose .bayyan-notice[data-notice='wait'] {
+  --bnx-notice-icon: var(--bnx-i-wait);
+}
+#root .bayyan-answer-document .prose .bayyan-notice[data-notice='tip'] {
+  --bnx-notice-icon: var(--bnx-i-tip);
+}
+#root
+  .bayyan-answer-document
+  .prose
+  .bayyan-notice:is([data-notice='error'], [data-notice='quota']) {
+  --bnx-notice-icon: var(--bnx-i-error);
+  --bnx-notice-ink: hsl(var(--destructive));
+  border-color: color-mix(in srgb, hsl(var(--destructive)) 32%, transparent);
+  background: color-mix(in srgb, hsl(var(--destructive)) 7%, transparent);
+  color: var(--bn-text);
+}
+#root .bayyan-answer-document .prose .bayyan-notice[data-notice='quota'] {
+  --bnx-notice-icon: var(--bnx-i-quota);
 }
 
-#root .bayyan-answer-document .prose a {
-  color: var(--bayyan-gold-ink);
-  text-decoration-color: rgba(161, 137, 97, 0.48);
+/* separators → hairline with a khatam fleuron */
+#root .bayyan-answer-document .prose .bayyan-rule {
+  position: relative;
+  height: 1px;
+  margin: 44px 0 40px;
+  background: var(--bn-grad-hair);
+  overflow: visible;
+}
+#root .bayyan-answer-document .prose > .bayyan-rule:first-child {
+  margin-top: 6px;
+}
+#root .bayyan-answer-document .prose .bayyan-rule::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  background: var(--bn-canvas);
+}
+#root .bayyan-answer-document .prose .bayyan-rule::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 13px;
+  height: 13px;
+  transform: translate(-50%, -50%);
+  background: var(--bn-gold);
+  -webkit-mask: var(--bn-star) center / contain no-repeat;
+  mask: var(--bn-star) center / contain no-repeat;
+}
+
+/* tables */
+#root .bayyan-answer-document .prose table {
+  font-family: var(--bn-font-ui);
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.5;
+  border-collapse: collapse;
+}
+#root .bayyan-answer-document .prose :is(th, td) {
+  height: auto;
+  padding: 10px 12px;
+  overflow-wrap: normal;
+  word-break: normal;
+  border-bottom: 1px solid var(--bn-hair);
+  text-align: start;
+  vertical-align: top;
+  unicode-bidi: plaintext;
+}
+#root .bayyan-answer-document .prose tr {
+  border: 0;
+}
+#root .bayyan-answer-document .prose tbody tr:last-child > td {
+  border-bottom: 0;
+}
+#root .bayyan-answer-document .prose th {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bn-gold-text);
+}
+#root
+  .bayyan-answer-document
+  .prose
+  :is(.rounded-xl, .rounded-lg):has(> div > table) {
+  margin: 20px 0 24px;
+  border: 1px solid var(--bn-hair);
+  border-radius: 16px;
+  background: var(--bn-surface);
+  box-shadow: var(--bn-shadow-1);
+  overflow: hidden;
+}
+
+/* ---------- Inline citation tag (a.bayyan-cite) ----------
+   Geist with PROPORTIONAL lining figures (the tabular "1" has a slab foot and
+   read as monospace), a plain inline box so text-wrap: pretty still keeps a run
+   like "S1, S2, S4, S7, S15." together. */
+#root .bayyan-answer-document .prose a.bayyan-cite {
+  display: inline;
+  padding: 2px 5px 1px;
+  margin-inline: 1px;
+  border-radius: 5px;
+  border: 1px solid var(--bn-gold-border-soft);
+  background: var(--bn-gold-tint);
+  color: var(--bn-gold-text);
+  font-family: var(--bn-font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  font-variant-numeric: lining-nums proportional-nums;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: 0.18em;
+  unicode-bidi: isolate;
+  transition: background-color 0.3s var(--bn-ease),
+    border-color 0.3s var(--bn-ease), color 0.3s var(--bn-ease);
+}
+#root .bayyan-answer-document .prose a.bayyan-cite:hover {
+  background: var(--bn-gold-tint-2);
+  border-color: var(--bn-gold);
+  color: var(--bn-gold-strong);
+}
+
+/* ---------- Bibliography ----------
+   Heading: an 'unwan cartouche — a label that shrinks to its text inside a
+   double gold hairline, signed with a book glyph. */
+#root .bayyan-answer-document .prose .bayyan-bibliography-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 0 18px;
+  padding-block: 9px;
+  padding-inline: 13px 16px;
+  border: 1px solid var(--bn-gold-border);
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 3px var(--bn-canvas),
+    inset 0 0 0 4px var(--bn-gold-border-soft);
+  background-color: var(--bn-canvas);
+  font-family: var(--bn-font-ui);
+  font-size: 11.5px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--bn-gold-text);
+  text-wrap: nowrap;
+}
+#root .bayyan-answer-document .prose .bayyan-bibliography-heading::before {
+  content: '';
+  width: 15px;
+  height: 15px;
+  flex: none;
+  background: currentColor;
+  -webkit-mask: var(--bn-i-book) center / contain no-repeat;
+  mask: var(--bn-i-book) center / contain no-repeat;
+}
+/* indirect-evidence note right under the heading */
+#root .bayyan-answer-document .prose .bayyan-bibliography-heading + blockquote {
+  margin: 0 0 14px;
+}
+
+#root .bayyan-answer-document .prose ul.bayyan-source-list {
+  list-style: none;
+  max-width: none;
+  margin: 0 0 8px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+#root .bayyan-answer-document .prose ul.bayyan-source-list > li {
+  margin: 0;
+  padding: 0;
+  text-align: start;
+}
+#root .bayyan-answer-document .prose ul.bayyan-source-list > li::marker {
+  content: none;
+}
+
+/* A source is an object you can open: [S1] [title / author / ref] [↗].
+   The entry takes the direction of its title (an Arabic title reads from the
+   right, a Latin title from the left); the ref stays an LTR island. */
+#root .bayyan-answer-document .prose a.bayyan-source-entry {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 14px;
+  min-height: 60px;
+  margin: 0;
+  padding-block: 11px;
+  padding-inline: 12px 18px;
+  border: 1px solid var(--bn-hair);
+  border-radius: 16px;
+  background: var(--bn-surface);
+  box-shadow: var(--bn-shadow-1);
+  direction: ltr;
+  text-align: start;
+  text-decoration: none;
+  white-space: normal;
+  font-family: var(--bn-font-ui);
+  font-size: 13.5px;
+  font-style: normal;
+  font-weight: 400;
+  font-variant-numeric: lining-nums proportional-nums;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--bn-text);
+  transition: border-color 0.4s var(--bn-ease), transform 0.4s var(--bn-ease),
+    box-shadow 0.4s var(--bn-ease), background-color 0.4s var(--bn-ease);
+}
+#root
+  .bayyan-answer-document
+  .prose
+  a.bayyan-source-entry:has(.bayyan-source-entry__title[lang='ar']) {
+  direction: rtl;
+}
+#root .bayyan-answer-document .prose .bayyan-source-entry__marker {
+  display: inline-grid;
+  place-items: center;
+  align-self: center;
+  min-width: 38px;
+  height: 38px;
+  padding-inline: 8px;
+  border-radius: 11px;
+  background: var(--bn-gold-tint);
+  box-shadow: inset 0 0 0 1px var(--bn-gold-border-soft);
+  color: var(--bn-gold-text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  direction: ltr;
+  unicode-bidi: isolate;
+  transition: background-color 0.4s var(--bn-ease), color 0.4s var(--bn-ease);
+}
+#root .bayyan-answer-document .prose .bayyan-source-entry__body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 14px;
+  row-gap: 1px;
+  min-width: 0;
+}
+#root .bayyan-answer-document .prose .bayyan-source-entry__title {
+  display: block;
+  flex: 1 1 100%;
+  max-width: 100%;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--bn-text);
+  text-wrap: pretty;
+}
+#root .bayyan-answer-document .prose .bayyan-source-entry__title[lang='ar'] {
+  text-wrap: balance;
+  font-family: var(--bn-font-arabic);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+#root .bayyan-answer-document .prose .bayyan-source-entry__author {
+  display: block;
+  max-width: 100%;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--bn-text-2);
+  text-wrap: balance;
+}
+#root .bayyan-answer-document .prose .bayyan-source-entry__author[lang='ar'] {
+  font-family: var(--bn-font-arabic);
+  font-size: 16px;
+  line-height: 1.6;
+}
+#root .bayyan-answer-document .prose .bayyan-source-entry__ref {
+  display: block;
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 500;
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: 0.01em;
+  color: var(--bn-muted);
+}
+/* open affordance at the end of the entry (mirrored in an RTL entry) */
+#root .bayyan-answer-document .prose a.bayyan-source-entry::after {
+  content: '';
+  width: 16px;
+  height: 16px;
+  flex: none;
+  background: var(--bn-muted);
+  opacity: 0.75;
+  -webkit-mask: var(--bn-i-arrow) center / contain no-repeat;
+  mask: var(--bn-i-arrow) center / contain no-repeat;
+  transition: background-color 0.3s var(--bn-ease),
+    transform 0.4s var(--bn-ease), opacity 0.3s var(--bn-ease);
+}
+#root
+  .bayyan-answer-document
+  .prose
+  a.bayyan-source-entry:has(.bayyan-source-entry__title[lang='ar'])::after {
+  transform: scaleX(-1);
+}
+#root .bayyan-answer-document .prose a.bayyan-source-entry:hover {
+  border-color: var(--bn-gold-border);
+  transform: translateY(-1px);
+  box-shadow: var(--bn-shadow-2);
+}
+#root
+  .bayyan-answer-document
+  .prose
+  a.bayyan-source-entry:hover
+  .bayyan-source-entry__marker {
+  background: var(--bn-gold-tint-2);
+  color: var(--bn-gold-strong);
+}
+#root .bayyan-answer-document .prose a.bayyan-source-entry:hover::after {
+  background: var(--bn-gold);
+  opacity: 1;
+  transform: translate(2px, -2px);
+}
+#root
+  .bayyan-answer-document
+  .prose
+  a.bayyan-source-entry:has(
+    .bayyan-source-entry__title[lang='ar']
+  ):hover::after {
+  transform: scaleX(-1) translate(2px, -2px);
+}
+
+/* ---------- Research method (details.search-details) ----------
+   A pipeline timeline: gold check discs on a rail, micro-labels, the Arabic
+   reformulated query in Amiri, the closing note under a dashed hairline. */
+#root .bayyan-answer-document details.search-details {
+  --bnx-details-bg: var(--bn-surface);
+  max-width: none;
+  margin: 28px 0 0;
+  border: 1px solid var(--bn-hair);
+  border-radius: 18px;
+  background: var(--bnx-details-bg);
+  box-shadow: var(--bn-shadow-1);
+  overflow: hidden;
+  font-family: var(--bn-font-ui);
+  font-variant-numeric: lining-nums;
+}
+.dark #root .bayyan-answer-document details.search-details {
+  --bnx-details-bg: var(--bn-paper);
+}
+#root .bayyan-answer-document details.search-details > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding-inline: 18px 16px;
+  cursor: pointer;
+  font-family: var(--bn-font-ui);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--bn-text-2);
+  transition: color 0.3s var(--bn-ease), background-color 0.3s var(--bn-ease);
+}
+#root
+  .bayyan-answer-document
+  details.search-details
+  > summary::-webkit-details-marker {
+  display: none;
+}
+#root .bayyan-answer-document details.search-details > summary::marker {
+  content: '';
+}
+#root .bayyan-answer-document details.search-details > summary::before {
+  content: '';
+  width: 17px;
+  height: 17px;
+  flex: none;
+  background: var(--bn-gold);
+  -webkit-mask: var(--bnx-i-search) center / contain no-repeat;
+  mask: var(--bnx-i-search) center / contain no-repeat;
+}
+#root .bayyan-answer-document details.search-details > summary::after {
+  content: '';
+  margin-inline-start: auto;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  background: var(--bn-muted);
+  -webkit-mask: var(--bn-i-chevron) center / contain no-repeat;
+  mask: var(--bn-i-chevron) center / contain no-repeat;
+  transition: transform 0.5s var(--bn-ease);
+}
+#root .bayyan-answer-document details.search-details > summary:hover {
+  color: var(--bn-gold-text);
+  background: var(--bn-hover);
+}
+#root .bayyan-answer-document details.search-details[open] > summary {
+  border-bottom: 1px solid var(--bn-hair);
+  color: var(--bn-text);
+}
+#root .bayyan-answer-document details.search-details[open] > summary::after {
+  transform: rotate(180deg);
+}
+#root .bayyan-answer-document .details-content {
+  position: relative;
+  padding-block: 20px 18px;
+  padding-inline: 56px 22px;
+  font-family: var(--bn-font-ui);
+  font-size: 14.5px;
+  line-height: 1.6;
+  font-variant-numeric: lining-nums;
+  color: var(--bn-body);
+}
+/* the rail: runs down the discs; the closing note paints over its tail */
+#root .bayyan-answer-document .details-content::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 30px;
+  top: 32px;
+  bottom: 18px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--bn-gold-border), var(--bn-hair));
+}
+#root .bayyan-answer-document .details-content > [role='article'] {
+  position: relative;
+  max-width: none;
+  margin: 0 0 16px;
+  direction: var(--bnx-dir);
+  unicode-bidi: plaintext;
+  white-space: normal;
+  font-size: inherit;
+  line-height: 1.6;
+  color: var(--bn-body);
+}
+#root
+  .bayyan-answer-document
+  .details-content
+  > [role='article']:has(> .font-bold)::before {
+  content: '';
+  position: absolute;
+  direction: var(--bnx-dir);
+  inset-inline-start: -35px;
+  top: 1px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bn-i-check-white) center / 11px no-repeat,
+    var(--bn-grad-disc);
+  box-shadow: 0 0 0 4px var(--bnx-details-bg),
+    0 0 0 5px var(--bn-gold-border-soft);
+}
+#root .bayyan-answer-document .details-content > [role='article'] > .font-bold {
+  display: block;
+  margin-bottom: 3px;
+  font-family: var(--bn-font-ui);
+  font-size: 10.5px;
+  line-height: 1.6;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bn-muted);
+}
+#root .bayyan-answer-document .details-content > [role='article'] > br {
+  display: none;
+}
+/* the Arabic search query (first row), set like the landing's translated query */
+#root
+  .bayyan-answer-document
+  .details-content
+  > [role='article']:first-child[data-script='ar'] {
+  font-family: var(--bn-font-arabic);
+  font-size: 18.5px;
+  line-height: 1.85;
+  color: var(--bn-gold-text);
+  direction: rtl;
+  unicode-bidi: isolate;
+  text-align: right;
+  text-wrap: balance;
+}
+#root
+  .bayyan-answer-document
+  .details-content
+  > [role='article']:first-child[data-script='ar']
+  > .font-bold {
+  direction: var(--bnx-dir);
+  text-align: start;
+}
+/* the closing note */
+#root .bayyan-answer-document .details-content > .details-note {
+  position: relative;
+  z-index: 1;
+  margin-block: 4px 0;
+  margin-inline-start: -56px;
+  padding-top: 12px;
+  padding-inline-start: 56px;
+  background: var(--bnx-details-bg);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--bn-muted);
+}
+#root .bayyan-answer-document .details-content > .details-note::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  inset-inline: 56px 0;
+  border-top: 1px dashed var(--bn-hair-strong);
+}
+/* deep mode: the explored sub-questions */
+#root .bayyan-answer-document .details-content ol {
+  max-width: none;
+  margin: -6px 0 14px;
+  padding: 0;
+  font-family: var(--bn-font-arabic);
+  font-size: 17px;
+  line-height: 1.8;
+  color: var(--bn-text-2);
+}
+#root .bayyan-answer-document .details-content ol > li {
+  margin: 0 0 2px;
+  margin-inline-start: 1.4em;
+  padding-inline-start: 4px;
+}
+
+/* -----------------------------------------------------------------------------
+   8. LIVE STATES — search in progress, streaming
+   ----------------------------------------------------------------------------- */
+#root
+  .bayyan-answer-document[data-state='running']
+  .bayyan-answer-document__eyebrow::before {
+  width: 7px;
+  height: 7px;
+  margin-inline: 2px;
+  border-radius: 50%;
+  -webkit-mask: none;
+  mask: none;
+  background: var(--bn-gold);
+  box-shadow: 0 0 0 0 rgba(161, 137, 97, 0.5);
+  animation: bn-pulse 2.4s var(--bn-ease) infinite;
+}
+/* while a search runs, the app's timer chip (public/style.css) floats just
+   above the composer: the column leaves it room under the progress card */
+#root .bayyan-chat-column:has(.loading-steps) {
+  padding-bottom: 40px;
+}
+#root .bayyan-answer-document .loading-steps {
+  position: relative;
+  display: grid;
+  gap: 0;
+  max-width: none;
+  margin: 0;
+  padding: 18px 20px 20px;
+  border: 1px solid var(--bn-hair);
+  border-radius: 18px;
+  background: var(--bn-surface);
+  box-shadow: var(--bn-shadow-2);
+  overflow: hidden;
+  font-family: var(--bn-font-ui);
+}
+/* three shimmering skeleton lines */
+#root .bayyan-answer-document .loading-steps::before {
+  content: '';
+  order: 2;
+  display: block;
+  height: 44px;
+  margin-top: 18px;
+  margin-inline-start: 44px;
+  background: linear-gradient(var(--bn-skeleton), var(--bn-skeleton)) 0 0 / 94%
+      7px no-repeat,
+    linear-gradient(var(--bn-skeleton), var(--bn-skeleton)) 0 18px / 81% 7px
+      no-repeat,
+    linear-gradient(var(--bn-skeleton), var(--bn-skeleton)) 0 36px / 56% 7px
+      no-repeat;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.45) 30%,
+    #000 50%,
+    rgba(0, 0, 0, 0.45) 70%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.45) 30%,
+    #000 50%,
+    rgba(0, 0, 0, 0.45) 70%
+  );
+  -webkit-mask-size: 250% 100%;
+  mask-size: 250% 100%;
+  animation: bn-skeleton 2.4s var(--bn-ease-soft) infinite;
+}
+html[dir='rtl'] #root .bayyan-answer-document .loading-steps::before {
+  background-position: 100% 0, 100% 18px, 100% 36px;
+}
+#root .bayyan-answer-document .loading-steps::after {
+  content: none;
+}
+#root .bayyan-answer-document .loading-step {
+  order: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: none;
+}
+#root .bayyan-answer-document .loading-step::after {
+  content: none;
+}
+#root .bayyan-answer-document :is(.loading-step-done, .step-check) {
+  display: none;
+}
+/* khatam loader: the brand star turning slowly on a gold-tint medallion,
+   ringed by a fine gold arc that runs */
+#root .bayyan-answer-document .loading-icon {
+  position: relative;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bn-gold-tint);
+  box-shadow: inset 0 0 0 1px var(--bn-gold-border-soft);
+  color: transparent;
+  filter: none;
+  animation: none;
+}
+#root .bayyan-answer-document .loading-icon::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  display: block;
+  background: var(--bn-gold);
+  -webkit-mask: var(--bn-star) center / contain no-repeat;
+  mask: var(--bn-star) center / contain no-repeat;
+  animation: bn-spin 8s linear infinite reverse;
+}
+#root .bayyan-answer-document .loading-icon::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  border-top-color: var(--bn-gold);
+  border-inline-end-color: var(--bn-gold-border);
+  animation: bn-spin 1.2s var(--bn-ease-soft) infinite;
+}
+#root .bayyan-answer-document .loading-text {
+  position: static;
+  display: block;
+  min-width: 0;
+  font-family: var(--bn-font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--bn-text);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  animation: none;
+  unicode-bidi: plaintext;
+  text-align: start;
+}
+#root .bayyan-answer-document .loading-text::after {
+  content: none;
+}
+
+/* answer being written: a live gold hairline under the document */
+#root
+  .bayyan-answer-document[data-state='running']:has(
+    .bayyan-stream-cursor
+  )::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-top: 6px;
+  background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--bn-gold) 40%,
+        var(--bn-gold-bright) 50%,
+        var(--bn-gold) 60%,
+        transparent 100%
+      )
+      30% 0 / 40% 100% no-repeat,
+    var(--bn-hair);
+  animation: bn-indeterminate 2.4s var(--bn-ease-soft) infinite;
+}
+/* the streaming caret: never invisible in a still frame */
+#root .bayyan-stream-cursor {
+  display: inline-block;
+  width: 2.5px;
+  height: 1.15em;
+  margin-inline-start: 4px;
+  vertical-align: -0.2em;
+  border-radius: 2px;
+  background: var(--bn-gold-text);
+  box-shadow: 0 0 10px rgba(205, 183, 140, 0.55);
+  opacity: 1;
+  animation: bn-caret 1.1s var(--bn-ease-soft) infinite;
+}
+
+/* -----------------------------------------------------------------------------
+   9. MESSAGE ACTIONS (copy / share / feedback) and follow-up suggestions
+   ----------------------------------------------------------------------------- */
+#root .bayyan-message-actions {
+  margin-top: 14px;
+  margin-inline-start: 0;
+  gap: 4px;
+}
+#root .bayyan-message-actions > div {
+  gap: 4px;
+}
+#root .bayyan-message-actions button.w-9 {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--bn-hair);
+  color: var(--bn-muted);
+  background: transparent;
+  transition: color 0.3s var(--bn-ease), border-color 0.3s var(--bn-ease),
+    background-color 0.3s var(--bn-ease);
+}
+#root .bayyan-message-actions button.w-9:hover {
+  color: var(--bn-gold-text);
+  border-color: var(--bn-gold-border);
+  background: var(--bn-gold-tint);
+}
+#root .bayyan-message-actions button.w-9 svg {
+  width: 15px;
+  height: 15px;
+}
+#root
+  .bayyan-message-actions
+  :is(.positive-feedback-on, .negative-feedback-on) {
+  color: var(--bn-gold-text);
+}
+/* text actions (follow-up suggestions…): full-width paper rows */
+#root .bayyan-message-actions > button:not(.w-9) {
+  width: 100%;
+  height: auto;
+  min-height: 48px;
+  margin-top: 4px;
+  padding: 10px 16px;
+  border: 1px solid var(--bn-hair);
+  border-radius: 16px;
+  justify-content: flex-start;
+  text-align: start;
+  white-space: normal;
+  font-family: var(--bn-font-ui);
+  font-size: 14.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--bn-text);
+  background: var(--bn-surface);
+  box-shadow: var(--bn-shadow-1);
+  transition: border-color 0.3s var(--bn-ease), transform 0.4s var(--bn-ease),
+    color 0.3s var(--bn-ease);
+}
+#root .bayyan-message-actions > button:not(.w-9):hover {
+  border-color: var(--bn-gold-border);
+  color: var(--bn-gold-strong);
+  background: var(--bn-surface);
+  transform: translateY(-1px);
+}
+/* the server's light-bulb emoji is stripped: the row is signed with the star */
+#root .bayyan-message-actions > button:not(.w-9)::before {
+  content: '';
+  width: 11px;
+  height: 11px;
+  flex: none;
+  margin-inline-end: 2px;
+  background: var(--bn-gold);
+  -webkit-mask: var(--bn-star) center / contain no-repeat;
+  mask: var(--bn-star) center / contain no-repeat;
+}
+
+/* -----------------------------------------------------------------------------
+   10. PORTALED SURFACES — Radix menus, popovers, dialogs, sheets, tooltips,
+   toasts (rendered into <body>, outside #root). Colours already follow the
+   rebased shadcn tokens; this adds the house shape.
+   ----------------------------------------------------------------------------- */
+[data-radix-popper-content-wrapper]
+  > :is([role='menu'], [role='dialog'], [role='listbox']) {
+  border: 1px solid var(--bn-hair-strong);
+  border-radius: 16px;
+  background: var(--bn-elevated);
+  color: var(--bn-text);
+  box-shadow: var(--bn-shadow-3);
+  font-family: var(--bn-font-ui);
+}
+[data-radix-popper-content-wrapper] > [role='menu'] {
+  padding: 6px;
+}
+[data-radix-popper-content-wrapper]
+  :is([role='menuitem'], [role='menuitemradio'], [role='menuitemcheckbox']) {
+  min-height: 38px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: var(--bn-text);
+  transition: background-color 0.25s var(--bn-ease), color 0.25s var(--bn-ease);
+}
+[data-radix-popper-content-wrapper]
+  :is([role='menuitem'], [role='menuitemradio'], [role='menuitemcheckbox']):is(
+    :hover,
+    [data-highlighted],
+    [data-state='open']
+  ) {
+  background: var(--bn-gold-tint);
+  color: var(--bn-gold-strong);
+}
+[data-radix-popper-content-wrapper] [role='menuitem'].text-red-500 {
+  color: hsl(var(--destructive));
+}
+[data-radix-popper-content-wrapper] [role='separator'] {
+  margin-block: 5px;
+  background: var(--bn-hair);
+}
+[data-radix-popper-content-wrapper] [role='menu'] > .font-semibold,
+[data-radix-popper-content-wrapper]
+  [role='menu']
+  > div:first-child:not([role]) {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bn-muted);
+}
+/* "Lisez-moi" moves into the avatar menu where the header button folds away */
+[data-radix-popper-content-wrapper] .bayyan-user-nav__readme {
+  display: none;
+}
+@media (max-width: 480px) {
+  [data-radix-popper-content-wrapper] .bayyan-user-nav__readme {
+    display: flex;
+  }
+}
+/* menus in the Arabic UI (Radix renders them dir="rtl"): the label loses its
+   Latin tracking, end icons and radio marks change side, the submenu chevron
+   points to the left */
+html[dir='rtl']
+  [data-radix-popper-content-wrapper]
+  [role='menu']
+  > .font-semibold,
+html[dir='rtl']
+  [data-radix-popper-content-wrapper]
+  [role='menu']
+  > div:first-child:not([role]) {
+  font-family: 'IBM Plex Sans Arabic', var(--bn-font-ui);
+  font-size: 12.5px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+[data-radix-popper-content-wrapper] [role='menu'][dir='rtl'] .ml-auto {
+  margin-left: 0;
+  margin-right: auto;
+}
+[data-radix-popper-content-wrapper] [role='menu'][dir='rtl'] .mr-2 {
+  margin-right: 0;
+  margin-left: 0.5rem;
+}
+[data-radix-popper-content-wrapper]
+  [role='menu'][dir='rtl']
+  [role='menuitemradio'] {
+  padding-left: 8px;
+  padding-right: 32px;
+}
+[data-radix-popper-content-wrapper]
+  [role='menu'][dir='rtl']
+  [role='menuitemradio']
+  > span:first-child {
+  left: auto;
+  right: 8px;
+}
+[data-radix-popper-content-wrapper]
+  [role='menu'][dir='rtl']
+  [aria-haspopup='menu']
+  > svg:last-child {
+  transform: scaleX(-1);
+}
+/* compact response-level popover: two rows, the chosen one tinted */
+[data-radix-popper-content-wrapper] > [role='dialog'] {
+  padding: 6px;
+}
+[data-radix-popper-content-wrapper] > [role='dialog'] > button {
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: background-color 0.25s var(--bn-ease);
+}
+[data-radix-popper-content-wrapper] > [role='dialog'] > button:hover {
+  background: var(--bn-hover);
+}
+[data-radix-popper-content-wrapper] > [role='dialog'] > button.bg-accent {
+  background: var(--bn-gold-tint);
+}
+[data-radix-popper-content-wrapper] > [role='dialog'] > button svg {
+  color: var(--bn-gold);
+}
+/* tooltips: a small ink label */
+[data-radix-popper-content-wrapper] > div[data-side]:not([role]) {
+  padding: 6px 10px;
+  border: 1px solid var(--bn-q-border);
+  border-radius: 9px;
+  background: var(--bn-q-bg);
+  color: var(--bn-q-text);
+  font-family: var(--bn-font-ui);
+  font-size: 12.5px;
+  font-weight: 500;
+  box-shadow: var(--bn-q-shadow);
+}
+/* dialogs and the phone sidebar sheet */
+/* [data-state]: Radix content only — the app's source reader
+   (body > #jawab-source-reader > section[role=dialog]) is style.css's */
+body > [role='dialog'][data-state]:not([data-sidebar]),
+body > [role='alertdialog'],
+body > div > [role='dialog'][data-state]:not([data-sidebar]) {
+  border: 1px solid var(--bn-hair-strong);
+  border-radius: var(--bn-r-panel);
+  background: var(--bn-paper);
+  color: var(--bn-text);
+  box-shadow: var(--bn-shadow-3);
+  font-family: var(--bn-font-ui);
+}
+body > [role='dialog'].h-screen {
+  border: 0;
+  border-radius: 0;
+}
+body > :is([role='dialog'], [role='alertdialog']) :is(h2, [id$='-title']) {
+  font-family: var(--bn-font-display);
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--bn-text);
+}
+body > :is([role='dialog'], [role='alertdialog']) p[id$='-description'] {
+  color: var(--bn-text-2);
+}
+/* form fields (the command palette's search field is not a boxed field) */
+body
+  > :is([role='dialog'], [role='alertdialog'])
+  :is(input:not([cmdk-input]), textarea) {
+  border-radius: 12px;
+  border-color: var(--bn-hair-strong);
+  background: var(--bn-surface);
+  font-family: var(--bn-font-ui);
+}
+body
+  > :is([role='dialog'], [role='alertdialog'])
+  :is(input:not([cmdk-input]), textarea):focus-visible {
+  border-color: var(--bn-gold-border);
+  box-shadow: 0 0 0 3px var(--bn-gold-tint);
+}
+body > :is([role='dialog'], [role='alertdialog']) button.bg-primary {
+  border-radius: var(--bn-r-pill);
+  background: var(--bn-grad-cta);
+  color: #14120e;
+  font-weight: 600;
+  box-shadow: var(--bn-shadow-cta);
+}
+body > :is([role='dialog'], [role='alertdialog']) button.bg-primary:hover {
+  box-shadow: var(--bn-shadow-cta-hover);
+}
+body
+  > :is([role='dialog'], [role='alertdialog'])
+  button:is(.border-input, .bg-background) {
+  border-radius: var(--bn-r-pill);
+  border-color: var(--bn-hair-strong);
+  background: transparent;
+}
+body > div[data-state][class*='bg-black'] {
+  background: var(--bn-backdrop);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+/* search (command palette) */
+[cmdk-root] {
+  background: var(--bn-paper);
+  font-family: var(--bn-font-ui);
+}
+/* the search field is the palette's header line: no box of its own, the
+   wrapper's bottom hairline is the only divider */
+[cmdk-input] {
+  font-size: 15px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+html[dir='rtl'] [cmdk-input-wrapper] > svg {
+  margin-right: 0;
+  margin-left: 8px;
+}
+[cmdk-group-heading] {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bn-muted);
+}
+[cmdk-item] {
+  border-radius: 10px;
+  unicode-bidi: plaintext;
+}
+[cmdk-item][data-selected='true'] {
+  background: var(--bn-gold-tint);
+  color: var(--bn-gold-strong);
+}
+/* the readme dialog reads like a short document */
+body > [role='dialog'] .prose {
+  font-family: var(--bn-font-ui);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--bn-body);
+}
+body > [role='dialog'] .prose :is(h1, h2, h3) {
+  font-family: var(--bn-font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  border: 0;
+  color: var(--bn-text);
+}
+body > [role='dialog'] .prose a {
+  color: var(--bn-gold-text);
+  text-decoration: underline;
+  text-decoration-color: var(--bn-gold-border);
   text-underline-offset: 3px;
 }
-
-#root .bayyan-answer-document .prose a[href*='/public/library.html'] {
-  min-height: 28px;
-  padding: 3px 8px;
-  border: 1px solid rgba(161, 137, 97, 0.42);
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  color: var(--bayyan-gold-ink);
-  background: var(--bayyan-tint);
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 760;
-  text-decoration: none;
+/* "---" between sections: a hairline with the section's own air */
+body > [role='dialog'] .prose .bayyan-rule {
+  margin-block: 28px 4px;
+  background: var(--bn-hair);
+}
+/* toasts */
+[data-sonner-toast] {
+  border-radius: 14px;
+  font-family: var(--bn-font-ui);
+  box-shadow: var(--bn-shadow-3);
+}
+[data-sonner-toast]:not(
+    [data-type='success'],
+    [data-type='error'],
+    [data-type='warning']
+  ) {
+  border-color: var(--bn-hair-strong);
+  background: var(--bn-elevated);
+  color: var(--bn-text);
 }
 
-#root .bayyan-answer-document .prose [dir='rtl'],
-#root .bayyan-answer-document .prose [lang='ar'] {
-  direction: rtl;
-  text-align: right;
-  font-family: 'IBM Plex Sans Arabic', 'Noto Naskh Arabic', serif;
+/* -----------------------------------------------------------------------------
+   10b. FULL-PAGE ROUTES — /login and /settings
+   The dialogs' vocabulary on the two stand-alone React routes: display-face
+   titles, gold-gradient pill CTA, hairline pill secondary buttons, 12px fields
+   with the gold focus, 22px hairline cards. Scopes: the login form is the only
+   form with #email; the settings page is the only route with #username.
+   ----------------------------------------------------------------------------- */
+#root form:has(#email) h1,
+#root > div:has(#username) h1 {
+  font-family: var(--bn-font-display);
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--bn-text);
+  text-wrap: balance;
+}
+#root > div:has(#username) h1 {
+  font-size: 40px;
+}
+html[dir='rtl'] #root form:has(#email) h1,
+html[dir='rtl'] #root > div:has(#username) h1 {
+  font-family: var(--bn-font-arabic);
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+#root > div:has(#username) h1 + p {
+  margin-top: 6px;
+  color: var(--bn-text-2);
+  font-size: 15px;
+}
+:is(#root form:has(#email), #root > div:has(#username)) label {
+  color: var(--bn-text-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+/* fields */
+:is(#root form:has(#email), #root > div:has(#username)) input {
+  height: 44px;
+  border-radius: 12px;
+  border-color: var(--bn-hair-strong);
+  background: var(--bn-surface);
+  color: var(--bn-text);
+  font-family: var(--bn-font-ui);
+  transition: border-color 0.25s var(--bn-ease), box-shadow 0.25s var(--bn-ease);
+}
+#root > div:has(#username) input {
+  background: var(--bn-paper);
+}
+:is(#root form:has(#email), #root > div:has(#username)) input::placeholder {
+  color: var(--bn-muted);
+}
+:is(#root form:has(#email), #root > div:has(#username)) input:focus-visible {
+  outline: none;
+  border-color: var(--bn-gold-border);
+  box-shadow: 0 0 0 3px var(--bn-gold-tint);
+}
+:is(#root form:has(#email), #root > div:has(#username))
+  input.border-destructive {
+  border-color: hsl(var(--destructive) / 0.6);
+}
+/* the password field's eye toggle: a quiet round icon button at inline-end */
+#root form:has(#email) .relative > input {
+  padding-inline-end: 48px;
+}
+#root form:has(#email) .relative > button.absolute {
+  border-radius: var(--bn-r-pill);
+  color: var(--bn-muted);
+}
+#root form:has(#email) .relative > button.absolute:hover {
+  background: var(--bn-hover);
+  color: var(--bn-text);
+}
+html[dir='rtl'] #root form:has(#email) .relative > button.absolute {
+  right: auto;
+  left: 0.5rem;
+}
+/* primary: the gold-gradient pill (login submit, settings "Enregistrer") */
+:is(#root form:has(#email), #root > div:has(#username)) button.bg-primary {
+  min-height: 44px;
+  padding-inline: 22px;
+  border-radius: var(--bn-r-pill);
+  background: var(--bn-grad-cta);
+  color: #14120e;
+  font-weight: 600;
+  box-shadow: var(--bn-shadow-cta);
+  transition: box-shadow 0.3s var(--bn-ease), transform 0.3s var(--bn-ease);
+}
+:is(#root form:has(#email), #root > div:has(#username))
+  button.bg-primary:hover {
+  background: var(--bn-grad-cta);
+  box-shadow: var(--bn-shadow-cta-hover);
+}
+/* secondary (Google, outline): a hairline pill */
+:is(#root form:has(#email), #root > div:has(#username))
+  button:is(.border-input, .bg-secondary) {
+  min-height: 44px;
+  border-radius: var(--bn-r-pill);
+  border-color: var(--bn-hair-strong);
+  background: transparent;
+  color: var(--bn-text);
+}
+:is(#root form:has(#email), #root > div:has(#username))
+  button:is(.border-input, .bg-secondary):hover {
+  border-color: var(--bn-gold-border);
+  background: var(--bn-hover);
+}
+/* destructive keeps its red, takes the pill shape */
+#root > div:has(#username) button.bg-destructive {
+  min-height: 44px;
+  padding-inline: 20px;
+  border-radius: var(--bn-r-pill);
+  font-weight: 600;
+}
+/* "OU" between the password form and the providers: a micro-label on a
+   hairline. The line leaves a gap for the label instead of the label masking
+   it with a canvas patch (the CTA's glow above showed the patch in dark). */
+#root form:has(#email) .relative.text-center::after {
+  border-top-color: transparent;
+  background: linear-gradient(
+      90deg,
+      var(--bn-hair-strong) calc(50% - 34px),
+      transparent calc(50% - 34px),
+      transparent calc(50% + 34px),
+      var(--bn-hair-strong) calc(50% + 34px)
+    )
+    top / 100% 1px no-repeat;
+}
+#root form:has(#email) .relative.text-center > span {
+  padding-inline: 12px;
+  background: transparent;
+  color: var(--bn-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+html[dir='rtl'] #root form:has(#email) .relative.text-center > span {
+  font-size: 13px;
+  letter-spacing: 0;
+}
+/* settings: back link, cards, rows */
+#root > div:has(#username) > div > button:first-child {
+  min-height: 40px;
+  padding-inline: 12px 16px;
+  border-radius: var(--bn-r-pill);
+  color: var(--bn-text-2);
+}
+#root > div:has(#username) > div > button:first-child:hover {
+  background: var(--bn-hover);
+  color: var(--bn-text);
+}
+html[dir='rtl'] #root > div:has(#username) > div > button:first-child {
+  margin-left: 0;
+  margin-right: -0.5rem;
+}
+html[dir='rtl'] #root > div:has(#username) > div > button:first-child svg {
+  margin-right: 0;
+  transform: scaleX(-1);
+}
+#root > div:has(#username) .rounded-lg.border.bg-card {
+  border-radius: var(--bn-r-card);
+  border-color: var(--bn-hair);
+  background: var(--bn-surface);
+  color: var(--bn-text);
+  box-shadow: var(--bn-shadow-1);
+}
+#root > div:has(#username) .rounded-lg.border.bg-card.border-destructive\/40 {
+  border-color: hsl(var(--destructive) / 0.32);
+}
+#root > div:has(#username) .bg-card > div:first-child > div:first-child {
+  font-family: var(--bn-font-display);
   font-size: 24px;
-  line-height: 1.85;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+html[dir='rtl']
+  #root
+  > div:has(#username)
+  .bg-card
+  > div:first-child
+  > div:first-child {
+  font-family: var(--bn-font-arabic);
+  font-weight: 700;
+  font-size: 21px;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+#root > div:has(#username) .bg-card .text-muted-foreground {
+  color: var(--bn-muted);
+}
+#root > div:has(#username) .bg-card > div:first-child > .text-muted-foreground {
+  color: var(--bn-text-2);
+  line-height: 1.55;
+}
+#root > div:has(#username) .bg-card .bg-border {
+  background: var(--bn-hair);
 }
 
-#root .bayyan-answer-document .prose table {
-  min-width: 620px;
-  font-size: 14px;
+/* -----------------------------------------------------------------------------
+   11. RTL — Arabic UI (the sidebar is rendered side="right"; spacing is logical)
+   ----------------------------------------------------------------------------- */
+html[dir='rtl'] :is(#root, [data-mobile='true']) [data-sidebar='header'] > div {
+  background-position: right 46px top 52%;
+}
+html[dir='rtl'] #root .bayyan-answer-document__eyebrow,
+html[dir='rtl'] #root .bayyan-user-question__label,
+html[dir='rtl'] #root .bayyan-welcome-copy > p,
+html[dir='rtl'] :is(#root, [data-mobile='true']) [data-sidebar='group-label'] {
+  letter-spacing: 0;
+  text-transform: none;
+  font-family: 'IBM Plex Sans Arabic', var(--bn-font-ui);
+}
+/* answer labels follow the answer's own language (dir="auto"), not the UI:
+   kept in a rule of their own so a browser without :dir() drops only these */
+#root
+  .bayyan-answer-document
+  .details-content
+  > [role='article']:dir(rtl)
+  > .font-bold,
+#root .bayyan-answer-document .prose .bayyan-bibliography-heading:dir(rtl) {
+  letter-spacing: 0;
+  text-transform: none;
+  font-family: 'IBM Plex Sans Arabic', var(--bn-font-ui);
+}
+html[dir='rtl'] #root .bayyan-answer-document__eyebrow,
+html[dir='rtl'] #root .bayyan-welcome-copy > p {
+  font-size: 13px;
+}
+html[dir='rtl'] #root .bayyan-user-question__label {
+  font-size: 12.5px;
+}
+#root
+  .bayyan-answer-document
+  .details-content
+  > [role='article']:dir(rtl)
+  > .font-bold {
+  font-size: 12.5px;
+}
+#root .bayyan-answer-document .prose .bayyan-bibliography-heading:dir(rtl) {
+  font-size: 13.5px;
+}
+html[dir='rtl'] :is(#root, [data-mobile='true']) [data-sidebar='group-label'] {
+  font-size: 12px;
+}
+/* Arabic title: larger Amiri on two lines at 1.6, line 1 in ink, line 2 in
+   the gold gradient — the same rhythm as the French title */
+html[dir='rtl'] #root .bayyan-welcome-copy > h1 {
+  font-family: var(--bn-font-arabic);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.6;
+  font-size: clamp(46px, 4.4vw, 62px);
+}
+html[dir='rtl'] #root .bayyan-welcome-title__accent {
+  font-style: normal;
+  padding-bottom: 0.12em;
+}
+html[dir='rtl'] #root .bayyan-welcome-imprint {
+  font-family: 'IBM Plex Sans Arabic', var(--bn-font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+/* by the heading's own direction, not the UI's: a French answer's Latin
+   "BIBLIOGRAPHIE" cartouche keeps its tracking in the Arabic UI */
+#root .bayyan-answer-document .prose :is(h1, h2, h3):dir(rtl) {
+  letter-spacing: 0;
+}
+html[dir='rtl'] #root .bayyan-user-question .prose {
+  letter-spacing: 0;
+}
+html[dir='rtl'] #root .bayyan-response-level__option,
+html[dir='rtl'] #root .bayyan-response-level > p,
+html[dir='rtl'] #root #message-composer #chat-input {
+  font-family: 'IBM Plex Sans Arabic', var(--bn-font-ui);
+}
+/* dir="auto" resolves an EMPTY field to LTR: while the placeholder shows, the
+   field takes the UI direction (placeholder, ellipsis and caret on the right,
+   on the 18–22px inline-start padding); typed text still resolves by itself */
+html[dir='rtl'] #root #message-composer #chat-input:placeholder-shown {
+  direction: rtl;
+  text-align: start;
 }
 
-#root #message-composer.is-conversation {
-  width: min(100%, 430px);
-  min-height: 94px;
-  margin-inline: auto;
-  border: 1px solid var(--bayyan-border);
-  border-radius: 18px !important;
-  color: var(--bayyan-ink);
-  background: var(--bayyan-floating-surface) !important;
-  box-shadow: 0 5px 20px rgba(17, 17, 17, 0.08);
+/* -----------------------------------------------------------------------------
+   12. RESPONSIVE — phones (about half of the usage) and tablets
+   ----------------------------------------------------------------------------- */
+@media (min-width: 768px) and (max-width: 1100px) {
+  :root {
+    --bn-column: 680px;
+  }
 }
 
-#root #message-composer.is-conversation #chat-submit,
-#root #message-composer.is-conversation #stop-button {
-  background: var(--bayyan-gold);
+/* tablets with the sidebar open: the header bar is ~520px wide, so the text
+   buttons fold to icons and the quota keeps only its figure */
+@media (min-width: 768px) and (max-width: 899px) {
+  #root:has([data-side][data-state='expanded']) #readme-button {
+    width: 36px;
+    padding: 0;
+    gap: 0;
+    font-size: 0;
+  }
+  #root:has([data-side][data-state='expanded']) #readme-button::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    background: currentColor;
+    -webkit-mask: var(--bn-i-info) center / contain no-repeat;
+    mask: var(--bn-i-info) center / contain no-repeat;
+  }
+  #root:has([data-side][data-state='expanded']) #readme-button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  #root:has([data-side][data-state='expanded'])
+    #header
+    button:has(> svg.lucide-heart) {
+    width: 36px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+  }
+  /* the label stays for assistive tech */
+  #root:has([data-side][data-state='expanded'])
+    #header
+    button:has(> svg.lucide-heart)
+    > span {
+    display: inline;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  #root:has([data-side][data-state='expanded'])
+    .bayyan-quota--inline
+    .bayyan-quota__label {
+    display: none;
+  }
 }
 
-#root .watermark {
-  display: none !important;
+/* short laptop screens (1366x768 → ~657px of viewport, 1280x720): the title
+   page is ~680px tall, so it tightens and the title follows the height,
+   keeping logo → imprint inside the view under the 60px header */
+@media (min-width: 768px) and (max-height: 760px) {
+  #root #welcome-screen.bayyan-welcome-screen {
+    padding-block: 8px 20px;
+  }
+  #root .bayyan-welcome-brand {
+    margin-bottom: 18px;
+  }
+  #root .bayyan-welcome-logo {
+    height: 30px;
+  }
+  #root .bayyan-welcome-copy > p {
+    margin-bottom: 12px;
+  }
+  #root .bayyan-welcome-copy > h1 {
+    font-size: clamp(40px, min(4.9vw, 8.2vh), 70px);
+  }
+  html[dir='rtl'] #root .bayyan-welcome-copy > h1 {
+    font-size: clamp(38px, min(4.4vw, 7.2vh), 62px);
+    line-height: 1.55;
+  }
+  #root .bayyan-welcome-copy > span {
+    margin-top: 12px;
+  }
+  #root #message-composer.is-welcome {
+    margin-top: 26px;
+  }
+  #root .bayyan-welcome-imprint {
+    margin-top: 16px;
+  }
 }
 
-@media (min-width: 640px) {
-  #root .bayyan-welcome-screen {
-    min-height: min(844px, calc(100dvh - 42px));
-    margin-block: 21px;
-    padding: 28px 20px 36px;
-    border: 1px solid rgba(222, 222, 222, 0.8);
+@media (max-width: 767px) {
+  #root #header {
+    height: 56px;
+    padding-inline: 6px;
+    gap: 0;
+  }
+  #root #header .bayyan-header__end {
+    gap: 0;
+  }
+  #root #header #sidebar-trigger-button,
+  #root #header #new-chat-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+  #root #header #sidebar-trigger-button svg,
+  #root #header #new-chat-button svg {
+    width: 21px !important;
+    height: 21px !important;
+  }
+  /* Lisez-moi → info icon (the label stays for assistive tech) */
+  #root #readme-button {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    gap: 0;
+    font-size: 0;
+  }
+  #root #readme-button::before {
+    content: '';
+    width: 19px;
+    height: 19px;
+    background: currentColor;
+    -webkit-mask: var(--bn-i-info) center / contain no-repeat;
+    mask: var(--bn-i-info) center / contain no-repeat;
+  }
+  #root #readme-button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  /* Contribuer → icon button (the label stays for assistive tech; it beats
+     the span's own Tailwind "hidden", which would drop it from the a11y tree) */
+  #root #header button:has(> svg.lucide-heart) {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    border-color: transparent;
+    background: transparent;
+  }
+  #root #header button:has(> svg.lucide-heart) > span {
+    display: inline;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  #root #header button:has(> svg.lucide-heart)::before {
+    width: 19px;
+    height: 19px;
+  }
+  #root #theme-toggle {
+    width: 44px;
+    height: 44px;
+  }
+  #root #theme-toggle svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  #root #user-nav-button {
+    width: 44px;
+    height: 44px;
+    margin: 0;
+  }
+  /* the mobile quota row → a chip floating at the header's exact centre
+     (3 + 3 icon buttons around it once "Lisez-moi" folds away) */
+  #root .bayyan-quota--strip {
+    position: absolute;
+    top: 13px;
+    left: 50%;
+    z-index: 6;
+    height: 30px;
+    padding-inline: 9px 10px;
+    gap: 6px;
+    transform: translateX(-50%);
+    border: 0;
+    border-radius: var(--bn-r-pill);
+    background: var(--bn-surface-2);
+    box-shadow: inset 0 0 0 1px var(--bn-hair);
+    font-size: 12px;
+    color: var(--bn-muted);
+  }
+  /* the Capacitor iOS shell pushes the icon row down by the status-bar
+     inset (public/style.css pads #header by --bayyan-ios-header-safe-top
+     and keeps p-3's 12px at the bottom): the chip follows the row centre */
+  html.bayyan-native-ios #root .bayyan-quota--strip {
+    top: calc(var(--bayyan-ios-header-safe-top, 14px) + 7px);
+  }
+  /* a read-out, not a control: taps on its edges reach the neighbouring
+     44px buttons (they overlap it by a few px on 320px phones) */
+  #root .bayyan-quota--strip {
+    pointer-events: none;
+  }
+  #root .bayyan-quota--strip .bayyan-quota__label {
+    display: none;
+  }
+  #root .bayyan-quota--strip::before {
+    width: 11px;
+    height: 11px;
+  }
+
+  /* welcome */
+  #root #welcome-screen.bayyan-welcome-screen {
+    width: 100%;
+    padding: 12px 2px 28px;
+  }
+  #root .bayyan-welcome-brand {
+    margin-bottom: 26px;
+  }
+  #root .bayyan-welcome-logo {
+    height: 32px;
+  }
+  #root .bayyan-welcome-copy > p {
+    margin-bottom: 18px;
+    font-size: 10.5px;
+    gap: 10px;
+  }
+  #root .bayyan-welcome-copy > p::before,
+  #root .bayyan-welcome-copy > p::after {
+    width: 20px;
+  }
+  #root .bayyan-welcome-copy > h1 {
+    font-size: 44px;
+  }
+  html[dir='rtl'] #root .bayyan-welcome-copy > h1 {
+    font-size: 46px;
+  }
+  #root .bayyan-welcome-copy > span {
+    margin-top: 16px;
+    font-size: 16px;
+    padding-inline: 8px;
+  }
+  #root #message-composer.is-welcome {
+    margin-top: 30px;
+    padding-block: 16px 12px;
+    padding-inline: 18px 14px;
+    border-radius: 24px;
+  }
+  #root #message-composer.is-welcome #chat-input {
+    font-size: 16px;
+  }
+  #root .bayyan-welcome-controls {
+    gap: 12px;
+  }
+  #root .bayyan-response-level {
+    flex: 1 1 100%;
+  }
+  #root .bayyan-response-level__segments {
+    flex: 1 1 auto;
+  }
+  #root .bayyan-response-level__option {
+    flex: 1 1 0;
+    min-height: 40px;
+  }
+  #root .bayyan-response-level > p {
+    max-width: none;
+    flex: 1 1 100%;
+  }
+  #root .bayyan-welcome-actions {
+    flex: 1 1 100%;
+    justify-content: space-between;
+  }
+  #root #message-composer button:has(> svg.lucide-mic) {
+    width: 44px;
+    height: 44px;
+  }
+  /* imprint on two lines: the two claims, then the four languages */
+  #root .bayyan-welcome-imprint {
+    margin-top: 20px;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+  }
+  #root .bayyan-welcome-imprint > span:last-child {
+    flex-basis: 100%;
+  }
+  #root .bayyan-welcome-imprint > span:nth-last-child(2)::after {
+    content: none;
+  }
+  html[dir='rtl'] #root .bayyan-welcome-imprint {
+    font-size: 12.5px;
+    letter-spacing: 0;
+  }
+
+  /* thread */
+  #root .step[data-step-type='user_message'] {
+    padding-top: 26px;
+  }
+  #root .bayyan-user-question {
+    max-width: 92%;
+    padding: 14px 18px 16px;
+  }
+  #root .bayyan-user-question .prose {
+    font-size: 21px;
+  }
+  #root .bayyan-answer-document .prose {
+    font-size: 17.5px;
+    line-height: 1.66;
+  }
+  #root
+    .bayyan-answer-document
+    .prose
+    > [role='article']:first-child:not(.bayyan-notice, .bayyan-ayah) {
+    font-size: 18.5px;
+    line-height: 1.6;
+  }
+  #root
+    .bayyan-answer-document
+    .prose
+    > [role='article']:first-child[data-script='ar']:not(
+      .bayyan-notice,
+      .bayyan-ayah
+    ) {
+    line-height: 1.9;
+  }
+  #root .bayyan-answer-document .prose h3 {
+    font-size: 25px;
+    margin-top: 36px;
+  }
+  #root .bayyan-answer-document .prose h2 {
+    font-size: 29px;
+  }
+  #root .bayyan-answer-document .prose h1 {
+    font-size: 33px;
+  }
+  #root .bayyan-answer-document .prose blockquote.bayyan-quote {
+    padding-block: 16px 14px;
+    padding-inline: 18px 16px;
+    margin-inline: -2px;
+  }
+  #root
+    .bayyan-answer-document
+    .prose
+    .bayyan-quote--evidence
+    > [data-script='ar'] {
+    font-size: 20.5px;
+    line-height: 1.85;
+  }
+  /* translations: the upright text face on phones (long italic runs tire
+     small screens) */
+  #root .bayyan-answer-document .prose blockquote .bayyan-translation {
+    font-size: 16.5px;
+    font-style: normal;
+  }
+  #root .bayyan-answer-document .prose .bayyan-ayah {
+    font-size: 22.5px;
+    line-height: 2;
+  }
+  #root .bayyan-answer-document .prose .bayyan-notice {
+    font-size: 14px;
+    padding-inline: 42px 14px;
+  }
+  #root .bayyan-answer-document .prose .bayyan-notice::before {
+    inset-inline-start: 14px;
+  }
+
+  /* Bibliography on phones: hairline reference rows instead of tall cards —
+     no card fill, a compact marker, the open arrow kept at the inline end. */
+  #root .bayyan-answer-document .prose ul.bayyan-source-list {
+    gap: 0;
+    border-top: 1px solid var(--bn-hair);
+  }
+  #root .bayyan-answer-document .prose a.bayyan-source-entry {
+    align-items: start;
+    column-gap: 12px;
+    min-height: 52px;
+    padding-block: 12px;
+    padding-inline: 2px 4px;
+    border: 0;
+    border-bottom: 1px solid var(--bn-hair);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  #root .bayyan-answer-document .prose .bayyan-source-entry__marker {
+    align-self: start;
+    min-width: 32px;
+    height: 24px;
+    margin-top: 3px;
+    padding-inline: 6px;
+    border-radius: 7px;
+    font-size: 11px;
+  }
+  #root .bayyan-answer-document .prose .bayyan-source-entry__title[lang='ar'] {
+    font-size: 17.5px;
+    line-height: 1.55;
+  }
+  #root .bayyan-answer-document .prose .bayyan-source-entry__author[lang='ar'] {
+    font-size: 15px;
+  }
+  #root .bayyan-answer-document .prose .bayyan-source-entry__ref {
+    flex-basis: 100%;
+    margin-top: 2px;
+    font-size: 11.5px;
+  }
+  /* the ref is an LTR island: align it with the entry, not with itself */
+  #root
+    .bayyan-answer-document
+    .prose
+    a.bayyan-source-entry:has(.bayyan-source-entry__title[lang='ar'])
+    .bayyan-source-entry__ref {
+    text-align: right;
+  }
+  #root .bayyan-answer-document .prose a.bayyan-source-entry::after {
+    align-self: center;
+    width: 15px;
+    height: 15px;
+    background: var(--bn-gold);
+    opacity: 0.9;
+  }
+  #root .bayyan-answer-document .prose a.bayyan-source-entry:hover {
+    transform: none;
+    box-shadow: none;
+    background: var(--bn-gold-tint);
+  }
+  #root .bayyan-answer-document .details-content {
+    padding-inline: 48px 16px;
+  }
+  #root .bayyan-answer-document .details-content::before {
+    inset-inline-start: 25px;
+  }
+  #root
+    .bayyan-answer-document
+    .details-content
+    > [role='article']:has(> .font-bold)::before {
+    inset-inline-start: -32px;
+  }
+  #root .bayyan-answer-document .details-content > .details-note {
+    margin-inline-start: -48px;
+    padding-inline-start: 48px;
+  }
+  #root .bayyan-answer-document .details-content > .details-note::before {
+    inset-inline-start: 48px;
+  }
+
+  /* composer */
+  #root #message-composer.is-conversation {
+    padding-block: 10px 8px;
+    padding-inline: 16px 8px;
     border-radius: 22px;
-    box-shadow: var(--bayyan-shadow);
+  }
+  #root #message-composer.is-conversation #chat-input {
+    font-size: 16px;
+  }
+  #root #message-composer.is-conversation #chat-submit,
+  #root #message-composer.is-conversation #stop-button {
+    width: 44px;
+    height: 44px;
+  }
+  #root #message-composer button[aria-haspopup='dialog'] {
+    position: relative;
+    height: 38px;
+  }
+
+  /* phone sidebar sheet: 44px rows */
+  :is(#root, [data-mobile='true']) [data-sidebar='menu-button'] {
+    height: 44px;
+    font-size: 14.5px;
   }
 }
 
-@media (max-width: 430px) {
-  #root .bayyan-welcome-screen {
-    padding-inline: 16px;
+/* 44px hit areas around compact controls on touch screens */
+@media (pointer: coarse) {
+  #root .bayyan-answer-document .prose a.bayyan-cite {
+    position: relative;
   }
+  #root .bayyan-answer-document .prose a.bayyan-cite::after {
+    content: '';
+    position: absolute;
+    inset: -13px -4px;
+  }
+  #root #message-composer button[aria-haspopup='dialog']::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
+  #root .bayyan-response-level__option {
+    min-height: 44px;
+  }
+  #root .bayyan-scroll-down > button {
+    width: 44px;
+    height: 44px;
+  }
+  [data-radix-popper-content-wrapper]
+    :is([role='menuitem'], [role='menuitemradio'], [role='menuitemcheckbox']) {
+    min-height: 44px;
+  }
+  body
+    > :is([role='dialog']:not([data-sidebar]), [role='alertdialog'])
+    button:not(.absolute) {
+    min-height: 44px;
+  }
+  /* the dialogs' 16px close cross */
+  body > :is([role='dialog'], [role='alertdialog']) > button.absolute::after {
+    content: '';
+    position: absolute;
+    inset: -14px;
+  }
+}
 
-  #root .step[data-step-type='user_message'],
-  #root .step[data-step-type='assistant_message'] {
-    padding-inline: 2px;
+/* touch screens: Radix tooltips open on focus, so they popped over the phone
+   sheet each time it opened (focus lands on its close toggle) and stuck after
+   any tap; every icon control has an accessible name instead */
+@media (hover: none) {
+  [data-radix-popper-content-wrapper]:has(> div[data-side]:not([role])) {
+    display: none !important;
+  }
+  /* no exit animation either: Radix Presence waits for an animationend that
+     never fires under a display:none ancestor, so a closed tooltip stayed
+     mounted as the top dismissable layer and swallowed every Escape (the
+     phone sheet could not be closed from a keyboard). With animation-name
+     none it unmounts at once. */
+  [data-radix-popper-content-wrapper] > div[data-side]:not([role]) {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #root #readme-button {
+    display: none;
+  }
+}
+/* short phones: the welcome page is taller than the screen, so the app's
+   support heart (bottom inline-end corner, 44px + 18px) has no free corner.
+   Reserve that slot under the imprint: once scrolled to the end, the corner
+   is clear and bayyan-support.js docks the heart there. A margin, not a
+   padding: the JS measures the imprint's box. */
+@media (max-width: 767px) and (max-height: 800px) {
+  #root [data-chat-state='welcome'] .bayyan-welcome-imprint {
+    margin-bottom: calc(62px + env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (max-width: 379px) {
+  #root .bayyan-quota--strip::before {
+    display: none;
+  }
+  #root .bayyan-quota--strip {
+    padding-inline: 8px;
+  }
+  #root .bayyan-welcome-imprint {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+  }
+  html[dir='rtl'] #root .bayyan-welcome-imprint {
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+  #root .bayyan-welcome-copy > h1 {
+    font-size: 40px;
+  }
+}
+
+/* -----------------------------------------------------------------------------
+   13. MOTION — expo-out everywhere, with a reduced-motion kill switch
+   ----------------------------------------------------------------------------- */
+@keyframes bn-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes bn-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes bn-shimmer {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: -220% 50%;
+  }
+}
+@keyframes bn-pattern-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(160px, 160px, 0);
+  }
+}
+/* steps can be thousands of pixels tall: no blur layer on them */
+@keyframes bn-rise-step {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes bn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes bn-skeleton {
+  from {
+    -webkit-mask-position: 100% 0;
+    mask-position: 100% 0;
+  }
+  to {
+    -webkit-mask-position: -150% 0;
+    mask-position: -150% 0;
+  }
+}
+@keyframes bn-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(161, 137, 97, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(161, 137, 97, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(161, 137, 97, 0);
+  }
+}
+@keyframes bn-caret {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes bn-indeterminate {
+  0% {
+    background-position: -60% 0;
+  }
+  100% {
+    background-position: 160% 0;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loading-shimmer,
-  .task-highlight,
-  #root .bayyan-answer-document .loading-step,
-  #root .bayyan-answer-document .loading-step *,
-  #root .bayyan-stream-cursor {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-/* Source verification sheet — the existing BAYYAN reader, restyled for mobile. */
-.jawab-source-reader {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: none;
-}
-
-.jawab-source-reader.open {
-  display: block;
-}
-
-.jawab-source-reader__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(17, 17, 17, 0.46);
-  backdrop-filter: blur(2px);
-}
-
-.jawab-source-reader__panel {
-  position: absolute;
-  top: 6vh;
-  right: 24px;
-  bottom: 6vh;
-  width: min(720px, calc(100vw - 48px));
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border: 1px solid var(--bayyan-border);
-  border-radius: 18px;
-  color: var(--bayyan-ink);
-  background: var(--bayyan-surface);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
-}
-
-.jawab-source-reader__header,
-.jawab-source-reader__footer {
-  flex-shrink: 0;
-  padding: 16px 18px;
-}
-
-.jawab-source-reader__header {
-  border-bottom: 1px solid var(--bayyan-border);
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.jawab-source-reader__footer {
-  border-top: 1px solid var(--bayyan-border);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.jawab-source-reader__eyebrow {
-  display: inline-flex;
-  margin-bottom: 6px;
-  color: var(--bayyan-gold-ink);
-  font-size: 10px;
-  line-height: 1.2;
-  font-weight: 780;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.jawab-source-reader h2 {
-  margin: 0;
-  color: var(--bayyan-ink);
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 23px;
-  line-height: 1.18;
-  font-weight: 600;
-}
-
-.jawab-source-reader p {
-  margin: 6px 0 0;
-  color: var(--bayyan-ink-secondary);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.jawab-source-reader__close,
-.jawab-source-reader__full,
-.jawab-source-reader__original {
-  min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid var(--bayyan-border);
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--bayyan-ink) !important;
-  background: var(--bayyan-surface);
-  font-size: 13px;
-  font-weight: 720;
-  text-decoration: none !important;
-  cursor: pointer;
-}
-
-.jawab-source-reader__full {
-  border-color: var(--bayyan-gold);
-  color: #ffffff !important;
-  background: var(--bayyan-gold);
-}
-
-.jawab-source-reader__original[hidden] {
-  display: none;
-}
-
-.jawab-source-reader__body {
-  flex: 1;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 18px;
-}
-
-.jawab-source-reader__status,
-.jawab-source-reader__chunk {
-  border: 1px solid var(--bayyan-border);
-  border-radius: 12px;
-  background: var(--bayyan-surface);
-}
-
-.jawab-source-reader__status {
-  padding: 18px;
-  color: var(--bayyan-ink-secondary);
-  background: var(--bayyan-tint);
-}
-
-.jawab-source-reader__chunk {
-  margin-bottom: 14px;
-  padding: 16px;
-}
-
-.jawab-source-reader__chunk.is-target {
-  border-color: var(--bayyan-gold);
-  background: var(--bayyan-tint);
-}
-
-.jawab-source-reader__ref {
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--bayyan-ink-secondary);
-  font-size: 12px;
-  line-height: 1.4;
-  font-weight: 740;
-}
-
-.jawab-source-reader__ref strong {
-  color: var(--bayyan-gold-ink);
-}
-
-.jawab-source-reader__text {
-  direction: rtl;
-  unicode-bidi: plaintext;
-  color: var(--bayyan-ink);
-  font-family: 'IBM Plex Sans Arabic', 'Noto Naskh Arabic', sans-serif;
-  font-size: 19px;
-  line-height: 2;
-  text-align: right;
-  white-space: pre-wrap;
-}
-
-@media (max-width: 760px) {
-  .jawab-source-reader__panel {
-    top: auto;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: auto;
-    height: min(84dvh, 760px);
-    border-radius: 20px 20px 0 0;
-  }
-
-  .jawab-source-reader__header,
-  .jawab-source-reader__body,
-  .jawab-source-reader__footer {
-    padding: 14px;
-  }
-
-  .jawab-source-reader h2 {
-    font-size: 20px;
-  }
-
-  .jawab-source-reader__text {
-    font-size: 18px;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -6,12 +6,20 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { Translator } from 'components/i18n';
+import { useTranslation } from 'components/i18n/Translator';
 
 import { Sidebar } from '../icons/Sidebar';
 import { useSidebar } from '../ui/sidebar';
 
 export default function SidebarTrigger() {
   const { setOpen, open, openMobile, setOpenMobile, isMobile } = useSidebar();
+  const { t } = useTranslation();
+  const isOpen = isMobile ? openMobile : open;
+  const label = t(
+    isOpen
+      ? 'threadHistory.sidebar.actions.close'
+      : 'threadHistory.sidebar.actions.open'
+  );
 
   return (
     <TooltipProvider>
@@ -25,13 +33,14 @@ export default function SidebarTrigger() {
             size="icon"
             variant="ghost"
             className="text-muted-foreground hover:text-muted-foreground"
+            aria-label={label}
           >
             <Sidebar className="!size-6" />
           </Button>
         </TooltipTrigger>
         <TooltipContent>
           <p>
-            {open ? (
+            {isOpen ? (
               <Translator path="threadHistory.sidebar.actions.close" />
             ) : (
               <Translator path="threadHistory.sidebar.actions.open" />

@@ -13,7 +13,20 @@ import { Translator } from 'components/i18n';
 
 import { useLayoutMaxWidth } from 'hooks/useLayoutMaxWidth';
 
-export default function ReadmeButton() {
+interface ReadmeDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onCloseAutoFocus?: (event: Event) => void;
+  children?: React.ReactNode;
+}
+
+/** The chainlit.md dialog; opened by the header button or the avatar menu. */
+export function ReadmeDialog({
+  open,
+  onOpenChange,
+  onCloseAutoFocus,
+  children
+}: ReadmeDialogProps) {
   const { config } = useConfig();
   const layoutMaxWidth = useLayoutMaxWidth();
 
@@ -22,13 +35,12 @@ export default function ReadmeButton() {
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button id="readme-button" variant="ghost">
-          <Translator path="navigation.header.readme" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="flex flex-col h-screen w-screen max-w-screen max-h-screen border-none !rounded-none overflow-y-auto">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {children ? <DialogTrigger asChild>{children}</DialogTrigger> : null}
+      <DialogContent
+        className="flex flex-col h-screen w-screen max-w-screen max-h-screen border-none !rounded-none overflow-y-auto"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <div
           className="mx-auto flex flex-col flex-grow gap-6"
           style={{
@@ -51,5 +63,15 @@ export default function ReadmeButton() {
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export default function ReadmeButton() {
+  return (
+    <ReadmeDialog>
+      <Button id="readme-button" variant="ghost">
+        <Translator path="navigation.header.readme" />
+      </Button>
+    </ReadmeDialog>
   );
 }

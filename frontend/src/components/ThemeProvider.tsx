@@ -46,6 +46,13 @@ export function ThemeProvider({
   useEffect(() => {
     const root = window.document.documentElement;
 
+    // Switch every surface in the same frame: no colour transition cascade.
+    root.classList.add('theme-switching');
+    const release = window.setTimeout(
+      () => root.classList.remove('theme-switching'),
+      120
+    );
+
     root.classList.remove('light', 'dark');
 
     if (theme === 'system') {
@@ -56,12 +63,13 @@ export function ThemeProvider({
 
       root.classList.add(systemTheme);
       applyThemeVariables(systemTheme);
-      return;
+      return () => window.clearTimeout(release);
     } else {
       applyThemeVariables(theme);
     }
 
     root.classList.add(theme);
+    return () => window.clearTimeout(release);
   }, [theme]);
 
   const value = {

@@ -167,7 +167,17 @@ const Message = memo(
                     </Step>
                   ) : (
                     // Display an assistant message
-                    <article className="bayyan-answer-document flex flex-col items-start min-w-[150px] flex-grow gap-2">
+                    <article
+                      className="bayyan-answer-document flex flex-col items-start min-w-[150px] flex-grow gap-2"
+                      data-kind={message.type}
+                      data-state={
+                        message.isError
+                          ? 'error'
+                          : isRunning || message.streaming
+                          ? 'running'
+                          : 'done'
+                      }
+                    >
                       <div className="bayyan-answer-document__eyebrow">
                         {assistantEyebrow}
                       </div>

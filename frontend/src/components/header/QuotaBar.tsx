@@ -1,3 +1,4 @@
+import { Zap } from 'lucide-react';
 import { useRecoilValue } from 'recoil';
 
 import { useTranslation } from 'components/i18n/Translator';
@@ -20,11 +21,12 @@ function QuotaValue({
     <span
       className={
         isEmpty
-          ? 'text-red-500 font-semibold'
+          ? 'bayyan-quota__value text-red-500 font-semibold'
           : isLow
-          ? 'text-orange-500 font-semibold'
-          : ''
+          ? 'bayyan-quota__value text-orange-500 font-semibold'
+          : 'bayyan-quota__value'
       }
+      data-level={isEmpty ? 'empty' : isLow ? 'low' : 'ok'}
     >
       {remaining}/{limit}
     </span>
@@ -69,12 +71,14 @@ export function QuotaInline() {
         remaining: units.remaining,
         limit: units.limit
       })}
-      className="hidden md:flex items-center gap-1.5 text-xs text-muted-foreground mr-1"
+      className="bayyan-quota bayyan-quota--inline hidden md:flex items-center gap-1.5 text-xs text-muted-foreground me-1"
       title={quotaTitle(quota, t)}
     >
-      <span className="text-[11px]">⚡</span>
-      <span className="flex items-center gap-1">
-        <span className="font-semibold">{t('bayyan.quota.points')}</span>
+      <Zap className="bayyan-quota__icon size-3.5" aria-hidden="true" />
+      <span className="bayyan-quota__body flex items-center gap-1">
+        <span className="bayyan-quota__label font-semibold">
+          {t('bayyan.quota.points')}
+        </span>
         <QuotaValue remaining={units.remaining} limit={units.limit} />
       </span>
     </div>
@@ -97,12 +101,14 @@ export default function QuotaBar() {
         remaining: units.remaining,
         limit: units.limit
       })}
-      className="flex md:hidden items-center justify-center gap-1.5 h-7 bg-muted/50 border-b text-xs text-muted-foreground px-3 shrink-0"
+      className="bayyan-quota bayyan-quota--strip flex md:hidden items-center justify-center gap-1.5 h-7 bg-muted/50 border-b text-xs text-muted-foreground px-3 shrink-0"
       title={quotaTitle(quota, t)}
     >
-      <span>⚡</span>
-      <span className="flex items-center gap-1">
-        <span className="font-semibold">{t('bayyan.quota.points')}</span>
+      <Zap className="bayyan-quota__icon size-3.5" aria-hidden="true" />
+      <span className="bayyan-quota__body flex items-center gap-1">
+        <span className="bayyan-quota__label font-semibold">
+          {t('bayyan.quota.points')}
+        </span>
         <QuotaValue remaining={units.remaining} limit={units.limit} />
       </span>
     </div>

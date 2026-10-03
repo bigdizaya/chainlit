@@ -3,7 +3,22 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronRight, Circle } from 'lucide-react';
 import * as React from 'react';
 
-const DropdownMenu = DropdownMenuPrimitive.Root;
+import { useBayyanLocale } from '@chainlit/react-client';
+
+/* BAYYAN: the app has no Radix DirectionProvider, so menus follow the UI
+   locale here (RTL layout, submenu side and arrow keys in Arabic). */
+const DropdownMenu = ({
+  dir,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Root>) => {
+  const { locale } = useBayyanLocale();
+  return (
+    <DropdownMenuPrimitive.Root
+      dir={dir ?? (locale === 'ar' ? 'rtl' : 'ltr')}
+      {...props}
+    />
+  );
+};
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 

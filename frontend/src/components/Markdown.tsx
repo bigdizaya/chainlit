@@ -33,6 +33,21 @@ import {
   alertComponents,
   normalizeAlertType
 } from './MarkdownAlert';
+import {
+  dominantScript,
+  hastText,
+  isBibliographyTitle,
+  isCitationMarker,
+  isLibraryHref,
+  isSourceListItem,
+  isTranslationLead,
+  noticeKind,
+  parseSourceEntry,
+  remarkAttributionCategory,
+  splitHeadingNumber,
+  stripLeadingEmoji,
+  textOf
+} from './bayyanMarkdown';
 
 interface Props {
   allowHtml?: boolean;
@@ -126,7 +141,8 @@ const Markdown = ({
       cursorPlugin,
       remarkGfm as any,
       remarkDirective as any,
-      MarkdownAlert
+      MarkdownAlert,
+      remarkAttributionCategory
     ];
 
     if (latex) {
@@ -158,17 +174,85 @@ const Markdown = ({
           const element = refElements?.find((e) => e.name === name);
           if (element) {
             return <ElementRef element={element} />;
-          } else {
+          }
+          const linkProps = omit(props, ['node']);
+          if (isLibraryHref(props.href)) {
+            const label = textOf(children).trim();
+            if (isCitationMarker(label)) {
+              return (
+                <a
+                  {...linkProps}
+                  className="bayyan-cite"
+                  data-cite={label.replace(/[[\]\s]/g, '')}
+                  target="_blank"
+                >
+                  {children}
+                </a>
+              );
+            }
+            const entry = parseSourceEntry(label);
+            if (entry) {
+              return (
+                <a
+                  {...linkProps}
+                  className="bayyan-source-entry"
+                  data-cite={entry.markers}
+                  target="_blank"
+                >
+                  <span className="bayyan-source-entry__marker">
+                    {entry.markers.replace(/\//g, ' · ')}
+                  </span>
+                  <span className="bayyan-source-entry__body">
+                    {entry.title ? (
+                      <bdi
+                        className="bayyan-source-entry__title"
+                        dir="auto"
+                        lang={
+                          dominantScript(entry.title) === 'ar'
+                            ? 'ar'
+                            : undefined
+                        }
+                      >
+                        {entry.title}
+                      </bdi>
+                    ) : null}
+                    {entry.author ? (
+                      <bdi
+                        className="bayyan-source-entry__author"
+                        dir="auto"
+                        lang={
+                          dominantScript(entry.author) === 'ar'
+                            ? 'ar'
+                            : undefined
+                        }
+                      >
+                        {entry.author}
+                      </bdi>
+                    ) : null}
+                    {entry.reference ? (
+                      <span className="bayyan-source-entry__ref" dir="ltr">
+                        {entry.reference}
+                      </span>
+                    ) : null}
+                  </span>
+                </a>
+              );
+            }
             return (
-              <a
-                {...props}
-                className="text-primary hover:underline"
-                target="_blank"
-              >
+              <a {...linkProps} className="bayyan-library-ref" target="_blank">
                 {children}
               </a>
             );
           }
+          return (
+            <a
+              {...linkProps}
+              className="text-primary hover:underline"
+              target="_blank"
+            >
+              {children}
+            </a>
+          );
         },
         img: (image: any) => {
           // Check if the image source is actually a video file
@@ -219,27 +303,46 @@ const Markdown = ({
           );
         },
         blockquote(props) {
+          const text = hastText(props.node);
+          const evidence =
+            dominantScript(text.split('\n')[0] || text) === 'ar' ||
+            /[\u0600-\u06FF]/.test((text.match(/«[^»]*»/) || [''])[0]);
           return (
             <blockquote
               {...omit(props, ['node'])}
-              className="mt-6 border-l-2 pl-6 italic"
+              className={cn(
+                'mt-6 border-s-2 ps-6 italic bayyan-quote',
+                evidence ? 'bayyan-quote--evidence' : 'bayyan-quote--note'
+              )}
             />
           );
         },
         em(props) {
-          return <span {...omit(props, ['node'])} className="italic" />;
+          const translation = isTranslationLead(hastText(props.node));
+          return (
+            <span
+              {...omit(props, ['node'])}
+              className={cn('italic', translation && 'bayyan-translation')}
+            />
+          );
         },
         strong(props) {
           return <span {...omit(props, ['node'])} className="font-bold" />;
         },
         hr() {
-          return <Separator />;
+          return <Separator className="bayyan-rule" />;
         },
         ul(props) {
+          const sources = (props.node?.children || []).some((child: any) =>
+            isSourceListItem(child)
+          );
           return (
             <ul
               {...omit(props, ['node'])}
-              className="my-3 ml-3 list-disc pl-2 [&>li]:mt-1"
+              className={cn(
+                'my-3 ms-3 list-disc ps-2 [&>li]:mt-1',
+                sources && 'bayyan-source-list'
+              )}
             />
           );
         },
@@ -247,49 +350,122 @@ const Markdown = ({
           return (
             <ol
               {...omit(props, ['node'])}
-              className="my-3 ml-3 list-decimal pl-2 [&>li]:mt-1"
+              className="my-3 ms-3 list-decimal ps-2 [&>li]:mt-1"
             />
+          );
+        },
+        li(props) {
+          const source = isSourceListItem(props.node);
+          return (
+            <li
+              {...omit(props, ['node'])}
+              dir="auto"
+              className={cn(props.className, source && 'bayyan-source-item')}
+            />
+          );
+        },
+        summary(props) {
+          const { children } = stripLeadingEmoji(props.children);
+          return (
+            <summary
+              {...omit(props, ['node', 'children'])}
+              className={cn(props.className, 'bayyan-details-summary')}
+            >
+              {children}
+            </summary>
           );
         },
         h1(props) {
+          const { children, stripped } = stripLeadingEmoji(props.children);
+          const bibliography =
+            stripped && isBibliographyTitle(textOf(children));
           return (
             <h1
-              {...omit(props, ['node'])}
-              className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl mt-8 first:mt-0"
-            />
+              {...omit(props, ['node', 'children'])}
+              dir="auto"
+              className={cn(
+                'scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl mt-8 first:mt-0',
+                bibliography && 'bayyan-bibliography-heading'
+              )}
+            >
+              {splitHeadingNumber(children)}
+            </h1>
           );
         },
         h2(props) {
+          const { children } = stripLeadingEmoji(props.children);
+          const bibliography = isBibliographyTitle(textOf(children));
           return (
             <h2
-              {...omit(props, ['node'])}
-              className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight mt-8 first:mt-0"
-            />
+              {...omit(props, ['node', 'children'])}
+              dir="auto"
+              className={cn(
+                'scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight mt-8 first:mt-0',
+                bibliography && 'bayyan-bibliography-heading'
+              )}
+            >
+              {splitHeadingNumber(children)}
+            </h2>
           );
         },
         h3(props) {
+          const { children, stripped } = stripLeadingEmoji(props.children);
+          const bibliography =
+            stripped && isBibliographyTitle(textOf(children));
           return (
             <h3
-              {...omit(props, ['node'])}
-              className="scroll-m-20 text-2xl font-semibold tracking-tight mt-6 first:mt-0"
-            />
+              {...omit(props, ['node', 'children'])}
+              dir="auto"
+              className={cn(
+                'scroll-m-20 text-2xl font-semibold tracking-tight mt-6 first:mt-0',
+                bibliography && 'bayyan-bibliography-heading'
+              )}
+            >
+              {splitHeadingNumber(children)}
+            </h3>
           );
         },
         h4(props) {
+          const { children, stripped } = stripLeadingEmoji(props.children);
+          const bibliography =
+            stripped && isBibliographyTitle(textOf(children));
           return (
             <h4
-              {...omit(props, ['node'])}
-              className="scroll-m-20 text-xl font-semibold tracking-tight mt-6 first:mt-0"
-            />
+              {...omit(props, ['node', 'children'])}
+              dir="auto"
+              className={cn(
+                'scroll-m-20 text-xl font-semibold tracking-tight mt-6 first:mt-0',
+                bibliography && 'bayyan-bibliography-heading'
+              )}
+            >
+              {splitHeadingNumber(children)}
+            </h4>
           );
         },
         p(props) {
+          const text = hastText(props.node);
+          const kind = noticeKind(text);
+          const ayah = /^\s*\uFD3F/.test(text);
+          const script = dominantScript(text);
+          // decorative leading emoji (notices, the follow-up suggestions title)
+          const { children } = stripLeadingEmoji(props.children);
           return (
             <div
-              {...omit(props, ['node'])}
-              className="leading-7 [&:not(:first-child)]:mt-4 whitespace-pre-wrap break-words"
+              {...omit(props, ['node', 'children'])}
+              className={cn(
+                'leading-7 [&:not(:first-child)]:mt-4 whitespace-pre-wrap break-words',
+                props.className,
+                kind && 'bayyan-notice',
+                ayah && 'bayyan-ayah'
+              )}
+              data-notice={kind}
+              data-script={script === 'ar' ? 'ar' : undefined}
+              lang={script === 'ar' ? 'ar' : undefined}
+              dir={ayah ? 'rtl' : 'auto'}
               role="article"
-            />
+            >
+              {children}
+            </div>
           );
         },
         table({ children, ...props }) {

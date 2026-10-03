@@ -11,6 +11,7 @@ import {
 
 import Icon from '@/components/Icon';
 import { Loader } from '@/components/Loader';
+import { stripLeadingText } from '@/components/bayyanMarkdown';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -30,11 +31,10 @@ const ActionButton = ({ action }: ActionProps) => {
   const [isRunning, setIsRunning] = useState(false);
 
   const content = useMemo(() => {
-    return action.icon
-      ? action.label
-      : action.label
-      ? action.label
-      : action.name;
+    const label = action.icon ? action.label : action.label || action.name;
+    // BAYYAN: the server prefixes follow-up labels with a decorative emoji
+    // (a light bulb); the house style draws its own mark instead.
+    return typeof label === 'string' ? stripLeadingText(label) : label;
   }, [action]);
 
   const icon = useMemo(() => {

@@ -384,7 +384,7 @@ export default function MessageComposer({
         </div>
       ) : (
         <div className="flex items-center justify-between">
-          <div className="flex items-center -ml-1.5">
+          <div className="bayyan-composer-tools flex items-center -ms-1.5">
             <VoiceButton disabled={disabled} />
             <UploadButton
               disabled={disabled}

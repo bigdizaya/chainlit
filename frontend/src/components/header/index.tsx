@@ -54,7 +54,7 @@ const Header = memo(() => {
       className="p-3 flex h-[60px] items-center justify-between gap-2 relative"
       id="header"
     >
-      <div className="flex items-center">
+      <div className="bayyan-header__start flex items-center">
         {historyEnabled && !sidebarHidden ? (
           !sidebarOpen ? (
             <SidebarTrigger />
@@ -71,8 +71,8 @@ const Header = memo(() => {
         <ChatProfiles navigate={navigate} />
       </div>
 
-      <div />
-      <div className="flex items-center gap-1">
+      <div className="bayyan-header__spacer" />
+      <div className="bayyan-header__end flex items-center gap-1">
         <ShareButton />
         <ReadmeButton />
         <ApiKeys />

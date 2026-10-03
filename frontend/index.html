@@ -7,8 +7,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- FONT START -->
+    <!-- BAYYAN « Encre & Or »: Geist (UI), Newsreader (answer text),
+         Instrument Serif (display), Amiri (Arabic), IBM Plex Sans Arabic (Arabic UI) -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700&family=Geist+Mono:wght@400..600&family=Geist:wght@300..700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Footed lining digits and a short hyphen for the display face -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&text=0123456789&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500&text=-&display=swap"
       rel="stylesheet"
     />
     <!-- FONT END -->
@@ -16,16 +27,24 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css"
     />
-    <!-- JS INJECTION PLACEHOLDER -->
-    <!-- CSS INJECTION PLACEHOLDER -->
-    <style>
-      html,
-      body,
-      #root {
-        min-height: 100%;
-        background: #fafafa;
-      }
-    </style>
+    <!-- Pre-paint theme and locale: before the injected app JS, which reads
+         html.dark / html.light for the browser theme-color at first paint -->
+    <script>
+      // Apply the saved theme before React paints to avoid a light flash in dark mode.
+      (function () {
+        try {
+          var saved = window.localStorage.getItem('vite-ui-theme');
+          var dark =
+            saved === 'dark' ||
+            (saved === 'system' &&
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.add(dark ? 'dark' : 'light');
+        } catch (error) {
+          // Storage can be unavailable in private WebViews: keep the light default.
+        }
+      })();
+    </script>
     <script>
       // Apply the URL/saved/device locale before React paints to avoid a French/LTR flash.
       (function () {
@@ -93,6 +112,22 @@
         }
       })();
     </script>
+    <!-- JS INJECTION PLACEHOLDER -->
+    <!-- CSS INJECTION PLACEHOLDER -->
+    <style>
+      html,
+      body,
+      #root {
+        min-height: 100%;
+        background: #faf7f1;
+      }
+      html.dark,
+      html.dark body,
+      html.dark #root {
+        background: #0b0a08;
+        color-scheme: dark;
+      }
+    </style>
     <script>
       const global = globalThis;
     </script>

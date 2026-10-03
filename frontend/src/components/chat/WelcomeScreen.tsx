@@ -92,10 +92,22 @@ export default function WelcomeScreen(props: Props) {
       <div className="bayyan-welcome-brand">{logo}</div>
       <div className="bayyan-welcome-copy">
         <p>{t('bayyan.welcome.eyebrow')}</p>
-        <h1>{t('bayyan.welcome.title')}</h1>
+        <h1>
+          <span className="bayyan-welcome-title__lead">
+            {t('bayyan.welcome.titleLead')}
+          </span>{' '}
+          <em className="bayyan-welcome-title__accent">
+            {t('bayyan.welcome.titleAccent')}
+          </em>
+        </h1>
         <span>{t('bayyan.welcome.description')}</span>
       </div>
       <MessageComposer {...props} />
+      <p className="bayyan-welcome-imprint">
+        <span>{t('bayyan.welcome.imprint.originalTexts')}</span>
+        <span>{t('bayyan.welcome.imprint.traceableSources')}</span>
+        <span dir="ltr">FR · AR · EN · ES</span>
+      </p>
       <Starters />
     </div>
   );

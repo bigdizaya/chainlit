@@ -1,4 +1,5 @@
 import { isBayyanFreshChatRequest } from '@/lib/bayyanInactivity';
+import { hasMessage } from '@/lib/utils';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSetRecoilState } from 'recoil';
@@ -170,7 +171,7 @@ const Chat = () => {
     options: { noClick: true }
   });
 
-  const { firstInteraction, threadId } = useChatMessages();
+  const { firstInteraction, threadId, messages } = useChatMessages();
 
   useEffect(() => {
     const currentPage = new URL(window.location.href);
@@ -208,6 +209,7 @@ const Chat = () => {
       onBlur={undefined}
       onFocus={undefined}
       className="relative flex h-full min-h-0 w-full flex-col overflow-hidden"
+      data-chat-state={hasMessage(messages) ? 'conversation' : 'welcome'}
     >
       {enableAttachments ? (
         <input id="#upload-drop-input" {...upload.getInputProps()} />
@@ -229,7 +231,7 @@ const Chat = () => {
           autoScrollRef={autoScrollRef}
         >
           <div
-            className="flex flex-col mx-auto w-full flex-grow p-4"
+            className="bayyan-chat-column flex flex-col mx-auto w-full flex-grow p-4"
             style={{
               maxWidth: layoutMaxWidth
             }}
@@ -245,7 +247,7 @@ const Chat = () => {
           </div>
         </ScrollContainer>
         <div
-          className="flex flex-col mx-auto w-full p-4 pt-0"
+          className="bayyan-composer-dock flex flex-col mx-auto w-full p-4 pt-0"
           style={{
             maxWidth: layoutMaxWidth
           }}
